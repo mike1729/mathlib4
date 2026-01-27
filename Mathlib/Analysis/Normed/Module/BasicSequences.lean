@@ -135,7 +135,7 @@ theorem isBasicSequence_of_grunblum [CompleteSpace X]
   let b_S := Module.Basis.span h_indep
   let e_Y : ℕ → S := b_S
 
-  have hbS : ∀ n, (b_S n : X) = e n := sorry
+  have hbS : ∀ n, (b_S n : X) = e n := Module.Basis.span_apply h_indep
 
   let P_span (k : ℕ) : S →ₗ[𝕜] S := b_S.constr 𝕜 (fun i => if i < k then b_S i else 0)
 
@@ -175,11 +175,7 @@ theorem isBasicSequence_of_grunblum [CompleteSpace X]
     rw [← norm_coe, ← norm_coe, hx,  h_P_span_apply]
     simp_rw [Submodule.coe_sum, Submodule.coe_smul, hbS]
     exact hK N k (b_S.repr x) hk_le_N
-
   let P (k : ℕ) : S →L[𝕜] S := LinearMap.mkContinuous (P_span k) K (h_P_span_bound k)
-
-  -- have h0 : P 0 = 0 := by
-  --   ext; simp_rw [P, P_span, LinearMap.mkContinuous_apply, h_P_span_apply, Finset.range_zero, Finset.sum_empty]; rfl
   -- 5. Verify Schauder Basis Conditions
   have h0 : P 0 = 0 := by
     have : P_span 0 = 0 := by
@@ -276,15 +272,24 @@ theorem isBasicSequence_of_grunblum [CompleteSpace X]
     rw [h_eq, sub_self, norm_zero]
     exact hε
 
-  -- Conclusion
-  -- obtain ⟨f, hf⟩ := SchauderBasis.basis_of_canonical_projections h0 hdim hcomp hlim
-
-  -- The basis f from basis_of_canonical_projections is in S, which equals span of e
-  -- We need to show that this gives a basis for span(range e) with e as basis elements
-  sorry
-
-
-
+  -- Conclusion: use basis_of_canonical_projections
+  -- Key: b_S n = ⟨e n, _⟩ as elements of S
+  have hbS_eq : ∀ n, b_S n = ⟨e n, subset_span (mem_range_self n)⟩ := fun n ↦
+    Subtype.ext (hbS n)
+  -- The goal's e_Y is definitionally fun n ↦ ⟨e n, _⟩
+  -- Show this is in the range of Q n = P (n+1) - P n
+  have he_in_range : ∀ n, ⟨e n, subset_span (mem_range_self n)⟩ ∈
+      LinearMap.range (SchauderBasis.Q P n).toLinearMap := fun n ↦ by
+    rw [← hbS_eq, LinearMap.mem_range]
+    use b_S n
+    simp only [SchauderBasis.Q, ContinuousLinearMap.coe_sub, P,
+               LinearMap.mkContinuous_coe, LinearMap.sub_apply]
+    rw [h_P_span_apply, h_P_span_apply, Finset.sum_range_succ, add_sub_cancel_left]
+    simp only [Module.Basis.repr_self, Finsupp.single_eq_same, one_smul]
+  -- ⟨e n, _⟩ ≠ 0 follows from h_nz
+  have he_ne : ∀ n, (⟨e n, subset_span (mem_range_self n)⟩ : S) ≠ 0 := fun n h ↦
+    h_nz n (by simpa using congrArg Subtype.val h)
+  exact ⟨SchauderBasis.basis_of_canonical_projections h0 hdim hcomp hlim he_in_range he_ne⟩
 
 lemma perturbation_finite_dimensional {S : Set (StrongDual 𝕜 X)}
     (h_weak_star : (0 : WeakDual 𝕜 X) ∈ closure (StrongDual.toWeakDual '' S))
@@ -400,31 +405,28 @@ lemma perturbation_finite_dimensional {S : Set (StrongDual 𝕜 X)}
         _ = 1 - ε                        := by dsimp [M, γ]; field_simp [hδ.ne']; ring
 
   -- Reconstruct for original e and c
+  have h_norm_ne : (e_norm : 𝕜) ≠ 0 := RCLike.ofReal_ne_zero.mpr (norm_ne_zero_iff.mpr he_ne)
+  -- Key: e = e_norm • e' and c = e_norm * (e_norm⁻¹ * c)
+  have he_eq : (e : StrongDual 𝕜 X) = (e_norm : 𝕜) • (e' : StrongDual 𝕜 X) := by
+    simp only [e', Submodule.coe_smul, smul_smul, mul_inv_cancel₀ h_norm_ne, one_smul]
+  have hc_eq : c = (e_norm : 𝕜) * ((e_norm⁻¹ : 𝕜) * c) := by
+    rw [← mul_assoc, mul_inv_cancel₀ h_norm_ne, one_mul]
   calc ‖(e : StrongDual 𝕜 X) + c • x‖
     _ = ‖(e_norm : 𝕜) • (e' : StrongDual 𝕜 X) + ((e_norm : 𝕜) * ((e_norm⁻¹ : 𝕜) * c)) • x‖ := by
-      -- Substitute e = e_norm • e'
-      -- Substitute c = e_norm * (e_norm⁻¹ * c)
-      simp only [e', e_norm]
-      sorry
+      conv_lhs => rw [he_eq, hc_eq]
     _ = ‖(e_norm : 𝕜) • ((e' : StrongDual 𝕜 X) + ((e_norm⁻¹ : 𝕜) * c) • x)‖ := by
       rw [smul_add, smul_smul]
     _ = ‖(e_norm : 𝕜)‖ * ‖(e' : StrongDual 𝕜 X) + ((e_norm⁻¹ : 𝕜) * c) • x‖ := by
       rw [norm_smul]
     _ = ‖e‖ * ‖(e' : StrongDual 𝕜 X) + ((e_norm⁻¹ : 𝕜) * c) • x‖ := by
-      -- 4. Simplify norm of the real scalar e_norm
-      sorry
-      -- rw [norm_algebraMap']
-      -- dsimp only [Real.norm_eq_abs, AddSubgroupClass.coe_norm]
-      -- rw [abs_of_nonneg (norm_nonneg e)]
-      -- rw [norm_coe]
+      simp only [e_norm, RCLike.norm_ofReal, abs_norm]
     _ ≥ ‖e‖ * (1 - ε) := by
-      -- 5. Apply the normalized estimate
       gcongr
+      -- estimate uses (↑(e_norm⁻¹) * c), but here we have ((↑e_norm)⁻¹ * c)
+      -- These are equal by RCLike.ofReal_inv
+      rw [← RCLike.ofReal_inv]
       exact estimate
     _ = (1 - ε) * ‖e‖ := mul_comm _ _
-
-
-
 
 /-- Given a set in the dual that is bounded away from 0 in norm but has 0 in its
     weak-star closure, we can select a basic sequence with basis constant close to 1. -/
