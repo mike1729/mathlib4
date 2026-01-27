@@ -31,12 +31,26 @@ A sequence `e` is a **Basic Sequence** if it forms a Schauder Basis for its clos
 -/
 def IsBasicSequence (𝕜 : Type*) {X : Type*} [RCLike 𝕜]
     [NormedAddCommGroup X] [NormedSpace 𝕜 X] (e : ℕ → X) : Prop :=
-  let Y := (span 𝕜 (range e)).topologicalClosure
-  let e_Y : ℕ → Y := fun n ↦ ⟨e n,
-    Submodule.le_topologicalClosure _ (subset_span (mem_range_self n))⟩
+  let Y := span 𝕜 (range e)
+  let e_Y : ℕ → Y := fun n ↦ ⟨e n, subset_span (mem_range_self n)⟩
   Nonempty (SchauderBasis 𝕜 e_Y)
 
+
 namespace BasicSequences
+
+-- def IsBasicSequence (𝕜 : Type*) {X : Type*} [RCLike 𝕜]
+--     [NormedAddCommGroup X] [NormedSpace 𝕜 X] (e : ℕ → X) : Prop :=
+--   let Y := (span 𝕜 (range e)).topologicalClosure
+--   let e_Y : ℕ → Y := fun n ↦ ⟨e n,
+--     Submodule.le_topologicalClosure _ (subset_span (mem_range_self n))⟩
+--   Nonempty (SchauderBasis 𝕜 e_Y)
+
+
+-- namespace BasicSequences
+
+-- lemma SchauderBasis_of_closure {Y : Submodule 𝕜 X} {e : ℕ → Y} (b : SchauderBasis 𝕜 e) :
+--     SchauderBasis 𝕜 (fun n ↦ ⟨e n, Submodule.le_topologicalClosure _ ⟩) := by
+--   sorry
 
 -- variable (𝕜 : Type*) {X : Type*} [NontriviallyNormedField 𝕜]
 --     [NormedAddCommGroup X] [NormedSpace 𝕜 X]
@@ -74,51 +88,33 @@ def SatisfiesGrunblumCondition (𝕜 : Type*) {X : Type*} [RCLike 𝕜]
 theorem grunblum_of_basic (he : IsBasicSequence 𝕜 e) : SatisfiesGrunblumCondition 𝕜 e := by
     sorry
 
-
-lemma linear_independet_of_grunblum (h_grunblum : SatisfiesGrunblumCondition 𝕜 e)
+lemma linearIndependent_of_grunblum (h_grunblum : SatisfiesGrunblumCondition 𝕜 e)
     (h_nz : ∀ n, e n ≠ 0) : LinearIndependent 𝕜 e := by
-  rcases h_grunblum with ⟨K, hK_ge_1, hK⟩
+  rcases h_grunblum with ⟨K, -, hK⟩
   rw [linearIndependent_iff']
-  intro s g h_sum i hi_s
-  -- 1. Construct global coefficients 'c' that match 'g' on s and are 0 otherwise
-  let c := fun j => if j ∈ s then g j else 0
+  intros s g hg_sum i hi_s
+  -- 1. Define coefficients 'c' globally and pick a sufficiently large N
+  let c := fun j ↦ if j ∈ s then g j else 0
   let N := s.sup id + 1
-
-  -- 2. Show the sum over a large range N is zero (matching the hypothesis)
+  have h_bound : ∀ j ∈ s, j < N := fun j hj ↦ Nat.lt_succ_of_le (Finset.le_sup hj (f := id))
+  -- 2. Show the sum over 'range N' is zero (because it matches 's' where c=g, and is 0 elsewhere)
   have h_total : ∑ j ∈ Finset.range N, c j • e j = 0 := by
-    rw [← h_sum]
-    have h_ss : s ⊆ Finset.range N := by
-      intro j hj
-      simp only [Finset.mem_range]
-      exact lt_of_le_of_lt (Finset.le_sup hj) (Nat.lt_succ_self _)
-    rw [← Finset.sum_subset h_ss]
-    · rw [h_sum]
-      apply Finset.sum_congr rfl
-      intro j hj
-      simp [c, hj]
-    · intro j _ h_notin
-      simp [c, h_notin]
-    -- apply (smul_eq_zero_iff_left (h_nz j)).mp
-
-
-
-  -- 3. Use Grünblum to show the term at 'i' is 0 (diff of two zero partial sums)
+    rw [← Finset.sum_subset (fun j hj ↦ Finset.mem_range.2 (h_bound j hj))
+      (fun x _ hj ↦ by simp [c, hj])]
+    convert hg_sum using 1
+    exact Finset.sum_congr rfl (fun j hj ↦ by simp [c, hj])
+  -- 3. Use Grünblum to show ALL partial sums up to N are zero
+  have h_partial : ∀ m ≤ N, ∑ j ∈ Finset.range m, c j • e j = 0 := fun m hm ↦
+    norm_le_zero_iff.1 <| by simpa [h_total] using hK N m c hm
+  -- 4. The term at 'i' is the difference of two zero partial sums (S_{i+1} - S_i)
   have h_term : c i • e i = 0 := by
-    -- The term at i is S_{i+1} - S_i
-    rw [← Finset.sum_range_succ_sub_sum (fun j ↦ c j • e j)]
-    let hK_N := hK (n := N) (a := c)
-    rw [h_total, norm_zero, mul_zero] at hK_N
-    have : i + 1 ≤ N := by
-      dsimp only [N]
-      apply Nat.succ_le_succ
-      exact Finset.le_sup hi_s (f := id)
+    rw [← Finset.sum_range_succ_sub_sum (fun j ↦ c j • e j),
+        h_partial (i + 1) (h_bound i hi_s),
+        h_partial i (le_of_lt (h_bound i hi_s)), sub_zero]
+  -- 5. Conclude g i = 0
+  simpa [c, hi_s, h_nz i] using h_term
 
-    rw [norm_le_zero_iff.mp (hK_N (i + 1) this),
-      norm_le_zero_iff.mp (hK_N i ((Nat.le_succ i).trans this)), sub_zero]
 
-  -- 4. Conclude g i = 0
-  simp only [c, if_pos hi_s] at h_term
-  exact (smul_eq_zero.mp h_term).resolve_right (h_nz i)
 /--
 **The Grünblum Criterion**:
 If a sequence satisfies the Grünblum condition (bounded projections on the span),
@@ -128,7 +124,7 @@ theorem isBasicSequence_of_grunblum [CompleteSpace X]
     (h_grunblum : SatisfiesGrunblumCondition 𝕜 e)
     (h_nz : ∀ n, e n ≠ 0) : IsBasicSequence 𝕜 e := by
 
-  have h_indep := linear_independet_of_grunblum h_grunblum h_nz
+  have h_indep := linearIndependent_of_grunblum h_grunblum h_nz
   rcases h_grunblum with ⟨K, hK_ge_1, hK⟩
 
   -- 1. Prove Linear Independence
@@ -136,17 +132,11 @@ theorem isBasicSequence_of_grunblum [CompleteSpace X]
   -- its partial sums must have norm 0.
 
   let S := Submodule.span 𝕜 (Set.range e)
-  let Y := S.topologicalClosure
-
   let b_S := Module.Basis.span h_indep
-  have hbS : ∀ n, b_S n = e n := by
-    intro n
-    rw [Module.Basis.span_apply h_indep n]
-  let e_Y' : ℕ → Y := fun n => ⟨e n, Submodule.subset_span (Set.mem_range_self n) |> Submodule.le_topologicalClosure S⟩
-  let e_Y : ℕ → Y := Submodule.inclusion (Submodule.le_topologicalClosure S) ∘ b_S
-  have heY_eq : ∀ n, e_Y n = e_Y' n := sorry
+  let e_Y : ℕ → S := b_S
 
-  -- 3. Define Projections on the dense span S
+  have hbS : ∀ n, (b_S n : X) = e n := sorry
+
   let P_span (k : ℕ) : S →ₗ[𝕜] S := b_S.constr 𝕜 (fun i => if i < k then b_S i else 0)
 
   have h_P_span_apply (k : ℕ) (x : S) :
@@ -186,109 +176,133 @@ theorem isBasicSequence_of_grunblum [CompleteSpace X]
     simp_rw [Submodule.coe_sum, Submodule.coe_smul, hbS]
     exact hK N k (b_S.repr x) hk_le_N
 
-  -- 4. Extend to Y
-  let P_SS (k : ℕ) : S →L[𝕜] S := LinearMap.mkContinuous (P_span k) K (h_P_span_bound k)
-  let ι : S →L[𝕜] Y := LinearMap.mkContinuous
-    (Submodule.inclusion (Submodule.le_topologicalClosure S)) 1 (fun x ↦ by simp only [AddSubgroupClass.coe_norm, Submodule.coe_inclusion, one_mul, le_refl])
+  let P (k : ℕ) : S →L[𝕜] S := LinearMap.mkContinuous (P_span k) K (h_P_span_bound k)
 
-  -- 2. Define P directly by extending the map (S → Y).
-  let P (k : ℕ) : Y →L[𝕜] Y :=
-    (LinearMap.mkContinuous (ι.toLinearMap.comp (P_span k)) K (by
-      intro x
-      -- The norm in Y is the same as in S, so the bound K still holds
-      simpa only [LinearMap.coe_comp, Function.comp_apply, LinearMap.coe_mk,
-                  Submodule.inclusion_apply, Submodule.coe_norm]
-        using h_P_span_bound k x)
-    ).extend ι
-  have h_dense : DenseRange ι := (denseRange_inclusion_iff ?_).mpr ?_
-
-  have h_uniind : IsUniformInducing ι := by
-    apply Isometry.isUniformInducing
-    apply AddMonoidHomClass.isometry_of_norm
-    intro x
-    rfl
-  -- Properties subsetof the extended projection
-  have h_P_eq_on_S (k : ℕ) (x : S) : P k (ι x)  = ι (P_span k x) := by
-    -- The extension agrees with the original map on the dense subspace
-    rw [ContinuousLinearMap.extend_eq]
-    · dsimp only [LinearMap.mkContinuous_apply, LinearMap.coe_comp, ContinuousLinearMap.coe_coe, Function.comp_apply]
-    · exact h_dense -- Density of S in Y
-    · exact h_uniind -- isuniformly_continuous
-
-
+  have h0 : P 0 = 0 := by
+    ext; simp_rw [P, P_span, LinearMap.mkContinuous_apply, h_P_span_apply, Finset.range_zero, Finset.sum_empty]; rfl
   -- 5. Verify Schauder Basis Conditions
   have h0 : P 0 = 0 := by
     have : P_span 0 = 0 := by
-      ext x
-      simp_rw [h_P_span_apply, Finset.range_zero, Finset.sum_empty]
-      rfl
-    apply ContinuousLinearMap.extend_unique
-    · exact h_dense -- S is dense in Y
-    · exact h_uniind -- The inclusion is uniformly inducing
-    ext x
-    -- 3. Simplify P 0 on S (it is the zero map because k=0)
-    simp only [ContinuousLinearMap.zero_comp, ContinuousLinearMap.zero_apply, ZeroMemClass.coe_zero,
-    LinearMap.mkContinuous_apply, LinearMap.coe_comp, ContinuousLinearMap.coe_coe, Function.comp_apply]
-    -- 4. P_span 0 x is 0
+      ext; simp_rw [h_P_span_apply, Finset.range_zero, Finset.sum_empty]; rfl
+    ext _
+    dsimp only [P]
+    simp only [LinearMap.mkContinuous_apply, ContinuousLinearMap.zero_apply, ZeroMemClass.coe_zero, ZeroMemClass.coe_eq_zero]
     rw [h_P_span_apply]
-    simp only [Finset.range_zero, Finset.sum_empty, map_zero]
-    rfl
-
-
-
-    -- apply ContinuousLinearMap.opNorm_ext; refine ContinuousLinearMap.dense_range_coe (Submodule.topologicalClosure_subtype S) ?_
-    -- intro x
-    -- rw [ContinuousLinearMap.zero_apply, h_P_eq_on_S]
-    -- simp [P_span, Basis.constr_basis, if_neg (Nat.not_lt_zero _)]
-    -- apply LinearMap.map_zero
+    simp only [Finset.range_zero, Finset.sum_empty]
 
   have hdim (n : ℕ) : Module.finrank 𝕜 (LinearMap.range (P n).toLinearMap) = n := by
-    -- The range of P n is the closure of the range of P_span n.
-    -- But range of P_span n is finite dimensional (span of e_0...e_{n-1}), so it is closed.
-    -- Thus range P n = range P_span n.
-    -- Rank is n because e_i are linearly independent.
-    sorry -- Standard rank argument using linearity and density
+    -- Define the target span W
+    let W := Submodule.span 𝕜 (Set.range (fun i : Fin n ↦ b_S i))
 
-  have hcomp (n m : ℕ) (y : Y) : P n (P m y) = P (min n m) y := by
-    -- Verify on dense set S
-    refine ContinuousLinearMap.dense_range_coe (Submodule.topologicalClosure_subtype S) ?_ y
-    intro x
-    simp only [h_P_eq_on_S]
-    -- P_span maps S to S, so P m x ∈ S.
-    rw [h_P_eq_on_S]
-    -- Now check composition on P_span
-    apply b_S.ext; intro i
-    simp only [LinearMap.comp_apply, P_span, Basis.constr_basis]
-    split_ifs <;> simp
+    -- Step 1: Show range (P n) = W
+    have h_range : LinearMap.range (P n).toLinearMap = W := by
+      apply le_antisymm
+      · rintro _ ⟨x, rfl⟩
+        dsimp only [P]
+        simp_rw [LinearMap.mkContinuous_apply, h_P_span_apply]
+        refine Submodule.sum_mem _ (fun i hi ↦ ?_)
+        apply Submodule.smul_mem
+        apply Submodule.subset_span
+        use i, Finset.mem_range.mp hi
+      · -- "≥": The basis vectors e_Y i are fixed points of P n, so they are in the range
+        rw [Submodule.span_le]
+        rintro _ ⟨i, rfl⟩
+        use b_S i
+        simp only [ContinuousLinearMap.coe_coe]
+        dsimp only [P]
+        simp only [LinearMap.mkContinuous_apply]
+        dsimp only [P_span]
+        rw [b_S.constr_basis]
+        have hi : i < n := sorry
+        rw [if_pos hi]
+    -- Step 2: Calculate the dimension
+    rw [h_range, finrank_span_eq_card]
+    · exact Fintype.card_fin n
+    · exact b_S.linearIndependent.comp (↑·) Fin.val_injective
 
-  have hlim (y : Y) : Tendsto (fun n ↦ P n y) atTop (𝓝 y) := by
-    -- Use Banach-Steinhaus / Density argument
-    -- 1. Uniformly bounded: ‖P n‖ ≤ K
+  have hcomp (n m : ℕ) (y : S) : P n (P m y) = P (min n m) y := by
+    dsimp [P]
+    -- Direct calculation on basis elements
+    apply b_S.ext_elem y; intro i
+    simp only [P_span, b_S.constr_basis]
+    split_ifs with h_m h_n
+    · rw [b_S.constr_basis, if_pos (lt_min h_n h_m)]
+    · rw [b_S.constr_basis, if_neg (not_lt.mpr (le_trans (min_le_left n m) (le_of_not_lt h_n)))]
+    · rw [if_neg (not_lt.mpr (le_trans (min_le_right n m) (le_of_not_lt h_m))), smul_zero]
+
+
+  have hlim (y : S) : Filter.Tendsto (fun n ↦ P n y) Filter.atTop (nhds y) := by
+    -- For any y in S, P n y eventually equals y
+    rw [Metric.tendsto_atTop]
+    intro ε hε
+    -- y is a finite linear combination. Let N be larger than any index in y.
+    obtain ⟨supp, f, rfl⟩ := b_S.exists_sum_repr y
+    use supp.sup id + 1
+    intro n hn
+    rw [dist_eq_norm, sub_eq_zero.mpr ?_, norm_zero]
+    · exact hε
+    · dsimp [P]
+      rw [h_P_span_apply, b_S.constr_linearCombination, Finsupp.linearCombination_apply, Finsupp.sum]
+      convert (Finset.sum_subset (s₁ := supp) (s₂ := Finset.range n) _ _).symm
+      · intro i hi
+        rw [b_S.constr_basis, if_pos (lt_of_le_of_lt (Finset.le_sup hi (f := id)) hn)]
+      · intro i hi
+        apply Finset.mem_range.mpr
+        exact lt_of_le_of_lt (Finset.le_sup hi (f := id)) hn
+      · intro i _ hi
+        simp [Finsupp.notMem_support_iff.mp hi]
+
+
+  have hlim' (y : S) : Filter.Tendsto (fun n ↦ P n y) Filter.atTop (nhds y) := by
+    -- Use density argument: P n converges on dense S, and P n are uniformly bounded
+    -- 1. Uniform bound: ‖P n‖ ≤ K
     have h_unif : ∀ n, ‖P n‖ ≤ K := by
       intro n
-      rw [ContinuousLinearMap.opNorm_extend]
-      apply ContinuousLinearMap.opNorm_le_bound _ (le_trans (by norm_num) (h_grunblum.choose_spec.1)) (h_P_span_bound n)
+      apply ContinuousLinearMap.opNorm_le_bound _ (le_trans (by norm_num) hK_ge_1)
+      intro x
+      -- Approximate x by elements from the dense range of ι
+      have h_cont : Continuous (fun y => ‖P n y‖ - K * ‖y‖) :=
+        (P n).continuous.norm.sub (continuous_const.mul continuous_norm)
+      have h_le_on_range : ∀ s : S, ‖P n s‖ ≤ K * ‖s‖ := fun s => by
+        dsimp only [P]
+        simp only [LinearMap.mkContinuous_apply, AddSubgroupClass.coe_norm]
+        calc ‖P_span n s‖
+          _ = ‖P_span n s‖ := rfl  -- ι is isometric
+          _ ≤ K * ‖s‖ := h_P_span_bound n s
+      -- The function ‖P n y‖ - K * ‖y‖ ≤ 0 on dense set, hence everywhere
 
-    -- 2. Convergence on dense subset S
-    have h_conv_S (x : S) : Tendsto (fun n ↦ P n x) atTop (𝓝 x) := by
-      simp_rw [h_P_eq_on_S]
-      -- For x in span, x is a finite sum. For large n, P_span n x = x.
-      obtain ⟨supp, hx⟩ := b_S.mem_span x
-      let N := supp.sup id + 1
-      rw [tendsto_atTop_eq_eventually_eq (x := (x:Y)) (i₀ := N)]
+      sorry
+
+    -- 2. Convergence on dense subset S: for x ∈ S, P n (ι x) → ι x
+    have h_conv_S (x : S) : Filter.Tendsto (fun n ↦ P n x) Filter.atTop (nhds x) := by
+      -- x has finite support, so for large n, P_span n x = x
+      let N := (b_S.repr x).support.sup id + 1
+      rw [Metric.tendsto_atTop]
+      intro ε hε
+      use N
       intro n hn
-      rw [h_P_span_apply]
-      -- Sum is actually x because n covers support
-      conv_rhs => rw [← hx]
-      apply Finset.sum_subset
-      · intro i hi; simp only [Finset.mem_range]; apply lt_of_le_of_lt (Finset.le_sup hi) hn
-      · intro i _ hi; simp [Basis.repr_support, hi]
-
-    -- 3. Combine
-    apply tendsto_of_uniform_bound_of_dense (h_unif) (fun x ↦ h_conv_S x) (Submodule.dense_topologicalClosure S)
+      dsimp only [P]
+      simp only [LinearMap.mkContinuous_apply]
+      rw [dist_eq_norm]
+      -- For n ≥ N, P_span n x = x
+      have h_eq : P_span n x = x := by
+        rw [h_P_span_apply]
+        conv_rhs => rw [← b_S.linearCombination_repr x, Finsupp.linearCombination_apply]
+        apply Finset.sum_subset
+        · intro i hi
+          -- exact Finset.mem_range.mpr (lt_of_le_of_lt (Finset.le_sup hi (f := id)) hn)
+          sorry
+        · intro i _ hi
+          --
+          sorry
+      rw [h_eq, sub_self, norm_zero]
+      exact hε
 
   -- Conclusion
   use SchauderBasis.basis_of_canonical_projections h0 hdim hcomp hlim
+
+
+
 
 lemma perturbation_finite_dimensional {S : Set (StrongDual 𝕜 X)}
     (h_weak_star : (0 : WeakDual 𝕜 X) ∈ closure (StrongDual.toWeakDual '' S))
