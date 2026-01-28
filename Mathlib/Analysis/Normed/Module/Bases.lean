@@ -187,10 +187,9 @@ theorem proj_uniform_bound [CompleteSpace X] : ∃ C : ℝ, ∀ n : ℕ, ‖b.pr
 /-- The basis constant is the supremum of the norms of the canonical projections. -/
 def basisConstant : ℝ≥0∞ := ⨆ n, (‖b.proj n‖₊ : ℝ≥0∞)
 
--- /-- The basis constant is finite. -/
-theorem basisConstant_lt_top_for_complete [CompleteSpace X] : b.basisConstant < ⊤ := by
+theorem basisConstant_lt_top_uniform_bound {C : ℝ} (hC : ∀ n : ℕ, ‖b.proj n‖ ≤ C) :
+    b.basisConstant < ⊤ := by
   rw [basisConstant, ENNReal.iSup_coe_lt_top, bddAbove_iff_exists_ge (0 : NNReal)]
-  obtain ⟨C, hC⟩ := b.proj_uniform_bound
   have hCpos : 0 ≤ C := by simpa [proj_zero] using hC 0
   use C.toNNReal
   constructor
@@ -198,6 +197,11 @@ theorem basisConstant_lt_top_for_complete [CompleteSpace X] : b.basisConstant < 
   · rintro _ ⟨n, rfl⟩
     rw [← NNReal.coe_le_coe, Real.coe_toNNReal C hCpos, coe_nnnorm]
     exact hC n
+
+-- /-- The basis constant is finite. -/
+theorem basisConstant_lt_top_for_complete [CompleteSpace X] : b.basisConstant < ⊤ := by
+  obtain ⟨C, hC⟩ := b.proj_uniform_bound
+  exact b.basisConstant_lt_top_uniform_bound hC
 
 /-- The norm of any projection is bounded by the basis constant (as a real number). -/
 theorem norm_proj_le_basisConstant (n : ℕ) : (‖b.proj n‖₊ : ℝ≥0∞) ≤ b.basisConstant := by
