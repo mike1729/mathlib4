@@ -231,9 +231,6 @@ theorem isBasicSequence_of_grunblum [CompleteSpace X] {e : ℕ → X}
   -- ⟨e n, _⟩ ≠ 0 follows from h_nz
   have he_ne : ∀ n, (⟨e n, subset_span (mem_range_self n)⟩ : S) ≠ 0 := fun n h ↦
     h_nz n (by simpa using congrArg Subtype.val h)
-
-
-
   -- 2. Obtain the bundled SchauderBasis on the subspace S
 -- 1. Bundle all the subspace data into our structure
   -- Note: 'e_Y' is 'e' lifted to S, and 'P' is the sequence of projections on S
@@ -255,10 +252,8 @@ theorem isBasicSequence_of_grunblum [CompleteSpace X] {e : ℕ → X}
       rw [hbS_eq]
       exact he_ne n
   }
-
   -- 2. Construct the Schauder Basis on S
   let b_S := D.basis
-
   -- 3. Construct the BasicSequence on X
   let seq : BasicSequence 𝕜 X := {
     toFun := e
@@ -271,22 +266,20 @@ theorem isBasicSequence_of_grunblum [CompleteSpace X] {e : ℕ → X}
       rw [SchauderBasis.CanonicalProjectionProperties.basis_coe D]
       -- D.e is defined as e_Y, which is e lifted to S
       dsimp only [val_codRestrict_apply]
-
       exact hbS n
 
     basisConstant_lt_top := by
       -- Goal: b_S.basisConstant < ⊤
-      apply SchauderBasis.basisConstant
-      intro n
-      -- Use the simplification lemma to switch from basis.proj to P
-      rw [SchauderBasis.CanonicalProjectionProperties.basis_proj D]
+      apply SchauderBasis.basisConstant_lt_top_uniform_bound
+      · intro n
+        -- Use the simplification lemma to switch from basis.proj to P
+        rw [SchauderBasis.CanonicalProjectionProperties.basis_proj D]
       -- Use the bound we proved earlier (renamed from h_unif to h_bound_P)
-      exact h_bound_P n
+        exact h_bound_P n
   }
 
   -- 4. Conclude
   use seq
-  rfl
 
 
 
