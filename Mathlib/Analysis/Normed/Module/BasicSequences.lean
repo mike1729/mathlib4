@@ -35,48 +35,18 @@ def IsBasicSequence (𝕜 : Type*) {X : Type*} [RCLike 𝕜]
     [NormedAddCommGroup X] [NormedSpace 𝕜 X] (e : ℕ → X) : Prop :=
   let Y := span 𝕜 (range e)
   let e_Y : ℕ → Y := fun n ↦ ⟨e n, subset_span (mem_range_self n)⟩
-  ∃ b : SchauderBasis 𝕜 e_Y, BddAbove (Set.range fun n => ‖b.proj n‖)
-
+  ∃ b : SchauderBasis 𝕜 e_Y, b.basisConstant < ⊤
 
 namespace BasicSequences
 
--- def IsBasicSequence (𝕜 : Type*) {X : Type*} [RCLike 𝕜]
---     [NormedAddCommGroup X] [NormedSpace 𝕜 X] (e : ℕ → X) : Prop :=
---   let Y := (span 𝕜 (range e)).topologicalClosure
---   let e_Y : ℕ → Y := fun n ↦ ⟨e n,
---     Submodule.le_topologicalClosure _ (subset_span (mem_range_self n))⟩
---   Nonempty (SchauderBasis 𝕜 e_Y)
-
-
--- namespace BasicSequences
-
--- lemma SchauderBasis_of_closure {Y : Submodule 𝕜 X} {e : ℕ → Y} (b : SchauderBasis 𝕜 e) :
---     SchauderBasis 𝕜 (fun n ↦ ⟨e n, Submodule.le_topologicalClosure _ ⟩) := by
---   sorry
-
--- variable (𝕜 : Type*) {X : Type*} [NontriviallyNormedField 𝕜]
---     [NormedAddCommGroup X] [NormedSpace 𝕜 X]
 variable {e : ℕ → X}
 
 /-- Every Schauder Basis of the whole space `X` is a basic sequence. -/
-theorem isBasicSequence_self (b : SchauderBasis 𝕜 e) : IsBasicSequence 𝕜 e := by
-  -- rw [IsBasicSequence]
-  -- let Y := (span 𝕜 (range e)).topologicalClosure
-  -- have h_dense : Y = ⊤ := by
-  --   rw [eq_top_iff']
-  --   intro x
-  --   -- Proof sketch: The basis expansion converges, so x is in the closure of the span.
-  --   exact mem_closure_of_tendsto (b.basis_expansion x)
-  --     (eventually_of_forall (fun n ↦ sum_mem (fun i _ ↦ smul_mem _ _ (subset_span (mem_range_self i)))))
-  -- -- We construct the basis for Y by restricting b.
-  -- -- (Technical construction omitted for brevity, asserting existence).
-  -- use ?_
-  sorry -- Standard coercion of basis to the top submodule.
+theorem isBasicSequence_self (b : SchauderBasis 𝕜 e) : IsBasicSequence 𝕜 e := sorry
 
 /-- The **Basis Constant** of a basic sequence. -/
 noncomputable def basicSequenceConstant (he : IsBasicSequence 𝕜 e) : ℝ :=
   (Classical.choice he).basisConstant
-
 
 
 /-- A sequence satisfies the **Grünblum Condition** if the norms of the projections
