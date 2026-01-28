@@ -29,30 +29,31 @@ variable {X : Type*} [NormedAddCommGroup X] [NormedSpace 𝕜 X]
 /-- A `BasicSequence` is a bundled sequence that forms a Schauder basis
     for its algebraic span, with a finite basis constant.
     TODO add a comment about closed span version -/
-structure BasicSequence (𝕜 : Type*) {X : Type*} [RCLike 𝕜]
+structure BasicSequence (𝕜 : Type*) (X : Type*) [RCLike 𝕜]
     [NormedAddCommGroup X] [NormedSpace 𝕜 X] where
-  /-- The underlying sequence in X. -/
   toFun : ℕ → X
-  /-- The sequence forms a Schauder basis for its algebraic span. -/
-  basis : SchauderBasis 𝕜 (fun n ↦ ⟨toFun n, Submodule.subset_span (Set.mem_range_self n)⟩ :
-    ℕ → Submodule.span 𝕜 (Set.range toFun))
-  /-- The basis constant must be finite. -/
+  -- The basis field now just takes the types, not the sequence function
+  basis : SchauderBasis 𝕜 (Submodule.span 𝕜 (Set.range toFun))
+  -- We explicitly link the basis vectors to the sequence
+  eq_basis : ⇑basis = Set.codRestrict toFun (Submodule.span 𝕜 (Set.range toFun))
+                        (fun n ↦ Submodule.subset_span (Set.mem_range_self n))
   basisConstant_lt_top : basis.basisConstant < ⊤
 
 -- Enable treating the BasicSequence as a function `ℕ → X`
 instance : CoeFun (BasicSequence 𝕜 X) (fun _ ↦ ℕ → X) where
   coe b := b.toFun
 
+/-- A sequence `e` is a basic sequence if there exists a `BasicSequence` structure
+    whose underlying sequence is equal to `e`. -/
+def IsBasicSequence (𝕜 : Type*) {X : Type*} [RCLike 𝕜]
+    [NormedAddCommGroup X] [NormedSpace 𝕜 X] (e : ℕ → X) : Prop :=
+  ∃ b : BasicSequence 𝕜 X, ⇑b = e
+
 namespace BasicSequences
 
-variable {e : ℕ → X}
-
-/-- Every Schauder Basis of the whole space `X` is a basic sequence. -/
-def isBasicSequence_self (b : SchauderBasis 𝕜 e) : BasicSequence 𝕜 := sorry
-
 /-- The **Basis Constant** of a basic sequence. -/
-noncomputable def basicSequenceConstant (he : IsBasicSequence 𝕜 e) : ℝ :=
-  he.choose.basisConstant.toReal
+noncomputable def basicSequenceConstant (bs : BasicSequence 𝕜 X) : ℝ :=
+  bs.basis.basisConstant.toReal
 
 /-- A sequence satisfies the **Grünblum Condition** if the norms of the projections
 onto the span of its first `n` elements are uniformly bounded. -/
@@ -62,9 +63,9 @@ def SatisfiesGrunblumCondition (𝕜 : Type*) {X : Type*} [RCLike 𝕜]
     ‖∑ i ∈ Finset.range m, a i • e i‖ ≤ K * ‖∑ i ∈ Finset.range n, a i • e i‖
 
 /-- A basic sequence implies the Grünblum inequality holds for its basis constant. -/
-theorem grunblum_of_basic (he : IsBasicSequence 𝕜 e) : SatisfiesGrunblumCondition 𝕜 e := sorry
+theorem grunblum_of_basic (bs : BasicSequence 𝕜 X) : SatisfiesGrunblumCondition 𝕜 bs := sorry
 
-lemma linearIndependent_of_grunblum (h_grunblum : SatisfiesGrunblumCondition 𝕜 e)
+lemma linearIndependent_of_grunblum {e : ℕ → X} (h_grunblum : SatisfiesGrunblumCondition 𝕜 e)
     (h_nz : ∀ n, e n ≠ 0) : LinearIndependent 𝕜 e := by
   rcases h_grunblum with ⟨K, -, hK⟩
   rw [linearIndependent_iff']
@@ -95,7 +96,7 @@ lemma linearIndependent_of_grunblum (h_grunblum : SatisfiesGrunblumCondition �
 If a sequence satisfies the Grünblum condition (bounded projections on the span),
 and the elements are non-zero, then it is a Basic Sequence.
 -/
-theorem isBasicSequence_of_grunblum [CompleteSpace X]
+theorem isBasicSequence_of_grunblum [CompleteSpace X] {e : ℕ → X}
     (h_grunblum : SatisfiesGrunblumCondition 𝕜 e)
     (h_nz : ∀ n, e n ≠ 0) : IsBasicSequence 𝕜 e := by
   have h_indep := linearIndependent_of_grunblum h_grunblum h_nz
@@ -187,18 +188,10 @@ theorem isBasicSequence_of_grunblum [CompleteSpace X]
     congr 1
     ext j
     simp only [Finset.mem_filter, Finset.mem_range, lt_min_iff]
+  have h_bound_P : ∀ n, ‖P n‖ ≤ K := fun n ↦ by
+    refine ContinuousLinearMap.opNorm_le_bound _ (zero_le_one.trans hK_ge_1) (fun x ↦ ?_)
+    exact h_P_span_bound n x
   have hlim (x : S) : Filter.Tendsto (fun n ↦ P n x) Filter.atTop (nhds x) := by
-    have h_unif : ∀ n, ‖P n‖ ≤ K := by
-      intro n
-      apply ContinuousLinearMap.opNorm_le_bound _ (le_trans (by norm_num) hK_ge_1)
-      intro s
-      have h_cont : Continuous (fun y => ‖P n y‖ - K * ‖y‖) :=
-        (P n).continuous.norm.sub (continuous_const.mul continuous_norm)
-      dsimp only [P]
-      simp only [LinearMap.mkContinuous_apply, AddSubgroupClass.coe_norm]
-      calc ‖P_span n s‖
-        _ = ‖P_span n s‖ := rfl
-        _ ≤ K * ‖s‖ := h_P_span_bound n s
     let N := (b_S.repr x).support.sup id + 1
     rw [Metric.tendsto_atTop]
     intro ε hε
@@ -238,9 +231,62 @@ theorem isBasicSequence_of_grunblum [CompleteSpace X]
   -- ⟨e n, _⟩ ≠ 0 follows from h_nz
   have he_ne : ∀ n, (⟨e n, subset_span (mem_range_self n)⟩ : S) ≠ 0 := fun n h ↦
     h_nz n (by simpa using congrArg Subtype.val h)
-  obtain b := SchauderBasis.basis_of_canonical_projections h0 hdim hcomp hlim he_in_range he_ne
-  have : ∀ n, ‖P n‖ ≤ K := h_unif
-  exact ⟨b, SchauderBasis.basisConstant_lt_top_uniform_bound b this⟩
+
+
+
+  -- 2. Obtain the bundled SchauderBasis on the subspace S
+-- 1. Bundle all the subspace data into our structure
+  -- Note: 'e_Y' is 'e' lifted to S, and 'P' is the sequence of projections on S
+  let D : SchauderBasis.CanonicalProjectionProperties 𝕜 S := {
+    P := P
+    e := e_Y
+    h0 := h0
+    hdim := hdim
+    hcomp := hcomp
+    hlim := hlim
+    he_in_range := fun n ↦ by
+      -- Rewrite b_S n to ⟨e n, ...⟩ so it matches your local proof
+      dsimp only [e_Y]
+      rw [hbS_eq]
+      exact he_in_range n
+    he_ne := fun n ↦ by
+      -- Rewrite b_S n to ⟨e n, ...⟩
+      dsimp only [e_Y]
+      rw [hbS_eq]
+      exact he_ne n
+  }
+
+  -- 2. Construct the Schauder Basis on S
+  let b_S := D.basis
+
+  -- 3. Construct the BasicSequence on X
+  let seq : BasicSequence 𝕜 X := {
+    toFun := e
+    basis := b_S
+
+    eq_basis := by
+      -- Goal: ⇑b_S = e_Y (roughly)
+      -- D.basis_coe gives us: ⇑b_S = D.e
+      ext n
+      rw [SchauderBasis.CanonicalProjectionProperties.basis_coe D]
+      -- D.e is defined as e_Y, which is e lifted to S
+      dsimp only [val_codRestrict_apply]
+
+      exact hbS n
+
+    basisConstant_lt_top := by
+      -- Goal: b_S.basisConstant < ⊤
+      apply SchauderBasis.basisConstant
+      intro n
+      -- Use the simplification lemma to switch from basis.proj to P
+      rw [SchauderBasis.CanonicalProjectionProperties.basis_proj D]
+      -- Use the bound we proved earlier (renamed from h_unif to h_bound_P)
+      exact h_bound_P n
+  }
+
+  -- 4. Conclude
+  use seq
+  rfl
 
 
 
