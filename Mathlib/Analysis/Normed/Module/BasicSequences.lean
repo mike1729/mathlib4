@@ -123,22 +123,16 @@ and the elements are non-zero, then it is a Basic Sequence.
 theorem isBasicSequence_of_grunblum [CompleteSpace X]
     (h_grunblum : SatisfiesGrunblumCondition 𝕜 e)
     (h_nz : ∀ n, e n ≠ 0) : IsBasicSequence 𝕜 e := by
-
   have h_indep := linearIndependent_of_grunblum h_grunblum h_nz
   rcases h_grunblum with ⟨K, hK_ge_1, hK⟩
-
   -- 1. Prove Linear Independence
   -- The Grünblum condition implies that if a finite combination is 0,
   -- its partial sums must have norm 0.
-
   let S := Submodule.span 𝕜 (Set.range e)
   let b_S := Module.Basis.span h_indep
   let e_Y : ℕ → S := b_S
-
   have hbS : ∀ n, (b_S n : X) = e n := Module.Basis.span_apply h_indep
-
   let P_span (k : ℕ) : S →ₗ[𝕜] S := b_S.constr 𝕜 (fun i => if i < k then b_S i else 0)
-
   have h_P_span_apply (k : ℕ) (x : S) :
       P_span k x = ∑ i ∈ Finset.range k, b_S.repr x i • b_S i := by
     rw [Module.Basis.constr_apply, Finsupp.sum]
@@ -149,13 +143,10 @@ theorem isBasicSequence_of_grunblum [CompleteSpace X]
       rw [Finsupp.notMem_support_iff.mp h2, zero_smul]
     · -- Case: i ∈ supp ∩ range k
       rw [if_pos (by simpa using h2)]
-
-    -- -- 3. Express P_span k x as a sum in X up to k
   have h_P_span_bound (k : ℕ) (x : S) : ‖P_span k x‖ ≤ K * ‖x‖ := by
     let a := b_S.repr x
     let N := max k (a.support.sup id + 1)
     have hk_le_N : k ≤ N := le_max_left _ _
-
     -- 1. Express x as a sum in X
     have hx : (x : X) = ∑ i ∈ Finset.range N, (b_S.repr x) i • b_S i := by
       nth_rw 1 [← b_S.linearCombination_repr x]
@@ -165,32 +156,27 @@ theorem isBasicSequence_of_grunblum [CompleteSpace X]
       rw [b_S.constr_apply, Finsupp.sum_congr]
       intro i hi
       rw [if_pos]
-
       calc i
         _ ≤ (b_S.repr x).support.sup id   := Finset.le_sup hi (f := id)
         _ < (b_S.repr x).support.sup id + 1 := Nat.lt_succ_self _
         _ ≤ N                    := le_max_right _ _
-
-    -- 3. Apply the Grünblum inequality
     rw [← norm_coe, ← norm_coe, hx,  h_P_span_apply]
     simp_rw [Submodule.coe_sum, Submodule.coe_smul, hbS]
     exact hK N k (b_S.repr x) hk_le_N
   let P (k : ℕ) : S →L[𝕜] S := LinearMap.mkContinuous (P_span k) K (h_P_span_bound k)
-  -- 5. Verify Schauder Basis Conditions
+  -- Verify Schauder Basis Conditions
   have h0 : P 0 = 0 := by
     have : P_span 0 = 0 := by
       ext; simp_rw [h_P_span_apply, Finset.range_zero, Finset.sum_empty]; rfl
     ext _
     dsimp only [P]
-    simp only [LinearMap.mkContinuous_apply, ContinuousLinearMap.zero_apply, ZeroMemClass.coe_zero, ZeroMemClass.coe_eq_zero]
+    simp only [LinearMap.mkContinuous_apply, ContinuousLinearMap.zero_apply, ZeroMemClass.coe_zero,
+      ZeroMemClass.coe_eq_zero]
     rw [h_P_span_apply]
     simp only [Finset.range_zero, Finset.sum_empty]
-
   have hdim (n : ℕ) : Module.finrank 𝕜 (LinearMap.range (P n).toLinearMap) = n := by
     -- Define the target span W
     let W := Submodule.span 𝕜 (Set.range (fun i : Fin n ↦ b_S i))
-
-    -- Step 1: Show range (P n) = W
     have h_range : LinearMap.range (P n).toLinearMap = W := by
       apply le_antisymm
       · rintro _ ⟨x, rfl⟩
@@ -200,8 +186,7 @@ theorem isBasicSequence_of_grunblum [CompleteSpace X]
         apply Submodule.smul_mem
         apply Submodule.subset_span
         exact ⟨⟨i, Finset.mem_range.mp hi⟩, rfl⟩
-      · -- "≥": The basis vectors e_Y i are fixed points of P n, so they are in the range
-        rw [Submodule.span_le]
+      · rw [Submodule.span_le]
         rintro _ ⟨i, rfl⟩
         use b_S i
         simp only [ContinuousLinearMap.coe_coe]
@@ -210,11 +195,9 @@ theorem isBasicSequence_of_grunblum [CompleteSpace X]
         dsimp only [P_span]
         rw [b_S.constr_basis]
         rw [if_pos i.isLt]
-    -- Step 2: Calculate the dimension
     rw [h_range, finrank_span_eq_card]
     · exact Fintype.card_fin n
     · exact b_S.linearIndependent.comp (fun i : Fin n => i.val) Fin.val_injective
-
   have hcomp (n m : ℕ) (y : S) : P n (P m y) = P (min n m) y := by
     simp only [P, LinearMap.mkContinuous_apply]
     conv_lhs => rw [h_P_span_apply m y, h_P_span_apply]
@@ -225,20 +208,15 @@ theorem isBasicSequence_of_grunblum [CompleteSpace X]
              smul_eq_mul, mul_ite, mul_one, mul_zero, Finset.sum_ite_eq', Finset.mem_range]
     -- Convert (if ... then c else 0) • x to if ... then c • x else 0
     simp_rw [ite_smul, zero_smul]
-    -- Now: ∑ j in range n, (if j < m then coeff j • b_S j else 0) = ∑ i in range (min n m), coeff i • b_S i
     rw [← Finset.sum_filter]
     congr 1
     ext j
     simp only [Finset.mem_filter, Finset.mem_range, lt_min_iff]
-
-
   have hlim (x : S) : Filter.Tendsto (fun n ↦ P n x) Filter.atTop (nhds x) := by
-    -- 1. Uniform bound: ‖P n‖ ≤ K
     have h_unif : ∀ n, ‖P n‖ ≤ K := by
       intro n
       apply ContinuousLinearMap.opNorm_le_bound _ (le_trans (by norm_num) hK_ge_1)
       intro s
-      -- Approximate x by elements from the dense range of ι
       have h_cont : Continuous (fun y => ‖P n y‖ - K * ‖y‖) :=
         (P n).continuous.norm.sub (continuous_const.mul continuous_norm)
       dsimp only [P]
@@ -246,8 +224,6 @@ theorem isBasicSequence_of_grunblum [CompleteSpace X]
       calc ‖P_span n s‖
         _ = ‖P_span n s‖ := rfl
         _ ≤ K * ‖s‖ := h_P_span_bound n s
-
-      -- x has finite support, so for large n, P_span n x = x
     let N := (b_S.repr x).support.sup id + 1
     rw [Metric.tendsto_atTop]
     intro ε hε
@@ -256,7 +232,6 @@ theorem isBasicSequence_of_grunblum [CompleteSpace X]
     dsimp only [P]
     simp only [LinearMap.mkContinuous_apply]
     rw [dist_eq_norm]
-    -- For n ≥ N, P_span n x = x
     have h_eq : P_span n x = x := by
       rw [h_P_span_apply]
       conv_rhs => rw [← b_S.linearCombination_repr x, Finsupp.linearCombination_apply]
@@ -271,7 +246,6 @@ theorem isBasicSequence_of_grunblum [CompleteSpace X]
         simp [Finsupp.notMem_support_iff.mp hi]
     rw [h_eq, sub_self, norm_zero]
     exact hε
-
   -- Conclusion: use basis_of_canonical_projections
   -- Key: b_S n = ⟨e n, _⟩ as elements of S
   have hbS_eq : ∀ n, b_S n = ⟨e n, subset_span (mem_range_self n)⟩ := fun n ↦
@@ -294,7 +268,7 @@ theorem isBasicSequence_of_grunblum [CompleteSpace X]
 lemma perturbation_finite_dimensional {S : Set (StrongDual 𝕜 X)}
     (h_weak_star : (0 : WeakDual 𝕜 X) ∈ closure (StrongDual.toWeakDual '' S))
     (h_norm : (0 : StrongDual 𝕜 X) ∉ closure S)
-    (E : Subspace 𝕜 (StrongDual 𝕜 X)) (he: Nontrivial E)
+    (E : Subspace 𝕜 (StrongDual 𝕜 X)) (he : Nontrivial E)
     (hefind : FiniteDimensional 𝕜 E)
     {ε : ℝ} (hε : 0 < ε) :
     ∃ x ∈ S, ∀ (e : E) (c : 𝕜), ‖(e : StrongDual 𝕜 X) + c • x‖ ≥ (1 - ε) * ‖e‖ := by
