@@ -26,23 +26,29 @@ open Submodule Set WeakDual Metric
 variable {𝕜 : Type*} [RCLike 𝕜]
 variable {X : Type*} [NormedAddCommGroup X] [NormedSpace 𝕜 X]
 
-/--
-A sequence `e` is a **Basic Sequence** if it forms a Schauder Basis for its linear span.
-Usually, we consider the closed span but here we use the (algebraic) span for simplicity and
-require
--/
-def IsBasicSequence (𝕜 : Type*) {X : Type*} [RCLike 𝕜]
-    [NormedAddCommGroup X] [NormedSpace 𝕜 X] (e : ℕ → X) : Prop :=
-  let Y := span 𝕜 (range e)
-  let e_Y : ℕ → Y := fun n ↦ ⟨e n, subset_span (mem_range_self n)⟩
-  ∃ b : SchauderBasis 𝕜 e_Y, b.basisConstant < ⊤
+/-- A `BasicSequence` is a bundled sequence that forms a Schauder basis
+    for its algebraic span, with a finite basis constant.
+    TODO add a comment about closed span version -/
+structure BasicSequence (𝕜 : Type*) {X : Type*} [RCLike 𝕜]
+    [NormedAddCommGroup X] [NormedSpace 𝕜 X] where
+  /-- The underlying sequence in X. -/
+  toFun : ℕ → X
+  /-- The sequence forms a Schauder basis for its algebraic span. -/
+  basis : SchauderBasis 𝕜 (fun n ↦ ⟨toFun n, Submodule.subset_span (Set.mem_range_self n)⟩ :
+    ℕ → Submodule.span 𝕜 (Set.range toFun))
+  /-- The basis constant must be finite. -/
+  basisConstant_lt_top : basis.basisConstant < ⊤
+
+-- Enable treating the BasicSequence as a function `ℕ → X`
+instance : CoeFun (BasicSequence 𝕜 X) (fun _ ↦ ℕ → X) where
+  coe b := b.toFun
 
 namespace BasicSequences
 
 variable {e : ℕ → X}
 
 /-- Every Schauder Basis of the whole space `X` is a basic sequence. -/
-theorem isBasicSequence_self (b : SchauderBasis 𝕜 e) : IsBasicSequence 𝕜 e := sorry
+def isBasicSequence_self (b : SchauderBasis 𝕜 e) : BasicSequence 𝕜 := sorry
 
 /-- The **Basis Constant** of a basic sequence. -/
 noncomputable def basicSequenceConstant (he : IsBasicSequence 𝕜 e) : ℝ :=
