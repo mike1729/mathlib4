@@ -27,13 +27,15 @@ variable {𝕜 : Type*} [RCLike 𝕜]
 variable {X : Type*} [NormedAddCommGroup X] [NormedSpace 𝕜 X]
 
 /--
-A sequence `e` is a **Basic Sequence** if it forms a Schauder Basis for its closed linear span.
+A sequence `e` is a **Basic Sequence** if it forms a Schauder Basis for its linear span.
+Usually, we consider the closed span but here we use the (algebraic) span for simplicity and
+require
 -/
 def IsBasicSequence (𝕜 : Type*) {X : Type*} [RCLike 𝕜]
     [NormedAddCommGroup X] [NormedSpace 𝕜 X] (e : ℕ → X) : Prop :=
   let Y := span 𝕜 (range e)
   let e_Y : ℕ → Y := fun n ↦ ⟨e n, subset_span (mem_range_self n)⟩
-  Nonempty (SchauderBasis 𝕜 e_Y)
+  ∃ b : SchauderBasis 𝕜 e_Y, BddAbove (Set.range fun n => ‖b.proj n‖)
 
 
 namespace BasicSequences
