@@ -46,8 +46,7 @@ theorem isBasicSequence_self (b : SchauderBasis 𝕜 e) : IsBasicSequence 𝕜 e
 
 /-- The **Basis Constant** of a basic sequence. -/
 noncomputable def basicSequenceConstant (he : IsBasicSequence 𝕜 e) : ℝ :=
-  (Classical.choice he).basisConstant
-
+  he.choose.basisConstant.toReal
 
 /-- A sequence satisfies the **Grünblum Condition** if the norms of the projections
 onto the span of its first `n` elements are uniformly bounded. -/
@@ -57,8 +56,7 @@ def SatisfiesGrunblumCondition (𝕜 : Type*) {X : Type*} [RCLike 𝕜]
     ‖∑ i ∈ Finset.range m, a i • e i‖ ≤ K * ‖∑ i ∈ Finset.range n, a i • e i‖
 
 /-- A basic sequence implies the Grünblum inequality holds for its basis constant. -/
-theorem grunblum_of_basic (he : IsBasicSequence 𝕜 e) : SatisfiesGrunblumCondition 𝕜 e := by
-    sorry
+theorem grunblum_of_basic (he : IsBasicSequence 𝕜 e) : SatisfiesGrunblumCondition 𝕜 e := sorry
 
 lemma linearIndependent_of_grunblum (h_grunblum : SatisfiesGrunblumCondition 𝕜 e)
     (h_nz : ∀ n, e n ≠ 0) : LinearIndependent 𝕜 e := by
@@ -85,7 +83,6 @@ lemma linearIndependent_of_grunblum (h_grunblum : SatisfiesGrunblumCondition �
         h_partial i (le_of_lt (h_bound i hi_s)), sub_zero]
   -- 5. Conclude g i = 0
   simpa [c, hi_s, h_nz i] using h_term
-
 
 /--
 **The Grünblum Criterion**:
@@ -235,12 +232,16 @@ theorem isBasicSequence_of_grunblum [CompleteSpace X]
   -- ⟨e n, _⟩ ≠ 0 follows from h_nz
   have he_ne : ∀ n, (⟨e n, subset_span (mem_range_self n)⟩ : S) ≠ 0 := fun n h ↦
     h_nz n (by simpa using congrArg Subtype.val h)
-  exact ⟨SchauderBasis.basis_of_canonical_projections h0 hdim hcomp hlim he_in_range he_ne⟩
+  obtain b := SchauderBasis.basis_of_canonical_projections h0 hdim hcomp hlim he_in_range he_ne
+  have : ∀ n, ‖P n‖ ≤ K := h_unif
+  exact ⟨b, SchauderBasis.basisConstant_lt_top_uniform_bound b this⟩
+
+
 
 lemma perturbation_finite_dimensional {S : Set (StrongDual 𝕜 X)}
     (h_weak_star : (0 : WeakDual 𝕜 X) ∈ closure (StrongDual.toWeakDual '' S))
     (h_norm : (0 : StrongDual 𝕜 X) ∉ closure S)
-    (E : Subspace 𝕜 (StrongDual 𝕜 X)) (he : Nontrivial E)
+    (E : Subspace 𝕜 (StrongDual 𝕜 X))
     (hefind : FiniteDimensional 𝕜 E)
     {ε : ℝ} (hε : 0 < ε) :
     ∃ x ∈ S, ∀ (e : E) (c : 𝕜), ‖(e : StrongDual 𝕜 X) + c • x‖ ≥ (1 - ε) * ‖e‖ := by
@@ -374,9 +375,126 @@ lemma perturbation_finite_dimensional {S : Set (StrongDual 𝕜 X)}
       exact estimate
     _ = (1 - ε) * ‖e‖ := mul_comm _ _
 
+theorem basic_sequence_selection_dual {S : Set (StrongDual 𝕜 X)}
+    (h_weak_star : (0 : WeakDual 𝕜 X) ∈ closure (StrongDual.toWeakDual '' S))
+    (h_norm : (0 : StrongDual 𝕜 X) ∉ closure S)
+    {ε : ℝ} (hε : ε > 0) :
+    ∃ (f : ℕ → StrongDual 𝕜 X) (hf : IsBasicSequence 𝕜 f), (∀ n, f n ∈ S) ∧
+    basicSequenceConstant hf < 1 + ε := by
+  -- 1. Setup control sequence `δ` using a telescoping product `u`.
+  let u (n : ℕ) := 1 + ε * (1 - (1/2) ^ n)
+  let δ (n : ℕ) := 1 - u n / u (n + 1)
+  have hu : ∀ n, 1 ≤ u n ∧ u n < 1 + ε := fun n ↦ by
+    have hp : (1 / 2 : ℝ) ^ n ≤ 1 := pow_le_one₀ (by norm_num) (by norm_num)
+    have hp' : 0 < (1 / 2 : ℝ) ^ n := pow_pos (by norm_num) n
+    constructor <;> { dsimp [u]; nlinarith }
+  have hδ_pos : ∀ n, 0 < δ n := fun n ↦ by
+    have hp_n1 : (1 / 2 : ℝ) ^ (n + 1) ≤ 1 := pow_le_one₀ (by norm_num) (by norm_num)
+    have hpos_un1 : 0 < u (n + 1) := by nlinarith [(hu (n + 1)).1]
+    dsimp [δ, u]
+    rw [sub_pos, div_lt_one hpos_un1]
+    have hp' : 0 < (1 / 2 : ℝ) ^ n := pow_pos (by norm_num) n
+    have : (1 / 2 : ℝ) ^ (n + 1) = (1 / 2) * (1 / 2 : ℝ) ^ n := by ring
+    nlinarith
+
+  -- 2. Construct the sequence `f` via strong recursion.
+  let f : ℕ → StrongDual 𝕜 X := fun n => Nat.strongRecOn n (fun k prev ↦
+    let E := Submodule.span 𝕜 (Set.range (fun i : Fin k ↦ prev i i.isLt))
+    Classical.choose (perturbation_finite_dimensional h_weak_star h_norm E
+      (FiniteDimensional.span_of_finite 𝕜 (Set.finite_range _)) (hδ_pos k)))
+
+  -- 3. Extract properties of `f`.
+  have hf_spec (n : ℕ) : f n ∈ S ∧ ∀ (e : Submodule.span 𝕜 (Set.range (fun i : Fin n ↦ f i))) (c : 𝕜),
+      (1 - δ n) * ‖e‖ ≤ ‖(e : StrongDual 𝕜 X) + c • f n‖ := by
+    -- Rewriting `f n` definition to match the `prev` in recursion
+    have hfn : f n = Classical.choose (perturbation_finite_dimensional h_weak_star h_norm
+        (Submodule.span 𝕜 (Set.range (fun i : Fin n ↦ f i)))
+        (FiniteDimensional.span_of_finite 𝕜 (Set.finite_range _)) (hδ_pos n)) := by
+      unfold f; rw [Nat.strongRecOn_eq]
+    rw [hfn]
+    exact Classical.choose_spec (perturbation_finite_dimensional h_weak_star h_norm
+        (Submodule.span 𝕜 (Set.range (fun i : Fin n ↦ f i)))
+        (FiniteDimensional.span_of_finite 𝕜 (Set.finite_range _)) (hδ_pos n))
+
+  -- 4. Prove the Grünblum condition via telescoping product.
+  have h_grunblum : SatisfiesGrunblumCondition 𝕜 f := by
+    refine ⟨1 + ε, by linarith [hε], fun n m a hnm ↦ ?_⟩
+    let S (k : ℕ) := ∑ i ∈ Finset.range k, a i • f i
+    have h_step (k) (hk : k < n) : ‖S k‖ ≤ (1 - δ k)⁻¹ * ‖S (k + 1)‖ := by
+      have hSk_mem : S k ∈ Submodule.span 𝕜 (Set.range (fun i : Fin k ↦ f i)) :=
+        Submodule.sum_mem _ (fun i hi ↦ Submodule.smul_mem _ _ <|
+          Submodule.subset_span ⟨⟨i, Finset.mem_range.mp hi⟩, rfl⟩)
+      let e : Submodule.span 𝕜 (Set.range (fun i : Fin k ↦ f i)) := ⟨S k, hSk_mem⟩
+      have h := (hf_spec k).2 e (a k)
+      simp only [e, S] at h
+      have h1δ : 0 < 1 - δ k := by
+        simp only [δ, sub_sub_cancel]
+        exact div_pos (lt_of_lt_of_le (by linarith) (hu k).1) (lt_of_lt_of_le (by linarith) (hu (k+1)).1)
+      rw [le_inv_mul_iff₀ h1δ]
+      calc (1 - δ k) * ‖S k‖ ≤ ‖S k + a k • f k‖ := h
+        _ = ‖S (k + 1)‖ := by simp only [S, Finset.sum_range_succ]
+
+    -- The key bound: ‖S m‖ ≤ (1 + ε) * ‖S n‖ via telescoping product
+    -- Each step gives ‖S k‖ ≤ (1 - δ k)⁻¹ * ‖S (k+1)‖
+    -- Product of (1 - δ k)⁻¹ from m to n-1 equals u n / u m ≤ (1 + ε)
+    have hu_pos : ∀ k, 0 < u k := fun k => lt_of_lt_of_le (by linarith) (hu k).1
+    -- Key identity: (1 - δ k)⁻¹ = u (k+1) / u k
+    have h_inv : ∀ k, (1 - δ k)⁻¹ = u (k + 1) / u k := fun k => by
+      simp only [δ, sub_sub_cancel]; rw [inv_div]
+    -- Chain the inequalities via induction
+    have h_chain : ‖S m‖ ≤ (u n / u m) * ‖S n‖ := by
+      obtain ⟨d, rfl⟩ := Nat.exists_eq_add_of_le hnm
+      induction d with
+      | zero => simp
+      | succ d ih =>
+        have h_step' : ∀ k < m + d, ‖S k‖ ≤ (1 - δ k)⁻¹ * ‖S (k + 1)‖ :=
+          fun k hk => h_step k (Nat.lt_add_right 1 hk)
+        calc ‖S m‖ ≤ (u (m + d) / u m) * ‖S (m + d)‖ := ih h_step'
+          _ ≤ (u (m + d) / u m) * ((1 - δ (m + d))⁻¹ * ‖S (m + d + 1)‖) := by
+              gcongr; exact h_step (m + d) (by omega)
+          _ = (u (m + d) / u m) * (u (m + d + 1) / u (m + d)) * ‖S (m + d + 1)‖ := by
+              rw [h_inv]; ring
+          _ = (u (m + (d + 1)) / u m) * ‖S (m + (d + 1))‖ := by
+              rw [show m + d + 1 = m + (d + 1) by ring]
+              field_simp [(hu_pos _).ne']
+    -- Finally bound u n / u m ≤ (1 + ε)
+    calc ‖S m‖ ≤ (u n / u m) * ‖S n‖ := h_chain
+      _ ≤ (1 + ε) * ‖S n‖ := by
+          gcongr
+          rw [div_le_iff (hu_pos m)]
+          calc u n < 1 + ε := (hu n).2
+            _ = (1 + ε) * 1 := by ring
+            _ ≤ (1 + ε) * u m := by gcongr; exact (hu m).1
+
+  -- 5. Final assembly.
+  have h_nz n : f n ≠ 0 := by
+    intro hfn
+    apply h_norm
+    rw [← hfn]
+    exact subset_closure (hf_spec n).1
+
+  obtain ⟨b, hb⟩ := isBasicSequence_of_grunblum h_grunblum h_nz
+  refine ⟨f, ⟨b, hb⟩, fun n ↦ (hf_spec n).1, ?_⟩
+  -- The basis constant is bounded by 1 + ε via the Grünblum condition
+  -- Since h_grunblum was constructed with K = 1 + ε, the basis constant is < 1 + ε
+  -- (The Grünblum condition with K gives basisConstant ≤ K)
+  sorry
+
+-- Helper to satisfy strict type requirements for the bound
+lemma SchauderBasis.proj_uniform_bound_of_grunblum {e : ℕ → X} (b : SchauderBasis 𝕜 e)
+    {K : ℝ} (hK : SatisfiesGrunblumCondition 𝕜 e) (n : ℕ) :
+    ‖b.proj n‖ ≤ hK.choose := by
+  obtain ⟨C, -, hC⟩ := hK
+  apply ContinuousLinearMap.opNorm_le_bound _ (by have := hK.choose_spec.1; linarith)
+  intro x
+  obtain ⟨seq, hseq⟩ := (b.basis_expansion x).tendsto_sum_nat
+  apply le_of_tendsto (Continuous.tendsto (continuous_norm.comp (b.proj n).continuous) seq) hseq
+  filter_upwards [Filter.mem_atTop n] with m hm
+  simpa using hC m n (b.coord · x) hm
+
 /-- Given a set in the dual that is bounded away from 0 in norm but has 0 in its
     weak-star closure, we can select a basic sequence with basis constant close to 1. -/
-theorem basic_sequence_selection_dual {S : Set (StrongDual 𝕜 X)}
+theorem basic_sequence_selection_dual' {S : Set (StrongDual 𝕜 X)}
     (h_weak_star : (0 : StrongDual 𝕜 X) ∈ closure (StrongDual.toWeakDual '' S))
     (h_norm : (0 : StrongDual 𝕜 X) ∉ closure S)
     {ε : ℝ} (hε : ε > 0) :

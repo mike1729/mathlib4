@@ -183,10 +183,9 @@ theorem proj_uniform_bound [CompleteSpace X] : ∃ C : ℝ, ∀ n : ℕ, ‖b.pr
 /-- The basis constant is the supremum of the norms of the canonical projections. -/
 def basisConstant : ℝ≥0∞ := ⨆ n, (‖b.proj n‖₊ : ℝ≥0∞)
 
--- /-- The basis constant is finite. -/
-theorem basisConstant_lt_top_for_complete [CompleteSpace X] : b.basisConstant < ⊤ := by
+theorem basisConstant_lt_top_uniform_bound {C : ℝ} (hC : ∀ n : ℕ, ‖b.proj n‖ ≤ C) :
+    b.basisConstant < ⊤ := by
   rw [basisConstant, ENNReal.iSup_coe_lt_top, bddAbove_iff_exists_ge (0 : NNReal)]
-  obtain ⟨C, hC⟩ := b.proj_uniform_bound
   have hCpos : 0 ≤ C := by simpa [proj_zero] using hC 0
   use C.toNNReal
   constructor
@@ -194,6 +193,11 @@ theorem basisConstant_lt_top_for_complete [CompleteSpace X] : b.basisConstant < 
   · rintro _ ⟨n, rfl⟩
     rw [← NNReal.coe_le_coe, Real.coe_toNNReal C hCpos, coe_nnnorm]
     exact hC n
+
+/-- The basis constant is finite. -/
+theorem basisConstant_lt_top_for_complete [CompleteSpace X] : b.basisConstant < ⊤ := by
+  obtain ⟨C, hC⟩ := b.proj_uniform_bound
+  exact basisConstant_lt_top_uniform_bound b hC
 
 /-- The norm of any projection is bounded by the basis constant (as a real number). -/
 theorem norm_proj_le_basisConstant (n : ℕ) : (‖b.proj n‖₊ : ℝ≥0∞) ≤ b.basisConstant := by
@@ -283,12 +287,12 @@ lemma Q_rank_one {P : ℕ → X →L[𝕜] X}
   exact Nat.add_right_cancel this.symm
 
 /-- Constructs a Schauder basis from a sequence of projections. -/
-def basis_of_canonical_projections {P : ℕ → X →L[𝕜] X} {e : ℕ → X} (h0 : P 0 = 0)
+theorem basis_of_canonical_projections {P : ℕ → X →L[𝕜] X} {e : ℕ → X} (h0 : P 0 = 0)
     (hdim : ∀ n, Module.finrank 𝕜 (LinearMap.range (P n).toLinearMap) = n)
     (hcomp : ∀ n m, ∀ x : X, P n (P m x) = P (min n m) x)
     (hlim : ∀ x, Tendsto (fun n ↦ P n x) atTop (𝓝 x))
     (he_in_range : ∀ n, e n ∈ LinearMap.range (Q P n).toLinearMap) (he_ne : ∀ n, e n ≠ 0) :
-    SchauderBasis 𝕜 e :=
+    ∃ b : SchauderBasis 𝕜 e, ∀ n, b.proj n = P n := by
   let Q := Q P
   have hrankQ := Q_rank_one h0 hdim hcomp
   have h_range_eq_span (n : ℕ) : LinearMap.range (Q n).toLinearMap = Submodule.span 𝕜 {e n} := by
@@ -342,6 +346,15 @@ def basis_of_canonical_projections {P : ℕ → X →L[𝕜] X} {e : ℕ → X} 
     dsimp only [mkContinuous_apply, IsLinearMap.mk'_apply]
     simp_rw [← hQf, Q]
     simp only [← Q_sum P h0 n, ContinuousLinearMap.coe_sum', Finset.sum_apply]
-  SchauderBasis.mk f ortho lim
+  let b := SchauderBasis.mk f ortho lim
+  use b
+  intro n
+  ext x
+  simp only [proj_apply, b]
+  simp only [f, mkContinuous_apply, IsLinearMap.mk'_apply]
+  simp_rw [← hQf]
+  have := congr_fun (congr_arg DFunLike.coe (Q_sum P h0 n)) x
+  simp only [ContinuousLinearMap.coe_sum', Finset.sum_apply] at this
+  exact this
 
 end SchauderBasis
