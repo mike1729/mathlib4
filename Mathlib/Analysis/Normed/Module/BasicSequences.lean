@@ -14,6 +14,8 @@ public import Mathlib.Topology.Neighborhoods
 public import Mathlib.Analysis.Normed.Operator.Extend
 public import Mathlib.Topology.Constructions
 public import Mathlib.Topology.UniformSpace.UniformEmbedding
+public import Mathlib.Topology.Algebra.Module.WeakDual
+
 
 /-!
 # Basic Sequences in Banach Spaces
@@ -1106,10 +1108,142 @@ lemma perturb_basic_sequence [CompleteSpace X] (b : BasicSequence 𝕜 X) (u : X
           exact mul_nonneg hC (le_of_lt (lt_of_lt_of_le zero_lt_one hK.1))
       _ = (K * C ^ 2) * ‖Y n‖ := by ring
 
-/-- There are no basic sequences in a subset `S` of `X` if and only if
-    the weak-star closure of the `S` is weakly-compact and does not contain `0`. -/
-theorem no_basic_sequence_iff_zero_not_in_weak_star_closure {S : Set X} :
-    (∀ (e : ℕ → X), ¬ IsBasicSequence 𝕜 e) ↔ (0 : X) ∉ closure ((toWeakSpace 𝕜 X )'' S) := by
-  sorry
+/-- If a bounded set S in a Banach space X does not contain a basic sequence,
+    then 0 is not in the weak closure of S.
+
+    This is a consequence of the basic sequence selection principle: if 0 is in the
+    weak* closure of J(S) but not in its norm closure, then J(S) contains a basic sequence,
+    which can be pulled back to a basic sequence in S. -/
+theorem no_basic_sequence_implies_zero_not_in_weak_closure [CompleteSpace X]
+    {S : Set X} (_hS_ne : S.Nonempty) (h_norm : (0 : X) ∉ closure S)
+    (h_no_basic : ∀ (e : ℕ → X), (∀ n, e n ∈ S) → ¬ IsBasicSequence 𝕜 e) :
+    (0 : X) ∉ closure (toWeakSpace 𝕜 X '' S) := by
+  -- We prove the contrapositive: if 0 is in the weak closure, we can find a basic sequence.
+  contrapose! h_no_basic
+
+  -- 1. Setup the Bidual embedding J : X → X**
+  let J := NormedSpace.inclusionInDoubleDual 𝕜 X
+  let S' := J '' S
+
+  -- 2. Translate the weak closure hypothesis to the bidual's weak* topology.
+  -- The weak topology on X and the weak* topology on X** are both induced by X*.
+  -- A basic weak* neighborhood of 0 in X** is determined by finitely many f ∈ X*.
+  -- The preimage under J of such a neighborhood equals the corresponding weak neighborhood
+  -- of 0 in X.
+  have h_weak_star : (0 : WeakDual 𝕜 (StrongDual 𝕜 X)) ∈ closure (StrongDual.toWeakDual '' S') := by
+    rw [_root_.mem_closure_iff]
+    intro U hU_open hU_zero
+    -- U is open in weak* topology, which is induced from StrongDual 𝕜 X → 𝕜
+    rw [isOpen_induced_iff] at hU_open
+    obtain ⟨V, hV_open, hV_eq⟩ := hU_open
+    have h0V : (fun f => (0 : WeakDual 𝕜 (StrongDual 𝕜 X)) f) ∈ V := by
+      rw [← hV_eq] at hU_zero; exact hU_zero
+    -- V is open in product topology, so contains a basic open set
+    rw [isOpen_pi_iff] at hV_open
+    obtain ⟨F, t, ht_cond, hFt_sub⟩ := hV_open _ h0V
+    -- F is finite set of functionals in X*, t gives open neighborhoods in 𝕜
+    -- Construct corresponding weak neighborhood W of 0 in X
+    -- In WeakSpace 𝕜 X, evaluation at f ∈ X* is continuous (WeakBilin.eval_continuous)
+    let W : Set (WeakSpace 𝕜 X) := ⋂ f ∈ F, {w : WeakSpace 𝕜 X | f ((toWeakSpace 𝕜 X).symm w) ∈ t f}
+    have hW_open : IsOpen W := by
+      apply isOpen_biInter_finset
+      intro f _
+      -- The evaluation map w ↦ f(w) is continuous in the weak topology
+      have hf_cont : Continuous (fun w : WeakSpace 𝕜 X => f ((toWeakSpace 𝕜 X).symm w)) :=
+        WeakBilin.eval_continuous (topDualPairing 𝕜 X).flip f
+      exact (ht_cond f ‹f ∈ F›).1.preimage hf_cont
+    have hW_zero : toWeakSpace 𝕜 X 0 ∈ W := by
+      simp only [W, mem_iInter, mem_setOf, map_zero]
+      intro f hf
+      exact (ht_cond f hf).2
+    -- Since 0 ∈ weak closure of S, W ∩ (toWeakSpace '' S) is nonempty
+    have h_inter : (W ∩ (toWeakSpace 𝕜 X '' S)).Nonempty := by
+      have h_cl := @_root_.mem_closure_iff (WeakSpace 𝕜 X) _
+        (toWeakSpace 𝕜 X 0) (toWeakSpace 𝕜 X '' S)
+      exact h_cl.mp h_no_basic W hW_open hW_zero
+    obtain ⟨w, hwW, x, hxS, hwx⟩ := h_inter
+    -- x ∈ S satisfies: f(x) ∈ t f for all f ∈ F
+    have hx_in_t : ∀ f ∈ F, f x ∈ t f := fun f hf => by
+      have := hwW
+      simp only [W, mem_iInter] at this
+      specialize this f hf
+      simp only [mem_setOf, hwx.symm, LinearEquiv.symm_apply_apply] at this
+      exact this
+    -- Therefore J(x) ∈ U
+    have hJx_U : StrongDual.toWeakDual (J x) ∈ U := by
+      rw [← hV_eq]
+      apply hFt_sub
+      intro f hf
+      change topDualPairing 𝕜 (StrongDual 𝕜 X) (StrongDual.toWeakDual (J x)) f ∈ t f
+      simp only [topDualPairing_apply, StrongDual.coe_toWeakDual, J, NormedSpace.dual_def]
+      exact hx_in_t f hf
+    -- And J(x) ∈ toWeakDual '' S'
+    have hJx_S' : StrongDual.toWeakDual (J x) ∈ StrongDual.toWeakDual '' S' :=
+      ⟨J x, ⟨x, hxS, rfl⟩, rfl⟩
+    exact ⟨StrongDual.toWeakDual (J x), hJx_U, hJx_S'⟩
+
+  -- 3. Show 0 is not in the norm closure of S' in the bidual.
+  -- Since J is an isometry, it preserves distances to the origin.
+  have h_norm_S' : (0 : StrongDual 𝕜 (StrongDual 𝕜 X)) ∉ closure S' := by
+    rw [Metric.mem_closure_iff]
+    push_neg
+    -- 0 ∉ closure S means there exists δ > 0 such that S ∩ ball(0, δ) = ∅
+    rw [Metric.mem_closure_iff] at h_norm
+    push_neg at h_norm
+    obtain ⟨δ, hδ_pos, hδ_S⟩ := h_norm
+    use δ, hδ_pos
+    rintro _ ⟨x, hxS, rfl⟩
+    -- J is an isometry: dist(J x, 0) = dist(x, 0)
+    have hJ_iso : ‖J x‖ = ‖x‖ := (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).norm_map x
+    rw [dist_zero_left, hJ_iso, ← dist_zero_left]
+    exact hδ_S x hxS
+
+  -- 4. Apply the Selection Principle for Dual Spaces with ε = 1.
+  obtain ⟨b_bidual, hb_mem, -⟩ := basic_sequence_selection_dual h_weak_star h_norm_S' zero_lt_one
+
+  -- 5. Pull the sequence back to X.
+  -- Since b_bidual n ∈ S' = J '' S, there exists x_n ∈ S such that J x_n = b_bidual n.
+  choose e he_S he_eq using hb_mem
+
+  -- 6. Show e is a basic sequence in S using the Grünblum condition.
+  use e, he_S
+
+  -- e has nonzero elements (since b_bidual is basic and J is injective)
+  have h_nz : ∀ n, e n ≠ 0 := fun n h_zero => by
+    -- b_bidual.basis is linearly independent, so its elements are nonzero
+    have hb_indep := b_bidual.basis.linearIndependent
+    have hb_nz := hb_indep.ne_zero n
+    -- b_bidual.eq_basis says: b_bidual.basis n = codRestrict b_bidual.toFun ... n
+    -- So (b_bidual.basis n : X**) = b_bidual n
+    have h_eq : (b_bidual.basis n : StrongDual 𝕜 (StrongDual 𝕜 X)) = b_bidual n := by
+      have := congrFun b_bidual.eq_basis n
+      exact congrArg Subtype.val this
+    -- If e n = 0, then J(e n) = 0 = b_bidual n, but b_bidual n ≠ 0
+    rw [← he_eq n, h_zero, map_zero] at h_eq
+    -- h_eq : (b_bidual.basis n : X**) = 0, so b_bidual.basis n = 0 as subtype element
+    exact hb_nz (Subtype.ext h_eq)
+
+  -- The Grünblum constant for b_bidual
+  let K := grunblumConstant b_bidual
+  have hK_ge : 1 ≤ K := grunblumConstant_ge_one b_bidual
+
+  -- Transfer Grünblum condition from b_bidual to e using J being an isometry
+  have hK_bound_e : ∀ (n m : ℕ) (a : ℕ → 𝕜), m ≤ n →
+      ‖∑ i ∈ Finset.range m, a i • e i‖ ≤ K * ‖∑ i ∈ Finset.range n, a i • e i‖ := by
+    intro n m a hmn
+    have h_J_sum (k : ℕ) : J (∑ i ∈ Finset.range k, a i • e i) =
+        ∑ i ∈ Finset.range k, a i • b_bidual i := by
+      simp only [map_sum, map_smul, he_eq]
+    have hJ_norm : ∀ y : X, ‖J y‖ = ‖y‖ :=
+      (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).norm_map
+    calc ‖∑ i ∈ Finset.range m, a i • e i‖
+      _ = ‖J (∑ i ∈ Finset.range m, a i • e i)‖ := (hJ_norm _).symm
+      _ = ‖∑ i ∈ Finset.range m, a i • b_bidual i‖ := by rw [h_J_sum]
+      _ ≤ K * ‖∑ i ∈ Finset.range n, a i • b_bidual i‖ := grunblum_bound_of_basic b_bidual n m a hmn
+      _ = K * ‖J (∑ i ∈ Finset.range n, a i • e i)‖ := by rw [h_J_sum]
+      _ = K * ‖∑ i ∈ Finset.range n, a i • e i‖ := by rw [hJ_norm]
+
+  -- Apply Grünblum criterion
+  exact isBasicSequence_of_grunblum ⟨K, hK_ge, hK_bound_e⟩ h_nz
 
 end BasicSequences
