@@ -1256,7 +1256,16 @@ theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
     let J := NormedSpace.inclusionInDoubleDual 𝕜 X
     let S_bidual := J '' S
 
-    have h_S_bidual_bounded : Bornology.IsBounded S_bidual := sorry
+    have h_S_bidual_bounded : Bornology.IsBounded S_bidual := by
+      rw [Metric.isBounded_iff_subset_closedBall 0] at h_bounded ⊢
+      obtain ⟨R, hR⟩ := h_bounded
+      use R
+      intro y hy
+      obtain ⟨x, hxS, rfl⟩ := hy
+      have hxS_norm : x ∈ closedBall 0 R := hR hxS
+      rw [Metric.mem_closedBall, dist_zero_right] at *
+      exact double_dual_bound.trans hxS_norm
+
     let K := closure (StrongDual.toWeakDual '' S_bidual)
 
     have hK_subset :  K ⊆ StrongDual.toWeakDual '' (J '' (Set.univ)) := by
@@ -1267,13 +1276,74 @@ theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
 
       let S' := (fun y => y - w) '' (J '' S)
 
-      have h_weak_star : (0 : WeakDual 𝕜 (StrongDual 𝕜 X)) ∈ closure (StrongDual.toWeakDual '' S') := sorry
+      have h_weak_starS' : (0 : WeakDual 𝕜 (StrongDual 𝕜 X)) ∈ closure (StrongDual.toWeakDual '' S') := by
+        let A := StrongDual.toWeakDual '' S_bidual
+        let T : WeakDual 𝕜 (StrongDual 𝕜 X) ≃ₜ WeakDual 𝕜 (StrongDual 𝕜 X) :=
+          Homeomorph.addRight (-w)
+        have h_image : StrongDual.toWeakDual '' S' = T '' A := by
+          simp only [S', A, image_image]
+          apply image_congr
+          intro y hy
+          simp only [T, Homeomorph.addRight_apply, Equiv.coe_fn_mk, sub_eq_add_neg,
+                     LinearEquiv.map_add, LinearEquiv.map_neg]
+          rfl
+        rw [h_image, Homeomorph.image_closure]
+        have h_zero : (0 : WeakDual 𝕜 (StrongDual 𝕜 X)) = T w := by
+          simp [T, sub_eq_add_neg]
 
-      have h_norm : (0 : Xbidual) ∉ closure S' := sorry
+        rw [h_zero]
+        apply mem_image_of_mem
+        exact hwK
 
+      have h_normS' : (0 : Xbidual) ∉ closure (WeakDual.toStrongDual '' S') := by
+        -- We proceed by contradiction. Assume 0 ∈ closure S'.
+        intro h0
+
+        -- S' is the translation of S_bidual by -w.
+        -- Since translation is a homeomorphism, w must be in the closure of S_bidual.
+        have hw_cl : (w : Xbidual) ∈ closure S_bidual := by
+          -- Define the homeomorphism T(z) = z - w
+          let T := Homeomorph.addRight (-w : Xbidual)
+          -- S' = T '' S_bidual
+          have h_image : S' = T '' S_bidual := rfl
+          rw [h_image, Homeomorph.image_closure] at h0
+          -- 0 ∈ T '' (closure S_bidual) ↔ T⁻¹(0) ∈ closure S_bidual
+          have h_inv : T.symm 0 = w := by
+            simp only [Homeomorph.symm_addRight, Homeomorph.addRight_apply, zero_add]
+            simp only [sub_eq_add_neg, neg_neg]
+
+          rw [mem_image_iff_mem_symm_apply, h_inv] at h0
+          exact h0
+
+        -- The range of J is closed in X** because X is complete and J is an isometry.
+        have h_JX_closed : IsClosed (range J) :=
+          Isometry.isClosedEmbedding (NormedSpace.inclusionInDoubleDual.isometry)
+
+        -- S_bidual is contained in range J, so its closure is also contained in range J.
+        have h_subset : closure S_bidual ⊆ range J :=
+          closure_minimal (image_subset_range J S) h_JX_closed
+
+        -- Therefore w ∈ range J.
+        have hw_in_JX : (w : Xbidual) ∈ range J := h_subset hw_cl
+
+        -- This contradicts the choice of w (hw_not_JX).
+        apply hw_not_JX
+        -- Reformulate w ∈ range J to match hw_not_JX
+        rw [image_univ]
+        obtain ⟨x, hx⟩ := hw_in_JX
+        use J x
+        constructor
+        · exact mem_range_self x
+        · -- Show toWeakDual (J x) = w.
+          -- Since J x = w as vectors, and toWeakDual is just a type cast (linear equiv), they are equal.
+          rw [hx]
+          rfl
       have h_basicS' : ∃ e : ℕ → Xbidual, (∀ n, e n ∈ S') ∧ IsBasicSequence 𝕜 e := by
-        -- use basic_sequence_selection_dual
-        sorry
+        obtain ⟨b, hb_mem, -⟩ := basic_sequence_selection_dual h_weak_starS' h_normS' zero_lt_one
+        use b
+        constructor
+        · exact hb_mem
+        · exact ⟨b, rfl⟩
 
       obtain ⟨e, he_S', he_basic⟩ := h_basicS'
 
