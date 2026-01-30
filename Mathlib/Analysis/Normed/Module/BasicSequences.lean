@@ -1246,4 +1246,65 @@ theorem no_basic_sequence_implies_zero_not_in_weak_closure [CompleteSpace X]
   -- Apply Grünblum criterion
   exact isBasicSequence_of_grunblum ⟨K, hK_ge, hK_bound_e⟩ h_nz
 
+theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
+    {S : Set X} (hS_ne : S.Nonempty) (h_norm : (0 : X) ∉ closure S)
+    (h_bounded : Bornology.IsBounded S)
+    (h_no_basic : ∀ (e : ℕ → X), (∀ n, e n ∈ S) → ¬ IsBasicSequence 𝕜 e) :
+    IsCompact (closure (toWeakSpace 𝕜 X '' S)) :=
+
+    let Xbidual := StrongDual 𝕜 (StrongDual 𝕜 X)
+    let J := NormedSpace.inclusionInDoubleDual 𝕜 X
+    let S_bidual := J '' S
+
+    have h_S_bidual_bounded : Bornology.IsBounded S_bidual := sorry
+    let K := closure (StrongDual.toWeakDual '' S_bidual)
+
+    have hK_subset :  K ⊆ StrongDual.toWeakDual '' (J '' (Set.univ)) := by
+      by_contra h_not_subset
+      rw [Set.subset_def] at h_not_subset
+      push_neg at h_not_subset
+      obtain ⟨w, hwK, hw_not_JX⟩ := h_not_subset
+
+      let S' := (fun y => y - w) '' (J '' S)
+
+      have h_weak_star : (0 : WeakDual 𝕜 (StrongDual 𝕜 X)) ∈ closure (StrongDual.toWeakDual '' S') := sorry
+
+      have h_norm : (0 : Xbidual) ∉ closure S' := sorry
+
+      have h_basicS' : ∃ e : ℕ → Xbidual, (∀ n, e n ∈ S') ∧ IsBasicSequence 𝕜 e := by
+        -- use basic_sequence_selection_dual
+        sorry
+
+      obtain ⟨e, he_S', he_basic⟩ := h_basicS'
+
+      have h_w_span : ∃ N : ℕ, w ∉ span 𝕜 (Set.range (fun n => e (n+N))) := by sorry
+
+      obtain ⟨N, h_w_notin_span⟩ := h_w_span
+      let e := fun n => e (n + N)
+
+      have h_sep : ∃ f : StrongDual 𝕜 Xbidual, f w = -1 ∧ (∀ n, f (e n) = 0) := by
+        -- use Hahn-Banach separation theorem
+        sorry
+
+      obtain ⟨f, hf_w, hf_e⟩ := h_sep
+      have hf_one: ∀ n, f ((e n) - w) = 1 := by
+        rw [hf_w, sub_eq_add_neg, add_comm, add_neg_self, add_zero]
+
+      have hf_zero : ∀ n, f ((e n) - w) = 0 := by
+        intro n
+        rw [hf_e n, sub_eq_add_neg, add_comm, add_neg_self, add_zero]
+
+      have h_basicS: IsBasicSequence 𝕜 (fun n => (e n) - w) := by
+        -- use perturb_basic_sequence e w f hf_e hf_w
+        sorry
+
+      have h_in_S : ∀ n, (e n) - w ∈ S_bidual := by sorry
+
+      --transfer back the basic sequence to S and get a contradiction with h_no_basic
+      sorry
+
+    -- transfer compactness back to X via weak-weak* correspondence
+    sorry
+
+
 end BasicSequences
