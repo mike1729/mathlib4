@@ -81,7 +81,12 @@ structure SchauderBasis (𝕜 : Type*) (X : Type*) [NontriviallyNormedField 𝕜
 instance : CoeFun (SchauderBasis 𝕜 X) (fun _ ↦ ℕ → X) where
   coe b := b.toFun
 
+
 namespace SchauderBasis
+
+def IsSchauderBasis (𝕜 : Type*) (X : Type*) [NontriviallyNormedField 𝕜]
+    [NormedAddCommGroup X] [NormedSpace 𝕜 X] (e : ℕ → X) : Prop :=
+  ∃ b : SchauderBasis 𝕜 X, ⇑b = e
 
 variable (b : SchauderBasis 𝕜 X)
 
