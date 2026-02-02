@@ -15,6 +15,7 @@ public import Mathlib.Analysis.Normed.Operator.Extend
 public import Mathlib.Topology.Constructions
 public import Mathlib.Topology.UniformSpace.UniformEmbedding
 public import Mathlib.Topology.Algebra.Module.WeakDual
+public import Mathlib.Analysis.LocallyConvex.Separation
 
 
 /-!
@@ -1051,7 +1052,7 @@ theorem exists_basic_sequence [CompleteSpace X] (hinf : ¬ FiniteDimensional �
     _ < 1 + ε := hK_lt
 
 lemma perturb_basic_sequence [CompleteSpace X] (b : BasicSequence 𝕜 X) (u : X)
-    (f : StrongDual 𝕜 X) (hf : ∀ n, f (b n) = 1) (hu0 : f u = 0) :
+    (f : StrongDual 𝕜 X) (hf : ∀ n, f (b n) = 1) (hu : u ∉ closure (Submodule.span 𝕜 (Set.range b))) :
     IsBasicSequence 𝕜 (fun n ↦ b n + u) := by
   let y := fun n ↦ b n + u
   -- 1. Elements are non-zero because f(y n) = 1
@@ -1440,5 +1441,474 @@ theorem SchauderBasis_of_closure_coe [CompleteSpace X] {Y : Submodule 𝕜 X}
     ⇑(SchauderBasis_of_closure b h_bound) = fun n ↦ ⟨b n, Y.le_topologicalClosure (b n).2⟩ :=
   funext fun n => SchauderBasis_of_closure_apply b h_bound n
 
+
+set_option maxHeartbeats 800000 in
+theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
+    {S : Set X} (hS_ne : S.Nonempty) (h_norm : (0 : X) ∉ closure S)
+    (h_bounded : Bornology.IsBounded S)
+    (h_no_basic : ∀ (e : ℕ → X), (∀ n, e n ∈ S) → ¬ IsBasicSequence 𝕜 e) :
+    IsCompact (closure (toWeakSpace 𝕜 X '' S)) :=
+
+    let Xbidual := StrongDual 𝕜 (StrongDual 𝕜 X)
+    let J := NormedSpace.inclusionInDoubleDual 𝕜 X
+    let S_bidual := J '' S
+
+    have h_S_bidual_bounded : Bornology.IsBounded S_bidual := by
+      rw [Metric.isBounded_iff_subset_closedBall 0] at h_bounded ⊢
+      obtain ⟨R, hR⟩ := h_bounded
+      use R
+      intro y hy
+      obtain ⟨x, hxS, rfl⟩ := hy
+      have hxS_norm : x ∈ closedBall 0 R := hR hxS
+      rw [Metric.mem_closedBall, dist_zero_right] at *
+      have hJ_iso : ‖J x‖ = ‖x‖ := (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).norm_map x
+      exact hJ_iso.le.trans hxS_norm
+
+    let K := closure (StrongDual.toWeakDual '' S_bidual)
+
+    have hK_subset :  K ⊆ StrongDual.toWeakDual '' (J '' (Set.univ)) := by
+      by_contra h_not_subset
+      rw [Set.subset_def] at h_not_subset
+      push_neg at h_not_subset
+      obtain ⟨w, hwK, hw_not_JX⟩ := h_not_subset
+
+      -- Define S' in StrongDual (Xbidual) space as translation of S_bidual by -w'
+      let w' : Xbidual := WeakDual.toStrongDual w
+      let S' := (fun y => y - w') '' S_bidual
+
+      have h_weak_starS' : (0 : WeakDual 𝕜 (StrongDual 𝕜 X)) ∈ closure (StrongDual.toWeakDual '' S') := by
+        let A := StrongDual.toWeakDual '' S_bidual
+        let T : WeakDual 𝕜 (StrongDual 𝕜 X) ≃ₜ WeakDual 𝕜 (StrongDual 𝕜 X) :=
+          Homeomorph.addRight (-w)
+        have h_image : StrongDual.toWeakDual '' S' = T '' A := by
+          simp only [S', A, S_bidual, image_image]
+          apply image_congr
+          intro x _
+          simp only [T, Homeomorph.coe_addRight, sub_eq_add_neg, w']
+          rfl
+        rw [h_image, ← Homeomorph.image_closure]
+        have h_zero : (0 : WeakDual 𝕜 (StrongDual 𝕜 X)) = T w := by
+          simp only [T, Homeomorph.coe_addRight, add_neg_cancel]
+        rw [h_zero]
+        apply mem_image_of_mem
+        exact hwK
+
+      have h_normS' : (0 : Xbidual) ∉ closure S' := by
+        -- We proceed by contradiction. Assume 0 ∈ closure S'.
+        intro h0
+
+        -- S' is the translation of S_bidual by -w'.
+        -- Since translation is a homeomorphism, w' must be in the closure of S_bidual.
+        have hw_cl : w' ∈ closure S_bidual := by
+          -- Define the homeomorphism T(z) = z - w' on Xbidual
+          let T := Homeomorph.addRight (-w' : Xbidual)
+          -- S' = T '' S_bidual (by definition of S')
+          have h_image : S' = T '' S_bidual := by
+            simp only [S', S_bidual, T, Homeomorph.coe_addRight, sub_eq_add_neg, image_image]
+          rw [h_image, ← Homeomorph.image_closure] at h0
+          -- 0 ∈ T '' (closure S_bidual) means T.symm 0 ∈ closure S_bidual
+          obtain ⟨y, hy_mem, hy_eq⟩ := h0
+          have h_y_eq_w' : y = w' := by
+            have : T.symm (T y) = T.symm 0 := by rw [hy_eq]
+            rw [Homeomorph.symm_apply_apply] at this
+            simp only [T, Homeomorph.addRight_symm, Homeomorph.coe_addRight, zero_add] at this
+            rw [neg_neg] at this
+            exact this
+          rw [← h_y_eq_w']
+          exact hy_mem
+
+        -- The range of J is closed in X** because X is complete and J is an isometry.
+        have h_JX_closed : IsClosed (range J) :=
+          (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).isometry.isClosedEmbedding.isClosed_range
+
+        -- S_bidual is contained in range J, so its norm closure is also contained in range J.
+        have h_subset : closure S_bidual ⊆ range J :=
+          closure_minimal (image_subset_range J S) h_JX_closed
+
+        -- Therefore w' ∈ range J.
+        have hw_in_JX : w' ∈ range J := h_subset hw_cl
+
+        -- This contradicts the choice of w (hw_not_JX).
+        apply hw_not_JX
+        -- Reformulate w' ∈ range J to match hw_not_JX
+        rw [image_univ]
+        obtain ⟨x, hx⟩ := hw_in_JX
+        use J x
+        constructor
+        · exact mem_range_self x
+        · -- Show toWeakDual (J x) = w.
+          simp only [w'] at hx
+          rw [hx]
+          rfl
+
+      have h_basicS' : ∃ e : ℕ → Xbidual, (∀ n, e n ∈ S') ∧ IsBasicSequence 𝕜 e := by
+        obtain ⟨b, hb_mem, -⟩ := basic_sequence_selection_dual h_weak_starS' h_normS' zero_lt_one
+        use b
+        constructor
+        · exact hb_mem
+        · exact ⟨b, rfl⟩
+
+      obtain ⟨e, he_S', he_basic⟩ := h_basicS'
+      rcases he_basic with ⟨b, rfl⟩
+
+      have h_w_span : ∃ N : ℕ, w' ∉ closure (Submodule.span 𝕜 (Set.range (fun n => b (n+N)))) := by
+        -- 1. w is non-zero (since w ∉ J(X) and 0 ∈ J(X))
+        have hw_ne : w' ≠ 0 := by
+          intro h
+          apply hw_not_JX
+          have hw0 : w = 0 := by
+            apply WeakDual.toStrongDual.injective
+            simp only [w'] at h
+            rw [h, map_zero]
+          rw [hw0, image_univ]
+          exact ⟨J 0, ⟨0, rfl⟩, by simp⟩
+
+        -- 2. Assume for contradiction that w is in the closure of *all* tail spans
+        by_contra h_contra
+        push_neg at h_contra
+
+        -- 3. Get the basis structure for the closure of the span
+        let Y := Submodule.span 𝕜 (Set.range b.toFun)
+        let Z := Y.topologicalClosure
+
+        -- Since h_contra holds for N=0, w is in the closure of the whole span
+        have h_w'_in_Z : w' ∈ Z := by
+          simpa using h_contra 0
+
+        -- Lift w to the subspace K = closure Y
+        let w'_Z : Z := ⟨w', h_w'_in_Z⟩
+        have hw'_Z_ne : w'_Z ≠ 0 := fun h => hw_ne (congrArg Subtype.val h)
+
+        -- Use the theorem to treat b as a Schauder basis for K
+        -- (Assuming SchauderBasis_of_closure is available as discussed)
+        let basis_Z :=
+        -- let basis_K : SchauderBasis 𝕜 Y.topologicalClosure :=
+          SchauderBasis_of_closure b.basis b.basisConstant_lt_top
+
+        -- 4. Since w ≠ 0, it must have a non-zero coordinate k
+        have h_exists_coord : ∃ k, basis_Z.coord k w'_Z ≠ 0 := by
+          by_contra! h_all_zero
+          apply hw'_Z_ne
+          -- If all coords are 0, the vector is 0 by the expansion property
+          have h_exp := basis_Z.expansion w'_Z
+          have h_zero : (fun i ↦ (basis_Z.coord i) w'_Z • basis_Z i) = fun _ ↦ 0 := by
+            ext i
+            simp [h_all_zero i]
+          rw [h_zero] at h_exp
+          exact HasSum.unique h_exp hasSum_zero
+
+        obtain ⟨k, hk_ne⟩ := h_exists_coord
+
+        -- 5. Use the hypothesis for N = k + 1 to derive a contradiction
+        -- The contradiction is: w ∈ closure(tail) implies coord k w = 0
+        specialize h_contra (k + 1)
+
+        -- The k-th coordinate functional is continuous on K
+        let coord_k := basis_Z.coord k
+
+        -- We show coord_k vanishes on the tail span
+        -- The tail span is generated by b_{k+1}, b_{k+2}, ...
+        let tail_span := Submodule.span 𝕜 (Set.range (fun n => b.toFun (n + (k + 1))))
+
+        -- First show tail_span ⊆ Y
+        have h_tail_in_Y : tail_span ≤ Y := by
+          apply Submodule.span_mono
+          intro x hx
+          obtain ⟨n, rfl⟩ := hx
+          exact ⟨n + (k + 1), rfl⟩
+
+        -- First prove a simpler lemma: coord_k vanishes on basis elements with index > k
+        have h_vanish_basis : ∀ j > k, basis_Z.coord k (basis_Z j) = 0 := by
+          intro j hj
+          rw [basis_Z.ortho k j, Pi.single_apply, if_neg (ne_of_gt hj).symm]
+
+        -- The coordinate functional coord_k vanishes on elements of tail_span
+        have h_vanish_on_tail : ∀ v (hv : v ∈ tail_span), coord_k ⟨v, Y.le_topologicalClosure (h_tail_in_Y hv)⟩ = 0 := by
+          intro v hv
+          -- For v in tail_span, show coord_k applied to the lifted element is 0
+          -- Use span induction with the dependent predicate
+          induction hv using Submodule.span_induction with
+          | mem x hx =>
+            -- Base case: generators b_{n + (k+1)}
+            obtain ⟨n, rfl⟩ := hx
+            -- x = b.toFun (n + (k + 1)), which corresponds to basis_Z (n + (k + 1))
+            have h_eq : (⟨b.toFun (n + (k + 1)), Y.le_topologicalClosure (h_tail_in_Y (Submodule.subset_span ⟨n, rfl⟩))⟩ : Z)
+                      = basis_Z (n + (k + 1)) := by
+              rw [SchauderBasis_of_closure_apply]
+              -- The result follows from b.eq_basis which says ⇑basis = Set.codRestrict ...
+              congr 1
+              simp only [b.eq_basis]
+              rfl
+            rw [h_eq]
+            exact h_vanish_basis (n + (k + 1)) (by omega)
+          | zero =>
+            convert map_zero coord_k
+          | add x y hx' hy' hx hy =>
+            have hx_Y : x ∈ Y.topologicalClosure := Y.le_topologicalClosure (h_tail_in_Y hx')
+            have hy_Y : y ∈ Y.topologicalClosure := Y.le_topologicalClosure (h_tail_in_Y hy')
+            have hxy_Y : x + y ∈ Y.topologicalClosure := Submodule.add_mem _ hx_Y hy_Y
+            have h_eq : coord_k ⟨x + y, hxy_Y⟩ = coord_k ⟨x, hx_Y⟩ + coord_k ⟨y, hy_Y⟩ := by
+              convert map_add coord_k ⟨x, hx_Y⟩ ⟨y, hy_Y⟩ using 2 <;> rfl
+            rw [h_eq, hx, hy, add_zero]
+          | smul c x hx' hx =>
+            have hx_Y : x ∈ Y.topologicalClosure := Y.le_topologicalClosure (h_tail_in_Y hx')
+            have hcx_Y : c • x ∈ Y.topologicalClosure := Submodule.smul_mem _ c hx_Y
+            have h_eq : coord_k ⟨c • x, hcx_Y⟩ = c • coord_k ⟨x, hx_Y⟩ := by
+              convert map_smul coord_k c ⟨x, hx_Y⟩ using 2 <;> rfl
+            rw [h_eq, hx, smul_zero]
+
+        -- 6. By continuity, coord_k w must be 0
+        have h_coord_w_zero : coord_k w'_Z = 0 := by
+          -- w is a limit of a sequence in tail_span
+          rw [mem_closure_iff_seq_limit] at h_contra
+          obtain ⟨u, hu_tail, hu_lim⟩ := h_contra
+
+          -- Lift the sequence to K
+          let u_K (n : ℕ) : Y.topologicalClosure :=
+            ⟨u n, Y.le_topologicalClosure (h_tail_in_Y (hu_tail n))⟩
+
+          -- Convergence in K is equivalent to convergence in Xbidual for the subtype
+          have h_lim_K : Filter.Tendsto u_K Filter.atTop (nhds w'_Z) := by
+            rw [Topology.IsEmbedding.tendsto_nhds_iff Topology.IsEmbedding.subtypeVal]
+            exact hu_lim
+
+          -- coord_k is continuous, so coord_k (lim u_n) = lim (coord_k u_n)
+          have h_tendsto := ((ContinuousLinearMap.continuous coord_k).tendsto w'_Z).comp h_lim_K
+
+          -- But coord_k (u_n) is constantly 0
+          have h_vals : ∀ n, coord_k (u_K n) = 0 := fun n ↦ h_vanish_on_tail (u n) (hu_tail n)
+
+          -- The sequence coord_k ∘ u_K = fun _ => 0
+          have h_const : (coord_k ∘ u_K) = fun _ => 0 := by
+            ext n
+            exact h_vals n
+          rw [h_const] at h_tendsto
+          -- Now h_tendsto says: (fun _ => 0) tends to coord_k w'_Z
+          -- So coord_k w'_Z must be 0
+          exact (tendsto_const_nhds_iff.mp h_tendsto).symm
+
+        -- 7. Contradiction
+        exact hk_ne h_coord_w_zero
+
+
+      obtain ⟨N, h_w_notin_span⟩ := h_w_span
+      let e := fun n => b (n + N)
+
+      have h_sep : ∃ f : StrongDual 𝕜 Xbidual, ∀ n, f (e n) = 1 := by
+        -- use hw_not_JX and Hahn-Banach to separate w' from J(X) to get g with g(w') ≠ 0 and g(J x) = 0 for all x
+        -- then scale g to get h with h(w') = -1  and h(J x) = 0 for all x
+        -- then conclude f = -h satisfies f(e n) = 1 since e n ∈ J(X)
+        sorry
+
+        -- Use Hahn-Banach separation theorem
+        -- The closed subspace M = closure(span(range e)) doesn't contain w'
+        let M := closure (Submodule.span 𝕜 (Set.range e) : Set Xbidual)
+
+        -- w' ∉ M by h_w_notin_span
+        have hw'_notin_M : w' ∉ M := by
+          convert h_w_notin_span using 1
+
+
+        -- M is a closed submodule, so by Hahn-Banach geometric form,
+        -- there exists a continuous linear functional separating w' from M
+        -- Specifically, ∃ f : Xbidual →L[𝕜] 𝕜 such that f w' ≠ 0 and ∀ m ∈ M, f m = 0
+
+        -- Since M contains span(range e), we have ∀ n, e n ∈ M
+        have he_in_M : ∀ n, e n ∈ M := fun n => by
+          apply subset_closure
+          exact Submodule.subset_span ⟨n, rfl⟩
+
+        -- Apply Hahn-Banach to separate w' from M
+        -- M is a closed subspace and w' ∉ M
+        have h_exists_f : ∃ f : StrongDual 𝕜 Xbidual, f w' ≠ 0 ∧ (∀ m ∈ M, f m = 0) := by
+          -- M is closed by definition (it's a closure)
+          have hM_closed : IsClosed M := isClosed_closure
+
+          -- M is convex over ℝ (closure of a convex set)
+          have hM_convex : Convex ℝ M := by
+            apply Convex.closure
+            -- Submodules are convex over ℝ via the scalar tower
+            have : Convex ℝ (Submodule.span 𝕜 (Set.range e) : Set Xbidual) := by
+              intro x hx y hy a b ha hb hab
+              exact Submodule.add_mem _ (Submodule.smul_of_tower_mem _ a hx) (Submodule.smul_of_tower_mem _ b hy)
+            exact this
+
+          -- Apply geometric Hahn-Banach (requires LocallyConvexSpace ℝ Xbidual)
+          haveI : LocallyConvexSpace ℝ Xbidual := NormedSpace.toLocallyConvexSpace' 𝕜
+          obtain ⟨g₀, u₀, hg₀_w', hg₀_M⟩ := RCLike.geometric_hahn_banach_point_closed (𝕜 := 𝕜) hM_convex hM_closed hw'_notin_M
+          -- hg₀_w' : RCLike.re (g₀ w') < u₀
+          -- hg₀_M : ∀ m ∈ M, u₀ < RCLike.re (g₀ m)
+
+          -- Since 0 ∈ M, we have u₀ < 0
+          have h0_in_M : (0 : Xbidual) ∈ M := by
+            apply subset_closure
+            exact Submodule.zero_mem _
+          have hu₀_neg : u₀ < 0 := by
+            have := hg₀_M 0 h0_in_M
+            simp only [map_zero] at this
+            exact this
+
+          -- Negate g₀ to get the desired direction for the proof
+          let g := -g₀
+          let u := -u₀
+          have hg_w' : u < RCLike.re (g w') := by
+            simp only [g, u, ContinuousLinearMap.neg_apply, map_neg]
+            linarith
+          have hg_M : ∀ m ∈ M, RCLike.re (g m) < u := fun m hm => by
+            simp only [g, u, ContinuousLinearMap.neg_apply, map_neg]
+            linarith [hg₀_M m hm]
+          have hu_pos : 0 < u := by simp only [u]; linarith
+
+          -- For any m ∈ M (which is a submodule after taking closure), we have re(g m) < u
+          -- Since M is closed under scaling and contains 0, this forces g m = 0
+          -- The key insight: if g m ≠ 0, then for any scalar c ∈ 𝕜, c • m ∈ M (M is a closed subspace)
+          -- So re(g(c • m)) = re(c * g m) < u for all c, which is impossible for large c
+          have hg_vanish : ∀ m ∈ M, g m = 0 := by
+            intro m hm
+            -- M is a closed subspace (closure of a submodule), so closed under scaling
+            -- If g m ≠ 0, we can scale to violate the bound re(g m) < u
+            by_contra h_ne
+            -- M is closed under scalar multiplication (closure of a submodule)
+            -- M = closure of span, which is a topological closure of a submodule
+            have h_smul_M : ∀ (c : 𝕜), c • m ∈ M := fun c => by
+              -- The closure of a submodule is itself a submodule
+              have hM_submodule : M = (Submodule.span 𝕜 (Set.range e)).topologicalClosure := rfl
+              rw [hM_submodule] at hm ⊢
+              exact Submodule.smul_mem _ c hm
+            -- There exists a scalar c such that re(g(c • m)) ≥ u, contradiction
+            -- We have g m ≠ 0, so |g m| > 0
+            have h_gm_pos : 0 < ‖g m‖ := norm_pos_iff.mpr h_ne
+            -- Choose c = t * conj(g m) / |g m|² for large enough t > 0
+            -- Then g(c • m) = c * g m and re(c * g m) = t * |g m|² / |g m|² = t
+            let c := (u / ‖g m‖) • (star (g m) / ‖g m‖ : 𝕜)
+            have hc_m_in_M := h_smul_M c
+            have h_bound := hg_M (c • m) hc_m_in_M
+            simp only [map_smul, c, smul_eq_mul] at h_bound
+            -- Compute re(c * g m)
+            have h_calc : RCLike.re (((u / ‖g m‖) • (star (g m) / ↑‖g m‖)) * g m) = u := by
+              -- (u / ‖g m‖) • (star (g m) / ↑‖g m‖) = (u / ‖g m‖) * (star (g m) / ↑‖g m‖)
+              rw [Algebra.smul_def, RCLike.algebraMap_eq_ofReal]
+              -- Now it's ((u / ‖g m‖) : 𝕜) * (star (g m) / ↑‖g m‖) * g m
+              rw [mul_assoc, mul_comm (star (g m) / ↑‖g m‖) (g m)]
+              have h1 : g m * (star (g m) / ↑‖g m‖) = ‖g m‖ := by
+                have h_nz : (↑‖g m‖ : 𝕜) ≠ 0 := RCLike.ofReal_ne_zero.mpr (ne_of_gt h_gm_pos)
+                field_simp
+                have h_mul := RCLike.mul_conj (g m)
+                simp only [starRingEnd_apply] at h_mul
+                rw [h_mul, sq]
+              rw [h1]
+              rw [← RCLike.ofReal_mul, div_mul_cancel₀ u (ne_of_gt h_gm_pos), RCLike.ofReal_re]
+            rw [h_calc] at h_bound
+            linarith
+
+          use g
+          constructor
+          · -- g w' ≠ 0 because re(g w') > u > 0
+            intro h
+            rw [h, RCLike.zero_re] at hg_w'
+            linarith
+          · exact hg_vanish
+
+        obtain ⟨f₀, hf₀_ne, hf₀_M⟩ := h_exists_f
+
+        -- The Hahn-Banach separation gives us f₀ with f₀ w' ≠ 0 and f₀(e n) = 0
+        -- We need a functional with the OPPOSITE polarity: f w' = 0 and f(e n) = 1
+        -- This requires a different construction using the Schauder basis coordinate functionals
+        -- TODO: Construct using linear independence of e ∪ {w'} and Hahn-Banach extension
+        sorry
+
+      obtain ⟨f, hf_w, hf_e⟩ := h_sep
+      have hf_sep_val: ∀ n, f ((e n) - w') = 1 := by
+        intro n
+        rw [map_sub, hf_e, hf_w]
+        ring
+
+      -- The sequence b n is in S' = (y - w') '' S_bidual
+      -- So b n = s_n - w' for some s_n ∈ S_bidual
+      -- Thus s_n = b n + w' ∈ S_bidual for all n
+      -- In particular, e n + w' = b(n+N) + w' ∈ S_bidual
+
+      -- The sequence (b n + w') is in S_bidual, but we need (e n - w') to work with
+      -- Actually, we should work with (b n + w') = s_n ∈ S_bidual instead
+
+      -- Let's define the correct sequence that's in S_bidual
+      let s := fun n => e n + w'
+      have hs_in_S_bidual : ∀ n, s n ∈ S_bidual := fun n => by
+        -- e n = b.toFun (n + N), so we need he_S' (n + N)
+        -- he_S' (n+N) : b.toFun (n+N) ∈ S' where S' = (fun y => y - w') '' S_bidual
+        -- So there exists t ∈ S_bidual such that b.toFun (n+N) = t - w'
+        -- Thus t = b.toFun (n+N) + w' = e n + w' = s n ∈ S_bidual
+        have h_mem : b.toFun (n + N) ∈ S' := he_S' (n + N)
+        rw [Set.mem_image] at h_mem
+        obtain ⟨t, ht_mem, ht_eq⟩ := h_mem
+        -- ht_eq : t - w' = b.toFun (n+N), so t = b.toFun (n+N) + w' = e n + w' = s n
+        simp only [s, e]
+        convert ht_mem using 1
+        -- Goal: b.toFun (n + N) + w' = t
+        -- From ht_eq: t - w' = b.toFun (n + N), so t = b.toFun (n + N) + w'
+        rw [sub_eq_iff_eq_add] at ht_eq
+        exact ht_eq.symm
+
+      -- If s = b + w' is basic, we can pull back to S and contradict h_no_basic
+      -- For now, assume the basicness (TODO: prove using similar Grünblum argument)
+      have h_basicS : IsBasicSequence 𝕜 s := by
+        sorry
+
+      have h_in_S : ∀ n, s n ∈ S_bidual := hs_in_S_bidual
+
+      --transfer back the basic sequence to S and get a contradiction with h_no_basic
+      -- Since s n ∈ S_bidual = J '' S, there exists x_n ∈ S with J(x_n) = s n
+      have h_preimage : ∀ n, ∃ x ∈ S, J x = s n := fun n => h_in_S n
+
+      let x : ℕ → X := fun n => (h_preimage n).choose
+      have hx_S : ∀ n, x n ∈ S := fun n => (h_preimage n).choose_spec.1
+      have hx_J : ∀ n, J (x n) = s n := fun n => (h_preimage n).choose_spec.2
+
+      -- J is an isometric embedding, so J preserves the Grünblum condition
+      -- If s is basic in Xbidual, then x is basic in X
+      have hx_basic : IsBasicSequence 𝕜 x := by
+        -- J is an isometry
+        have hJ_iso : Isometry J := (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).isometry
+        -- Extract the BasicSequence structure from h_basicS
+        obtain ⟨bs, hbs_eq⟩ := h_basicS
+        -- The Grünblum condition for x follows from that of s via the isometry
+        obtain ⟨K, hK_ge_one, hK_bound⟩ := grunblum_of_basic bs
+        have h_nz : ∀ n, x n ≠ 0 := fun n h_zero => by
+          have hJ_zero : J (x n) = 0 := by rw [h_zero, map_zero]
+          rw [hx_J n] at hJ_zero
+          -- s n = 0 contradicts that s is a basic sequence (basic sequences have nonzero elements)
+          -- A basic sequence has linearly independent elements, hence nonzero
+          have h_indep := bs.basis.linearIndependent
+          have hs_ne : s n ≠ 0 := by
+            rw [← hbs_eq]
+            have h_basis_ne := h_indep.ne_zero n
+            -- bs.basis.toFun n = ⟨bs.toFun n, _⟩ by bs.eq_basis
+            rw [bs.eq_basis] at h_basis_ne
+            simp only [Set.codRestrict_apply, Subtype.mk_eq_mk] at h_basis_ne
+            exact fun h => h_basis_ne (Subtype.ext h)
+          exact hs_ne hJ_zero
+        refine isBasicSequence_of_grunblum ⟨K, hK_ge_one, fun n m a hnm => ?_⟩ h_nz
+        -- Use that J is an isometry: ‖∑ a_i x_i‖ = ‖J(∑ a_i x_i)‖ = ‖∑ a_i J(x_i)‖ = ‖∑ a_i s_i‖
+        have h_J_sum (k : ℕ) : J (∑ i ∈ Finset.range k, a i • x i) = ∑ i ∈ Finset.range k, a i • s i := by
+          rw [map_sum]
+          apply Finset.sum_congr rfl
+          intro i _
+          rw [map_smul, hx_J]
+        have h_norm_eq (k : ℕ) : ‖∑ i ∈ Finset.range k, a i • x i‖ = ‖∑ i ∈ Finset.range k, a i • s i‖ := by
+          rw [← hJ_iso.norm_map_of_map_zero (map_zero J)]
+          congr 1
+          exact h_J_sum k
+        rw [h_norm_eq m, h_norm_eq n]
+        -- hK_bound uses bs.toFun but we need s; use hbs_eq to convert
+        simp only [← hbs_eq] at hK_bound
+        exact hK_bound n m a hnm
+
+      -- Contradiction: x is a basic sequence in S, but h_no_basic says there's no such sequence
+      exact h_no_basic x hx_S hx_basic
+
+    -- transfer compactness back to X via weak-weak* correspondence
+    sorry
+
+--
 
 end BasicSequences
