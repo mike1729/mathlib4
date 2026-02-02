@@ -22,6 +22,8 @@ public import Mathlib.Analysis.LocallyConvex.Separation
 # Basic Sequences in Banach Spaces
 -/
 
+@[expose] public section
+
 noncomputable section
 
 open Submodule Set WeakDual Metric Filter Topology
@@ -1051,9 +1053,15 @@ theorem exists_basic_sequence [CompleteSpace X] (hinf : ¬ FiniteDimensional �
     _ ≤ K := hb_bound
     _ < 1 + ε := hK_lt
 
-lemma perturb_basic_sequence [CompleteSpace X] (b : BasicSequence 𝕜 X) (u : X)
-    (f : StrongDual 𝕜 X) (hf : ∀ n, f (b n) = 1) (hu : u ∉ closure (Submodule.span 𝕜 (Set.range b))) :
+lemma perturb_basic_sequence [CompleteSpace X] (b : BasicSequence 𝕜 X) (u : X) (g : StrongDual 𝕜 X)
+    (hf : ∀ n, g (b n) = 1) (hu : g u = -1) (hunin : u ∉ closure (Submodule.span 𝕜 (Set.range b))) :
     IsBasicSequence 𝕜 (fun n ↦ b n + u) := by
+  have hh: ∃ h : StrongDual 𝕜 X, h u = -1 ∧ ∀ n, h (b n) = 0 := by sorry
+  obtain ⟨h, hh_u, hg_b⟩ := hh
+  let f := g - h
+  have hu0 : f u = 0 := by sorry
+  have hf : ∀ n, f (b n) = 1 := by sorry
+
   let y := fun n ↦ b n + u
   -- 1. Elements are non-zero because f(y n) = 1
   have h_nz : ∀ n, y n ≠ 0 := fun n h_zero ↦ by
