@@ -25,14 +25,14 @@ public import Mathlib.Topology.Algebra.Module.WeakDual
 
 noncomputable section
 
-open Submodule Set WeakDual Metric Filter Topology
+open Submodule Set WeakDual Metric Filter Topology BasicSequences
 
 variable {𝕜 : Type*} [RCLike 𝕜]
 variable {X : Type*} [NormedAddCommGroup X] [NormedSpace 𝕜 X]
 
 
 
-
+set_option maxHeartbeats 800000 in
 theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
     {S : Set X} (hS_ne : S.Nonempty) (h_norm : (0 : X) ∉ closure S)
     (h_bounded : Bornology.IsBounded S)
@@ -173,7 +173,7 @@ theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
         -- (Assuming SchauderBasis_of_closure is available as discussed)
         let basis_Z :=
         -- let basis_K : SchauderBasis 𝕜 Y.topologicalClosure :=
-          SchauderBasis_of_closure b.basis b.basisConstant_lt_top
+          SchauderBasis_of_closure (Y:=Y) b.basis b.basisConstant_lt_top
 
         -- 4. Since w ≠ 0, it must have a non-zero coordinate k
         have h_exists_coord : ∃ k, basis_Z.coord k w'_Z ≠ 0 := by
@@ -284,7 +284,7 @@ theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
       obtain ⟨N, h_w_notin_span⟩ := h_w_span
       let e := fun n => b (n + N)
 
-      have h_sep : ∃ f : StrongDual 𝕜 Xbidual, ∀ n, f (e n) = 1 := by
+      have h_sep : ∃ f : StrongDual 𝕜 Xbidual, (∀ n, f (e n) = 1) ∧ f w' = -1 := by
         -- Step 1: Show w' ∉ range J
         have hw'_not_in_JX : w' ∉ range J := by
           intro ⟨x, hx⟩

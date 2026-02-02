@@ -414,6 +414,60 @@ theorem isBasicSequence_of_grunblum [CompleteSpace X] {e : ℕ → X}
   -- 4. Conclude
   use seq
 
+/-- The tail of a basic sequence (starting from index N) is also a basic sequence. -/
+theorem tail_basic_sequence [CompleteSpace X] (bs : BasicSequence 𝕜 X) (N : ℕ) :
+    IsBasicSequence 𝕜 (fun n => bs (n + N)) := by
+  obtain ⟨K, hK_ge, hK_bound⟩ := grunblum_of_basic bs
+  -- Elements are nonzero since the basis is linearly independent
+  have h_nz : ∀ n, bs (n + N) ≠ 0 := by
+    intro n h_zero
+    have hb_indep := bs.basis.linearIndependent
+    have hb_nz := hb_indep.ne_zero (n + N)
+    have h_eq : (bs.basis (n + N) : X) = bs (n + N) := by
+      have := congrFun bs.eq_basis (n + N)
+      exact congrArg Subtype.val this
+    rw [h_zero] at h_eq
+    exact hb_nz (Subtype.val_injective h_eq)
+  refine isBasicSequence_of_grunblum ⟨K, hK_ge, ?_⟩ h_nz
+  intro n m a hnm
+  -- The key insight: ∑ a_i bs_{i+N} can be bounded using the Grünblum condition for bs
+  -- We'll construct a coefficient sequence a' that extends a to the full range
+  let a' : ℕ → 𝕜 := fun i => if N ≤ i then a (i - N) else 0
+  -- Show the sums are equal
+  have h_sum_eq (k : ℕ) : ∑ i ∈ Finset.range k, a i • bs (i + N) =
+      ∑ i ∈ Finset.range (k + N), a' i • bs i := by
+    -- Reindex: i -> i + N in the RHS sum, restricted to [N, k+N)
+    have h_split : ∑ i ∈ Finset.range (k + N), a' i • bs i =
+        ∑ i ∈ Finset.range N, a' i • bs i +
+        ∑ i ∈ Finset.Ico N (k + N), a' i • bs i := by
+      rw [Finset.sum_range_add_sum_Ico _ (Nat.le_add_left N k)]
+    -- Sum over [0, N) is zero
+    have h_zero : ∑ i ∈ Finset.range N, a' i • bs i = 0 := by
+      apply Finset.sum_eq_zero
+      intro i hi
+      have hi_lt : i < N := Finset.mem_range.mp hi
+      simp only [a', if_neg (not_le.mpr hi_lt), zero_smul]
+    -- Sum over [N, k+N) equals our target via reindexing
+    have h_Ico : ∑ i ∈ Finset.Ico N (k + N), a' i • bs i =
+        ∑ i ∈ Finset.range k, a i • bs (i + N) := by
+      -- Rewrite LHS using map with offset
+      conv_lhs =>
+        rw [show Finset.Ico N (k + N) = (Finset.range k).map
+            ⟨(· + N), fun _ _ h => Nat.add_right_cancel h⟩ from by
+          ext j
+          simp only [Finset.mem_map, Finset.mem_range, Finset.mem_Ico, Function.Embedding.coeFn_mk]
+          constructor
+          · intro ⟨hN, hk⟩; exact ⟨j - N, by omega, by omega⟩
+          · rintro ⟨i, hi, rfl⟩; omega]
+        rw [Finset.sum_map]
+      apply Finset.sum_congr rfl
+      intro i _
+      simp only [Function.Embedding.coeFn_mk, a', if_pos (Nat.le_add_left N i)]
+      simp only [Nat.add_sub_cancel_right]
+    rw [h_split, h_zero, zero_add, h_Ico]
+  rw [h_sum_eq m, h_sum_eq n]
+  exact hK_bound (n + N) (m + N) a' (by omega)
+
 /-- A version of `isBasicSequence_of_grunblum` that also provides an explicit bound
     on the basis constant. If a sequence satisfies the Grünblum condition with constant K,
     the resulting basic sequence has basis constant at most K. -/
@@ -1257,7 +1311,7 @@ theorem no_basic_sequence_implies_zero_not_in_weak_closure [CompleteSpace X]
   exact isBasicSequence_of_grunblum ⟨K, hK_ge, hK_bound_e⟩ h_nz
 
 
-noncomputable def SchauderBasis_of_closure [CompleteSpace X] {Y : Submodule 𝕜 X}
+def SchauderBasis_of_closure [CompleteSpace X] {Y : Submodule 𝕜 X}
     (b : SchauderBasis 𝕜 Y) (h_bound : b.basisConstant < ⊤) :
     SchauderBasis 𝕜 Y.topologicalClosure := by
   -- 1. Identify the closure Z and the inclusion map ι
