@@ -32,7 +32,7 @@ variable {X : Type*} [NormedAddCommGroup X] [NormedSpace 𝕜 X]
 
 
 
-set_option maxHeartbeats 800000 in
+set_option maxHeartbeats 2000000 in
 theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
     {S : Set X} (hS_ne : S.Nonempty) (h_norm : (0 : X) ∉ closure S)
     (h_bounded : Bornology.IsBounded S)
@@ -330,11 +330,55 @@ theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
         have hg_vanish : ∀ y ∈ range J, g y = 0 := by
           intro y hy
           by_contra h_ne
-          -- If g(y) ≠ 0, then either re(g y) ≠ 0 or im(g y) ≠ 0.
-          -- In either case, scaling arguments lead to a contradiction with hg_JX.
-          -- The key is: for a 𝕜-subspace, if we can scale to get arbitrarily negative
-          -- real parts, but hg_JX says u < re(g b) for all b in the subspace, contradiction.
-          sorry
+          -- If g(y) ≠ 0, then by scaling y ∈ range J (a subspace), we can make
+          -- re(g(c • y)) arbitrarily negative, contradicting hg_JX.
+          let gy := g y
+          have hnorm_pos : 0 < ‖gy‖ := norm_pos_iff.mpr h_ne
+          have hnorm_ne : ‖gy‖ ≠ 0 := ne_of_gt hnorm_pos
+          -- Choose c such that c * gy is a negative real number
+          -- c = -star(gy) / |gy| gives c * gy = -|gy|² / |gy| = -|gy| (negative real)
+          let c : 𝕜 := -star gy / ‖gy‖
+          -- c • y ∈ range J since range J is a subspace
+          have hcy_mem : c • y ∈ range J := by
+            obtain ⟨x, rfl⟩ := hy
+            exact ⟨c • x, by simp⟩
+          -- Compute g(c • y) = c * g(y)
+          have h_gc : g (c • y) = c * gy := by simp [gy, smul_eq_mul]
+          -- re(c * gy) = re((-star(gy) / ‖gy‖) * gy) = -‖gy‖
+          have h_re : RCLike.re (c * gy) = -‖gy‖ := by
+            simp only [c, neg_div, neg_mul, div_mul_eq_mul_div]
+            simp only [map_neg, neg_inj]
+            -- star gy * gy = ‖gy‖²
+            have h_conj : star gy * gy = (‖gy‖ : 𝕜)^2 := by
+              rw [RCLike.star_def, RCLike.conj_mul, sq]
+            rw [h_conj, sq]
+            have h_simpl : (‖gy‖ : 𝕜) * ‖gy‖ / (‖gy‖ : 𝕜) = ‖gy‖ := by
+              field_simp
+            rw [h_simpl, RCLike.ofReal_re]
+          -- Scale further to make re(g(t • c • y)) = -t‖gy‖ arbitrarily negative
+          let t : ℝ := (|u| + 1) / ‖gy‖ + 1
+          have ht_pos : 0 < t := by positivity
+          have htcy_mem : (t : 𝕜) • (c • y) ∈ range J := by
+            obtain ⟨x, rfl⟩ := hy
+            use (t : 𝕜) • c • x
+            simp [smul_smul]
+          have h_gtc : g ((t : 𝕜) • (c • y)) = (t : 𝕜) * (c * gy) := by
+            simp only [map_smul, smul_eq_mul, h_gc]
+          have h_re_t : RCLike.re ((t : 𝕜) * (c * gy)) = t * (-‖gy‖) := by
+            rw [RCLike.re_ofReal_mul, h_re]
+          have h_bound' := hg_JX ((t : 𝕜) • (c • y)) htcy_mem
+          rw [h_gtc, h_re_t] at h_bound'
+          -- h_bound' : u < t * (-‖gy‖) = -t * ‖gy‖
+          -- But we'll show t * (-‖gy‖) < u, giving contradiction
+          have h_neg : t * (-‖gy‖) < u := by
+            have h1 : ((|u| + 1) / ‖gy‖ + 1) * ‖gy‖ = |u| + 1 + ‖gy‖ := by
+              field_simp
+            calc t * (-‖gy‖) = -(((|u| + 1) / ‖gy‖ + 1) * ‖gy‖) := by ring
+              _ = -(|u| + 1 + ‖gy‖) := by rw [h1]
+              _ < -(|u| + 1) := by linarith
+              _ ≤ u - 1 := by linarith [neg_abs_le u]
+              _ < u := by linarith
+          linarith
 
         -- Step 7: g w' ≠ 0 (since re(g w') < u < 0)
         have hg_w'_ne : g w' ≠ 0 := by
@@ -349,24 +393,32 @@ theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
         -- So we need f(w') = -1, i.e., f = (-1 / g(w')) • g
         let f := (-(g w')⁻¹) • g
         use f
-        intro n
-        -- e n = b(n+N) ∈ S', so e n = t - w' for some t ∈ S_bidual = J '' S
-        have h_mem : b.toFun (n + N) ∈ S' := he_S' (n + N)
-        rw [Set.mem_image] at h_mem
-        obtain ⟨t, ht_mem, ht_eq⟩ := h_mem
-        -- t ∈ S_bidual = J '' S
-        obtain ⟨x, _, rfl⟩ := ht_mem
-        -- ht_eq : J x - w' = b(n+N) = e n
-        have he_eq : e n = J x - w' := ht_eq.symm
-        -- f(e n) = f(J x - w') = f(J x) - f(w')
-        calc f (e n) = f (J x - w') := by rw [he_eq]
-          _ = f (J x) - f w' := by rw [map_sub]
-          _ = (-(g w')⁻¹) • g (J x) - (-(g w')⁻¹) • g w' := rfl
-          _ = (-(g w')⁻¹) * g (J x) - (-(g w')⁻¹) * g w' := by simp [smul_eq_mul]
-          _ = (-(g w')⁻¹) * 0 - (-(g w')⁻¹) * g w' := by rw [hg_vanish (J x) (mem_range_self x)]
-          _ = 0 - (-(g w')⁻¹) * g w' := by ring
-          _ = (g w')⁻¹ * g w' := by ring
-          _ = 1 := inv_mul_cancel₀ hg_w'_ne
+        constructor
+        · -- First part: ∀ n, f (e n) = 1
+          intro n
+          -- e n = b(n+N) ∈ S', so e n = t - w' for some t ∈ S_bidual = J '' S
+          have h_mem : b.toFun (n + N) ∈ S' := he_S' (n + N)
+          rw [Set.mem_image] at h_mem
+          obtain ⟨t, ht_mem, ht_eq⟩ := h_mem
+          -- t ∈ S_bidual = J '' S
+          obtain ⟨x, _, rfl⟩ := ht_mem
+          -- ht_eq : J x - w' = b(n+N) = e n
+          have he_eq : e n = J x - w' := ht_eq.symm
+          -- f(e n) = f(J x - w') = f(J x) - f(w')
+          calc f (e n) = f (J x - w') := by rw [he_eq]
+            _ = f (J x) - f w' := by rw [map_sub]
+            _ = (-(g w')⁻¹) • g (J x) - (-(g w')⁻¹) • g w' := rfl
+            _ = (-(g w')⁻¹) * g (J x) - (-(g w')⁻¹) * g w' := by simp [smul_eq_mul]
+            _ = (-(g w')⁻¹) * 0 - (-(g w')⁻¹) * g w' := by rw [hg_vanish (J x) (mem_range_self x)]
+            _ = 0 - (-(g w')⁻¹) * g w' := by ring
+            _ = (g w')⁻¹ * g w' := by ring
+            _ = 1 := inv_mul_cancel₀ hg_w'_ne
+        · -- Second part: f w' = -1
+          calc f w' = (-(g w')⁻¹) • g w' := rfl
+            _ = (-(g w')⁻¹) * g w' := by simp [smul_eq_mul]
+            _ = -((g w')⁻¹ * g w') := by ring
+            _ = -(1 : 𝕜) := by rw [inv_mul_cancel₀ hg_w'_ne]
+            _ = -1 := by ring
 
 
       obtain ⟨f, hf_e⟩ := h_sep
@@ -391,9 +443,19 @@ theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
         exact ht_eq.symm
 
       -- If s = b + w' is basic, we can pull back to S and contradict h_no_basic
-      -- For now, assume the basicness (TODO: prove using similar Grünblum argument)
+      -- Use perturb_basic_sequence: if e is basic, f(e n) = 1, f(w') = -1, and w' ∉ closure(span e),
+      -- then e + w' is basic.
       have h_basicS : IsBasicSequence 𝕜 s := by
-        sorry
+        -- Use perturb_basic_sequence: the tail e is basic, and adding w' preserves basicness
+        -- under the conditions f(e n) = 1, f(w') = -1, w' ∉ closure(span e)
+        have he_basic : IsBasicSequence 𝕜 e := tail_basic_sequence b N
+        obtain ⟨b_tail, hb_tail_eq⟩ := he_basic
+        convert perturb_basic_sequence b_tail w' f ?_ hf_e.2 ?_ using 1
+        · funext n; exact congrArg (· + w') (congrFun hb_tail_eq n).symm
+        · intro n
+          have : b_tail.toFun n = e n := congrFun hb_tail_eq n
+          rw [this]; exact hf_e.1 n
+        · rw [congrArg Set.range hb_tail_eq]; exact h_w_notin_span
 
       have h_in_S : ∀ n, s n ∈ S_bidual := hs_in_S_bidual
 
@@ -408,9 +470,50 @@ theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
       -- J is an isometric embedding, so J preserves the Grünblum condition
       -- If s is basic in Xbidual, then x is basic in X
       have hx_basic : IsBasicSequence 𝕜 x := by
-        -- J is an isometry, so the Grünblum condition transfers from s to x
-        -- Since s = J ∘ x and J preserves norms, ‖∑ aᵢ xᵢ‖ = ‖∑ aᵢ sᵢ‖
-        sorry
+        -- Use isometry of J and transfer from h_basicS
+        -- J is an isometry
+        have hJ_iso : ∀ y, ‖J y‖ = ‖y‖ := fun y =>
+          (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).norm_map y
+        -- h_basicS gives us a basic sequence structure on s
+        rcases h_basicS with ⟨b_s, hb_s_eq⟩
+        -- s n ≠ 0 since b_s is a basic sequence (has linearly independent basis)
+        have hs_nz : ∀ n, s n ≠ 0 := fun n hs0 => by
+          -- b_s.basis.linearIndependent gives linear independence on the submodule
+          have h_indep := b_s.basis.linearIndependent
+          have h_ne := h_indep.ne_zero n
+          -- b_s.eq_basis : b_s.basis = Set.codRestrict b_s.toFun ...
+          -- So b_s.basis n = ⟨b_s n, _⟩
+          -- b_s n = s n via hb_s_eq
+          have hbn : b_s.toFun n = s n := congrFun hb_s_eq n
+          -- Unfold the codRestrict to get (b_s.basis n).1 = b_s n
+          have h_basis_val : (b_s.basis n : Xbidual) = b_s.toFun n := by
+            simp only [b_s.eq_basis]; rfl
+          -- If s n = 0, then (b_s.basis n).1 = 0, so b_s.basis n = 0
+          have h_zero : b_s.basis n = 0 := Subtype.ext (h_basis_val.trans (hbn.trans hs0))
+          exact h_ne h_zero
+        -- x n ≠ 0 since s n = J(x n) ≠ 0 and J is injective
+        have hx_nz : ∀ n, x n ≠ 0 := fun n hx0 => by
+          have := hs_nz n
+          rw [← hx_J n, hx0, map_zero] at this
+          exact this rfl
+        -- Bound on sums transfers via J being an isometry
+        have h_sum_eq : ∀ (a : ℕ → 𝕜) k, J (∑ i ∈ Finset.range k, a i • x i) = ∑ i ∈ Finset.range k, a i • s i := by
+          intro a k
+          simp only [map_sum, ContinuousLinearMap.map_smul, hx_J]
+        -- Transfer Grünblum bound
+        have h_bound : ∀ n m (a : ℕ → 𝕜), m ≤ n →
+            ‖∑ i ∈ Finset.range m, a i • x i‖ ≤ grunblumConstant b_s * ‖∑ i ∈ Finset.range n, a i • x i‖ := by
+          intro n m a hmn
+          calc ‖∑ i ∈ Finset.range m, a i • x i‖
+              = ‖J (∑ i ∈ Finset.range m, a i • x i)‖ := (hJ_iso _).symm
+            _ = ‖∑ i ∈ Finset.range m, a i • s i‖ := by rw [h_sum_eq]
+            _ = ‖∑ i ∈ Finset.range m, a i • b_s i‖ := by simp only [← hb_s_eq]
+            _ ≤ grunblumConstant b_s * ‖∑ i ∈ Finset.range n, a i • b_s i‖ :=
+                grunblum_bound_of_basic b_s n m a hmn
+            _ = grunblumConstant b_s * ‖∑ i ∈ Finset.range n, a i • s i‖ := by simp only [← hb_s_eq]
+            _ = grunblumConstant b_s * ‖J (∑ i ∈ Finset.range n, a i • x i)‖ := by rw [h_sum_eq]
+            _ = grunblumConstant b_s * ‖∑ i ∈ Finset.range n, a i • x i‖ := by rw [hJ_iso]
+        exact isBasicSequence_of_grunblum ⟨grunblumConstant b_s, grunblumConstant_ge_one b_s, h_bound⟩ hx_nz
 
       -- Contradiction: x is a basic sequence in S, but h_no_basic says there's no such sequence
       exact h_no_basic x hx_S hx_basic

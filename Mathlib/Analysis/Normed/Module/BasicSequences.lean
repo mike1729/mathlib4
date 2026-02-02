@@ -1110,16 +1110,115 @@ theorem exists_basic_sequence [CompleteSpace X] (hinf : ¬ FiniteDimensional �
 lemma perturb_basic_sequence [CompleteSpace X] (b : BasicSequence 𝕜 X) (u : X) (g : StrongDual 𝕜 X)
     (hf : ∀ n, g (b n) = 1) (hu : g u = -1) (hunin : u ∉ closure (Submodule.span 𝕜 (Set.range b))) :
     IsBasicSequence 𝕜 (fun n ↦ b n + u) := by
-  have hh: ∃ h : StrongDual 𝕜 X, h u = -1 ∧ ∀ n, h (b n) = 0 := by sorry
+  have hh: ∃ h : StrongDual 𝕜 X, h u = -1 ∧ ∀ n, h (b n) = 0 := by
+    -- Set up real module structure
+    haveI : NormedSpace ℝ X := NormedSpace.restrictScalars ℝ 𝕜 X
+
+    -- The closure of the span is a closed convex subspace
+    let M_sub := (Submodule.span 𝕜 (Set.range b.toFun)).topologicalClosure
+    let M : Set X := M_sub
+    have hM_eq : M = closure (↑(Submodule.span 𝕜 (Set.range b.toFun)) : Set X) :=
+      Submodule.topologicalClosure_coe _
+    have hM_closed : IsClosed M := by rw [hM_eq]; exact isClosed_closure
+    have hM_convex : Convex ℝ M := by
+      rw [hM_eq]
+      apply Convex.closure
+      -- A 𝕜-submodule is convex over ℝ since ℝ ⊆ 𝕜
+      intro x hx y hy a c ha hc hac
+      have hax : (a : 𝕜) • x ∈ Submodule.span 𝕜 (Set.range b.toFun) := Submodule.smul_mem _ _ hx
+      have hcy : (c : 𝕜) • y ∈ Submodule.span 𝕜 (Set.range b.toFun) := Submodule.smul_mem _ _ hy
+      have h_add := Submodule.add_mem _ hax hcy
+      convert h_add using 1
+      simp only [RCLike.real_smul_eq_coe_smul (K := 𝕜)]
+
+    -- Apply Hahn-Banach separation
+    haveI : LocallyConvexSpace ℝ X := by
+      refine LocallyConvexSpace.ofBasisZero ℝ X
+        (fun (r : ℝ) => Metric.closedBall (0 : X) r) (fun r => 0 < r) ?_ ?_
+      · exact @Metric.nhds_basis_closedBall X _ (0 : X)
+      · intro r _; exact @convex_closedBall X _ _ (0 : X) r
+
+    have hunin' : u ∉ M := by rw [hM_eq]; exact hunin
+
+    obtain ⟨f, s, hf_u, hf_M⟩ := @RCLike.geometric_hahn_banach_point_closed 𝕜 X _ _ _ M u
+      _ _ _ _ _ _ hM_convex hM_closed hunin'
+    -- hf_u : re(f u) < s
+    -- hf_M : ∀ m ∈ M, s < re(f m)
+
+    -- Since 0 ∈ M (submodule), we have s < re(f 0) = 0, so s < 0
+    have h0_in_M : (0 : X) ∈ M := M_sub.zero_mem
+    have hs_neg : s < 0 := by
+      have h_bound := hf_M 0 h0_in_M
+      simp only [map_zero] at h_bound
+      exact h_bound
+
+    -- f vanishes on M (subspace argument: if f m ≠ 0, scaling gives contradiction)
+    have hf_vanish : ∀ m ∈ M, f m = 0 := by
+      intro m hm
+      by_contra h_ne
+      -- Same scaling argument as in BasisExistance.lean
+      have hnorm_pos : 0 < ‖f m‖ := norm_pos_iff.mpr h_ne
+      have hnorm_ne : ‖f m‖ ≠ 0 := ne_of_gt hnorm_pos
+      let c : 𝕜 := -star (f m) / ‖f m‖
+      have hcm_mem : c • m ∈ M := M_sub.smul_mem c hm
+      have h_re : RCLike.re (f (c • m)) = -‖f m‖ := by
+        simp only [map_smul, smul_eq_mul]
+        simp only [c, neg_div, neg_mul, div_mul_eq_mul_div]
+        simp only [map_neg, neg_inj]
+        have h_conj : star (f m) * f m = (‖f m‖ : 𝕜)^2 := by
+          rw [RCLike.star_def, RCLike.conj_mul, sq]
+        rw [h_conj, sq]
+        have h_simpl : (‖f m‖ : 𝕜) * ‖f m‖ / (‖f m‖ : 𝕜) = ‖f m‖ := by field_simp
+        rw [h_simpl, RCLike.ofReal_re]
+      -- Scale further
+      let t : ℝ := (|s| + 1) / ‖f m‖ + 1
+      have ht_pos : 0 < t := by positivity
+      have htcm_mem : (t : 𝕜) • (c • m) ∈ M := M_sub.smul_mem (t : 𝕜) hcm_mem
+      have h_re_t : RCLike.re (f ((t : 𝕜) • (c • m))) = t * (-‖f m‖) := by
+        simp only [map_smul, smul_eq_mul, RCLike.re_ofReal_mul]
+        congr 1
+        simp only [map_smul, smul_eq_mul] at h_re
+        exact h_re
+      have h_bound := hf_M ((t : 𝕜) • (c • m)) htcm_mem
+      rw [h_re_t] at h_bound
+      have h_neg : t * (-‖f m‖) < s := by
+        have h1 : ((|s| + 1) / ‖f m‖ + 1) * ‖f m‖ = |s| + 1 + ‖f m‖ := by field_simp
+        calc t * (-‖f m‖) = -(((|s| + 1) / ‖f m‖ + 1) * ‖f m‖) := by ring
+          _ = -(|s| + 1 + ‖f m‖) := by rw [h1]
+          _ < -(|s| + 1) := by linarith
+          _ ≤ s - 1 := by linarith [neg_abs_le s]
+          _ < s := by linarith
+      linarith
+
+    -- f vanishes on b n since b n ∈ span ⊆ closure(span) = M
+    have hf_b : ∀ n, f (b n) = 0 := fun n => by
+      apply hf_vanish (b n)
+      exact (Submodule.span 𝕜 _).le_topologicalClosure (Submodule.subset_span (Set.mem_range_self n))
+
+    -- f u ≠ 0 (since re(f u) < s < 0)
+    have hf_u_ne : f u ≠ 0 := by
+      intro h; simp [h] at hf_u; linarith
+
+    -- Scale f to get h with h u = -1
+    let h' := (-(f u)⁻¹) • f
+    use h'
+    constructor
+    · -- h' u = -1
+      simp only [h', ContinuousLinearMap.smul_apply, smul_eq_mul]
+      rw [neg_mul, inv_mul_cancel₀ hf_u_ne]
+    · -- ∀ n, h' (b n) = 0
+      intro n
+      simp only [h', ContinuousLinearMap.smul_apply, hf_b n, smul_zero]
   obtain ⟨h, hh_u, hg_b⟩ := hh
   let f := g - h
-  have hu0 : f u = 0 := by sorry
-  have hf : ∀ n, f (b n) = 1 := by sorry
+  have hu0 : f u = 0 := by simp only [f, ContinuousLinearMap.sub_apply, hu, hh_u, sub_self]
+  have hf' : ∀ n, f (b n) = 1 := fun n => by
+    simp only [f, ContinuousLinearMap.sub_apply, hf n, hg_b n, sub_zero]
 
   let y := fun n ↦ b n + u
   -- 1. Elements are non-zero because f(y n) = 1
   have h_nz : ∀ n, y n ≠ 0 := fun n h_zero ↦ by
-    have h_val : f (y n) = 1 := by simp [y, f.map_add, hf, hu0]
+    have h_val : f (y n) = 1 := by simp [y, f.map_add, hf', hu0]
     rw [h_zero, f.map_zero] at h_val
     exact zero_ne_one h_val
     -- fun h => by simpa [y, hf, hu0, h] using f.map_zero
@@ -1140,7 +1239,7 @@ lemma perturb_basic_sequence [CompleteSpace X] (b : BasicSequence 𝕜 X) (u : X
     have h_rel (k) : Y k = E k + f (Y k) • u := by
       simp only [Y, E, y, smul_add, Finset.sum_add_distrib, ← Finset.sum_smul]
       congr 1
-      simp only [map_add, map_sum, map_smul, hf, hu0, smul_eq_mul, mul_one, mul_zero, add_zero]
+      simp only [map_add, map_sum, map_smul, hf', hu0, smul_eq_mul, mul_one, mul_zero, add_zero]
 
     -- We bound E by Y (projection onto span(e)) and Y by E (injecting back)
     have h_E_Y (k) : ‖E k‖ ≤ C * ‖Y k‖ := by
