@@ -185,8 +185,9 @@ theorem proj_uniform_bound [CompleteSpace X] : ∃ C : ℝ, ∀ n : ℕ, ‖b.pr
   use M
 
 /-- The basis constant is the supremum of the norms of the canonical projections. -/
-def basisConstant : ℝ≥0∞ := ⨆ n, (‖b.proj n‖₊ : ℝ≥0∞)
+def basisConstant : ℝ≥0∞ := ⨆ n, ‖b.proj n‖₊
 
+/-- The basis constant is finite if there exists a bound on the norms of the projections. -/
 theorem basisConstant_lt_top_uniform_bound {C : ℝ} (hC : ∀ n : ℕ, ‖b.proj n‖ ≤ C) :
     b.basisConstant < ⊤ := by
   rw [basisConstant, ENNReal.iSup_coe_lt_top, bddAbove_iff_exists_ge (0 : NNReal)]
@@ -198,30 +199,32 @@ theorem basisConstant_lt_top_uniform_bound {C : ℝ} (hC : ∀ n : ℕ, ‖b.pro
     rw [← NNReal.coe_le_coe, Real.coe_toNNReal C hCpos, coe_nnnorm]
     exact hC n
 
--- /-- The basis constant is finite. -/
+-- /-- The basis constant is finite in the complete space case. -/
 theorem basisConstant_lt_top_for_complete [CompleteSpace X] : b.basisConstant < ⊤ := by
   obtain ⟨C, hC⟩ := b.proj_uniform_bound
   exact b.basisConstant_lt_top_uniform_bound hC
 
-/-- The norm of any projection is bounded by the basis constant (as a real number). -/
-theorem norm_proj_le_basisConstant (n : ℕ) : (‖b.proj n‖₊ : ℝ≥0∞) ≤ b.basisConstant := by
+/-- The norm of any projection is bounded by the basis constant. -/
+theorem norm_proj_le_basisConstant (n : ℕ) : ‖b.proj n‖₊ ≤ b.basisConstant := by
   rw [basisConstant]
   exact le_iSup (fun i ↦ (‖b.proj i‖₊ : ℝ≥0∞)) n
 
-/-- `Q_n = P_{n+1} - P_n`. -/
-def Q (P : ℕ → X →L[𝕜] X) (n : ℕ) : X →L[𝕜] X := P (n + 1) - P n
+/-- The difference operator P_{n+1} - P_n. -/
+def succ_sub (P : ℕ → X →L[𝕜] X) (n : ℕ) : X →L[𝕜] X := P (n + 1) - P n
 
-/-- The sum of Q i over i < n equals P n. -/
+/-- The sum of succ_sub operators up to n equals P n. -/
 @[simp]
-lemma Q_sum (P : ℕ → X →L[𝕜] X) (h0 : P 0 = 0) (n : ℕ) : ∑ i ∈ Finset.range n, Q P i = P n := by
+lemma succ_sub_sum (P : ℕ → X →L[𝕜] X) (h0 : P 0 = 0) (n : ℕ) :
+∑ i ∈ Finset.range n, succ_sub P i = P n := by
   induction n with
   | zero => simp [h0]
-  | succ n ih => rw [Finset.sum_range_succ, ih, Q]; abel
+  | succ n ih => rw [Finset.sum_range_succ, ih, succ_sub]; abel
 
-/-- The operators `Q i` are orthogonal projections. -/
-lemma Q_ortho {P : ℕ → X →L[𝕜] X} (hcomp : ∀ n m, ∀ x : X, P n (P m x) = P (min n m) x)
-    (i j : ℕ) (x : X) : (Q P i) (Q P j x) = (Pi.single j (Q P j x) : ℕ → X) i := by
-  simp only [Pi.single_apply, Q, ContinuousLinearMap.sub_apply, map_sub, hcomp,
+/-- The operators `succ_sub P i` are orthogonal projections. -/
+lemma succ_sub_ortho {P : ℕ → X →L[𝕜] X} (hcomp : ∀ n m, ∀ x : X, P n (P m x) = P (min n m) x)
+    (i j : ℕ) (x : X) :
+    (succ_sub P i) (succ_sub P j x) = (Pi.single j (succ_sub P j x) : ℕ → X) i := by
+  simp only [Pi.single_apply, succ_sub, ContinuousLinearMap.sub_apply, map_sub, hcomp,
     Nat.add_min_add_right]
   split_ifs with h
   · rw [h, min_self, min_eq_right (Nat.le_succ j), Nat.min_eq_left (Nat.le_succ j)]
@@ -234,13 +237,13 @@ lemma Q_ortho {P : ℕ → X →L[𝕜] X} (hcomp : ∀ n m, ∀ x : X, P n (P m
         min_eq_right_of_lt (Nat.lt_succ_of_lt h')]
       abel
 
-/-- The rank of `Q n` is `1`. -/
-lemma Q_rank_one {P : ℕ → X →L[𝕜] X}
+/-- The rank of `succ_sub P n` is `1`. -/
+lemma succ_sub_rank_one {P : ℕ → X →L[𝕜] X}
     (h0 : P 0 = 0)
     (hrank : ∀ n, Module.finrank 𝕜 (LinearMap.range (P n).toLinearMap) = n)
     (hcomp : ∀ n m, ∀ x : X, P n (P m x) = P (min n m) x) (n : ℕ) :
-    Module.finrank 𝕜 (LinearMap.range (Q P n).toLinearMap) = 1 := by
-  let Q := Q P
+    Module.finrank 𝕜 (LinearMap.range (succ_sub P n).toLinearMap) = 1 := by
+  let Q := succ_sub P
   let U := LinearMap.range (Q n).toLinearMap
   let V := LinearMap.range (P n).toLinearMap
   have h_range_Pn_succ : LinearMap.range (P (n + 1)).toLinearMap = U ⊔ V := by
@@ -263,9 +266,9 @@ lemma Q_rank_one {P : ℕ → X →L[𝕜] X}
     rintro x ⟨⟨y, rfl⟩, ⟨z, hz⟩⟩
     dsimp only [ContinuousLinearMap.coe_coe] at *
     have : Q n (P n z) = 0 := by
-      simp_rw [Q, SchauderBasis.Q, ContinuousLinearMap.sub_apply, hcomp,
+      simp_rw [Q, SchauderBasis.succ_sub, ContinuousLinearMap.sub_apply, hcomp,
         min_eq_right (Nat.le_succ n), min_self, sub_self]
-    rw [← hz, ← this, hz, Q_ortho hcomp, Pi.single_apply, if_pos rfl]
+    rw [← hz, ← this, hz, succ_sub_ortho hcomp, Pi.single_apply, if_pos rfl]
   have h_fin_Pn (n : ℕ) : FiniteDimensional 𝕜 (LinearMap.range (P n).toLinearMap) := by
     by_cases hn : n = 0
     · rw [hn]
@@ -277,7 +280,7 @@ lemma Q_rank_one {P : ℕ → X →L[𝕜] X}
     exact Nat.pos_of_ne_zero hn
   have : FiniteDimensional 𝕜 U := by
     have : U ≤ LinearMap.range (P (n+1)).toLinearMap := by
-      simp only [U, Q, SchauderBasis.Q]
+      simp only [U, Q, SchauderBasis.succ_sub]
       intro x ⟨y, hy⟩
       rw [← hy]
       apply Submodule.sub_mem _ (LinearMap.mem_range_self _ _)
@@ -295,10 +298,10 @@ def basis_of_canonical_projections {P : ℕ → X →L[𝕜] X} {e : ℕ → X} 
     (hdim : ∀ n, Module.finrank 𝕜 (LinearMap.range (P n).toLinearMap) = n)
     (hcomp : ∀ n m, ∀ x : X, P n (P m x) = P (min n m) x)
     (hlim : ∀ x, Tendsto (fun n ↦ P n x) atTop (𝓝 x))
-    (he_in_range : ∀ n, e n ∈ LinearMap.range (Q P n).toLinearMap) (he_ne : ∀ n, e n ≠ 0) :
+    (he_in_range : ∀ n, e n ∈ LinearMap.range (succ_sub P n).toLinearMap) (he_ne : ∀ n, e n ≠ 0) :
     SchauderBasis 𝕜 X :=
-  let Q := Q P
-  have hrankQ := Q_rank_one h0 hdim hcomp
+  let Q :=  succ_sub P
+  have hrankQ := succ_sub_rank_one h0 hdim hcomp
   have h_range_eq_span (n : ℕ) : LinearMap.range (Q n).toLinearMap = Submodule.span 𝕜 {e n} := by
     symm
     have : FiniteDimensional 𝕜 ↥(LinearMap.range (Q n).toLinearMap) := by
@@ -337,7 +340,7 @@ def basis_of_canonical_projections {P : ℕ → X →L[𝕜] X} {e : ℕ → X} 
     have : Q i (e j) = (Pi.single j (e j) : ℕ → X) i := by
       obtain ⟨x, hx⟩ := he_in_range j
       rw [ContinuousLinearMap.coe_coe] at hx
-      rw [← hx, Q_ortho hcomp i j x]
+      rw [← hx, succ_sub_ortho hcomp i j x]
     rw [← hQf, this, Pi.single_apply]
     split_ifs with hij
     · subst hij; simp only
@@ -349,7 +352,7 @@ def basis_of_canonical_projections {P : ℕ → X →L[𝕜] X} {e : ℕ → X} 
     simp_rw [f]
     dsimp only [mkContinuous_apply, IsLinearMap.mk'_apply]
     simp_rw [← hQf, Q]
-    simp only [← Q_sum P h0 n, ContinuousLinearMap.coe_sum', Finset.sum_apply]
+    simp only [← succ_sub_sum P h0 n, ContinuousLinearMap.coe_sum', Finset.sum_apply]
   SchauderBasis.mk e f ortho lim
 
 end SchauderBasis
