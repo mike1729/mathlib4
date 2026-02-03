@@ -31,8 +31,11 @@ This file defines Schauder bases in a normed space and develops their basic theo
 * `UnconditionalSchauderBasis 𝕜 X`: An unconditional Schauder basis, an abbreviation for
   `SchauderBasis' ℕ 𝕜 X (SummationFilter.unconditional ℕ)`.
 
+* `SchauderBasis'.proj' b A`: The projection onto a finite set `A` of basis vectors,
+  defined as $P_A(x) = \sum_{i \in A} f_i(x)e_i$.
+
 * `SchauderBasis.proj b n`: The $n$-th canonical projection $P_n: X \to X$,
-  defined as $P_n(x) = \sum_{i < n} f_i(x)e_i$.
+  defined as $P_n(x) = \sum_{i < n} f_i(x)e_i$ (equals `proj' (Finset.range n)`).
 
 * `SchauderBasis.basisConstant`: The supremum of the norms of the canonical projections
   (often called the "basis constant").
@@ -40,6 +43,8 @@ This file defines Schauder bases in a normed space and develops their basic theo
 ## Main results
 
 * `SchauderBasis'.linearIndependent`: A Schauder basis is linearly independent.
+* `SchauderBasis'.proj'_tendsto_id`: The projections `proj' A` converge to identity
+  along the summation filter.
 * `SchauderBasis.proj_tendsto_id`: The canonical projections $P_n$ converge pointwise
   to the identity operator.
 * `SchauderBasis.proj_uniform_bound`: In a Banach space, the canonical projections
@@ -120,6 +125,36 @@ theorem linearIndependent : LinearIndependent 𝕜 b := by
   · intro j _ hji; rw [b.ortho i j, Pi.single_apply, if_neg hji.symm, smul_eq_mul, mul_zero]
   · intro hi; simp only [Finsupp.notMem_support_iff.mp hi, smul_eq_mul, zero_mul]
 
+/-- Projection onto a finite set of basis vectors. -/
+def proj' (A : Finset β) : X →L[𝕜] X := ∑ i ∈ A, (b.coord i).smulRight (b i)
+
+/-- The canonical projection on the empty set is the zero map. -/
+@[simp]
+theorem proj'_empty : b.proj' ∅ = 0 := by simp [proj']
+
+/-- The action of the projection on a vector x. -/
+@[simp]
+theorem proj'_apply (A : Finset β) (x : X) : b.proj' A x = ∑ i ∈ A, b.coord i x • b i := by
+  simp only [proj', ContinuousLinearMap.sum_apply, ContinuousLinearMap.smulRight_apply]
+
+/-- The action of the projection on a basis element e i. -/
+theorem proj'_basis_element (A : Finset β) (i : β) :
+    b.proj' A (b i) = if i ∈ A then b i else 0 := by
+  rw [proj'_apply]
+  by_cases hiA : i ∈ A
+  · rw [Finset.sum_eq_single_of_mem i hiA]
+    · simp only [b.ortho, Pi.single_apply, ↓reduceIte, one_smul, if_pos hiA]
+    · intro j _ hji; rw [b.ortho j i, Pi.single_apply, if_neg hji, zero_smul]
+  rw [if_neg hiA, Finset.sum_eq_zero]
+  intro j hj
+  rw [b.ortho j i, Pi.single_apply, if_neg, zero_smul]
+  exact fun h => hiA (h ▸ hj)
+
+/-- Projections converge to identity along the summation filter. -/
+theorem proj'_tendsto_id (x : X) : Tendsto (fun A ↦ b.proj' A x) L.filter (𝓝 x) := by
+  simp only [proj'_apply]
+  exact b.expansion x
+
 end SchauderBasis'
 
 /-! ### ℕ-indexed Schauder bases with conditional convergence -/
@@ -128,32 +163,22 @@ namespace SchauderBasis
 
 variable (b : SchauderBasis 𝕜 X)
 
-/-- A canonical projection P_n associated to a Schauder basis given by coordinate functionals f_i:
+/-- The n-th canonical projection P_n = proj' (Finset.range n), given by:
     P_n x = ∑_{i < n} f_i(x) e_i -/
-def proj (n : ℕ) : X →L[𝕜] X := ∑ i ∈ Finset.range n, (b.coord i).smulRight (b i)
+def proj (n : ℕ) : X →L[𝕜] X := b.proj' (Finset.range n)
 
 /-- The canonical projection at 0 is the zero map. -/
 @[simp]
-theorem proj_zero : b.proj 0 = 0 := by
-  simp only [proj, Finset.range_zero, Finset.sum_empty]
+theorem proj_zero : b.proj 0 = 0 := by simp only [proj, Finset.range_zero, b.proj'_empty]
 
 /-- The action of the canonical projection on a vector x. -/
 @[simp]
 theorem proj_apply (n : ℕ) (x : X) : b.proj n x = ∑ i ∈ Finset.range n, b.coord i x • b i := by
-  simp only [proj, ContinuousLinearMap.sum_apply, ContinuousLinearMap.smulRight_apply]
+  simp only [proj, b.proj'_apply]
 
 /-- The action of the canonical projection on a basis element e i. -/
 theorem proj_basis_element (n i : ℕ) : b.proj n (b i) = if i < n then b i else 0 := by
-  rw [proj_apply]
-  by_cases hin : i < n
-  · rw [Finset.sum_eq_single_of_mem i (Finset.mem_range.mpr hin)]
-    · simp only [b.ortho, Pi.single_apply, ↓reduceIte, one_smul, if_pos hin]
-    · intro j _ hji; rw [b.ortho j i, Pi.single_apply, if_neg hji, zero_smul]
-  rw [if_neg hin, Finset.sum_eq_zero]
-  intro j hj
-  push_neg at hin
-  rw [b.ortho j i, Pi.single_apply, if_neg , zero_smul]
-  exact (Finset.mem_range.mp hj).trans_le hin |>.ne
+  simp only [proj, b.proj'_basis_element, Finset.mem_range]
 
 /-- The range of the canonical projection is the span of the first n basis elements. -/
 theorem range_proj (n : ℕ) : LinearMap.range (b.proj n).toLinearMap =
@@ -180,9 +205,8 @@ theorem dim_range_proj (n : ℕ) :
 
 /-- The canonical projections converge pointwise to the identity map. -/
 theorem proj_tendsto_id (x : X) : Tendsto (fun n ↦ b.proj n x) atTop (𝓝 x) := by
-  simp only [proj_apply]
-  have := b.expansion x
-  rw [HasSum, SummationFilter.conditional_filter_eq_map_range] at this
+  have := b.proj'_tendsto_id x
+  rw [SummationFilter.conditional_filter_eq_map_range] at this
   exact this
 
 /-- Composition of canonical projections: `proj n (proj m x) = proj (min n m) x`. -/
