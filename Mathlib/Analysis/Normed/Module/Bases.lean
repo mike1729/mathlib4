@@ -14,11 +14,11 @@ public import Mathlib.Topology.Algebra.Module.FiniteDimension
 # Schauder Bases and Generalized Bases
 
 This file defines the theory of bases in Banach spaces, unifying the classical
-sequential notion with modern generalized (extended) bases.
+sequential notion with modern generalized bases.
 
 ## Overview
 
-A **basis** in a topological vector space allows every vector to be expanded as a
+A **basis** in a normed space allows every vector to be expanded as a
 (potentially infinite) linear combination of basis vectors. Historically, this
 was defined strictly for sequences $(x_n)_{n \in \mathbb{N}}$ with convergence
 of partial sums (the "classical Schauder basis").
@@ -108,7 +108,17 @@ abbrev SchauderBasis (𝕜 : Type*) (X : Type*) [NontriviallyNormedField 𝕜]
     [NormedAddCommGroup X] [NormedSpace 𝕜 X] :=
   SchauderBasis' ℕ 𝕜 X (SummationFilter.conditional ℕ)
 
-/-- An unconditional Schauder basis indexed by `β` with unconditional convergence. -/
+/--
+An unconditional Schauder basis indexed by `β`.
+
+In the literature, this is known as:
+* An **Extended Basis** (Marti, 1969): Defined via convergence of the net of finite partial sums.
+* An **Unconditional Basis** (Singer, 1981): On an arbitrary set, convergence is necessarily
+  unconditional.
+
+This structure generalizes the classical Schauder basis by replacing sequential
+convergence with summability over the directed set of finite subsets.
+-/
 abbrev UnconditionalSchauderBasis' (β : Type*) [Preorder β] [LocallyFiniteOrder β] [DecidableEq β]
     (𝕜 : Type*) (X : Type*) [NontriviallyNormedField 𝕜] [NormedAddCommGroup X] [NormedSpace 𝕜 X] :=
   SchauderBasis' β 𝕜 X (SummationFilter.unconditional β)
@@ -197,14 +207,7 @@ theorem proj'_comp (A B : Finset β) (x : X) : b.proj' A (b.proj' B x) = b.proj'
 /-- The dimension of the range of the projection `proj' A` equals the cardinality of `A`. -/
 theorem finrank_range_proj' (A : Finset β) :
     Module.finrank 𝕜 (LinearMap.range (b.proj' A).toLinearMap) = A.card := by
-  rw [range_proj']
-  have h_eq : (b '' (A : Set β)) = Set.range (fun i : A => b i.val) := by
-    ext x
-    simp only [Set.mem_image, Set.mem_range, Finset.mem_coe]
-    constructor
-    · rintro ⟨i, hi, rfl⟩; exact ⟨⟨i, hi⟩, rfl⟩
-    · rintro ⟨⟨i, hi⟩, rfl⟩; exact ⟨i, hi, rfl⟩
-  rw [h_eq, finrank_span_eq_card]
+  rw [range_proj', Set.image_eq_range, finrank_span_eq_card]
   · exact Fintype.card_coe A
   · exact b.linearIndependent.comp (fun i : A => i.val) Subtype.val_injective
 
@@ -234,15 +237,11 @@ theorem proj'_uniform_bound [CompleteSpace X] : ∃ C : ℝ, ∀ A : Finset β, 
   have hdecomp : b.proj' A x = b.proj' (A ∩ A₀) x + b.proj' (A \ A₀) x := by
     simp only [SchauderBasis'.proj'_apply]
     have hdisj : Disjoint (A ∩ A₀) (A \ A₀) := by
-      rw [Finset.disjoint_left]
-      intro i hi
+      rw [Finset.disjoint_left]; intro i hi
       simp only [Finset.mem_inter] at hi
       simp only [Finset.mem_sdiff, hi.2, not_true_eq_false, and_false, not_false_eq_true]
     rw [← Finset.sum_union hdisj]
-    congr 1
-    ext i
-    simp only [Finset.mem_union, Finset.mem_inter, Finset.mem_sdiff]
-    tauto
+    congr 1; ext i; simp only [Finset.mem_union, Finset.mem_inter, Finset.mem_sdiff]; tauto
   rw [hdecomp]
   -- The tail (A \ A₀) is small since it's disjoint from A₀
   have htail : ‖b.proj' (A \ A₀) x‖ < 1 := by
@@ -265,12 +264,10 @@ theorem basisConstant'_lt_top_of_bound {C : ℝ} (hC : ∀ A : Finset β, ‖b.p
     b.basisConstant' < ⊤ := by
   rw [basisConstant', ENNReal.iSup_coe_lt_top, bddAbove_iff_exists_ge (0 : NNReal)]
   have hCpos : 0 ≤ C := by simpa [SchauderBasis'.proj'_empty] using hC ∅
-  use C.toNNReal
-  constructor
-  · exact zero_le _
-  · rintro _ ⟨A, rfl⟩
-    rw [← NNReal.coe_le_coe, Real.coe_toNNReal C hCpos, coe_nnnorm]
-    exact hC A
+  refine ⟨C.toNNReal, zero_le _, ?_⟩
+  rintro _ ⟨A, rfl⟩
+  rw [← NNReal.coe_le_coe, Real.coe_toNNReal C hCpos, coe_nnnorm]
+  exact hC A
 
 /-- The basis constant is finite in a complete space for unconditional bases. -/
 theorem basisConstant'_lt_top [CompleteSpace X] : b.basisConstant' < ⊤ := by
@@ -352,12 +349,10 @@ theorem basisConstant_lt_top_uniform_bound {C : ℝ} (hC : ∀ n : ℕ, ‖b.pro
     b.basisConstant < ⊤ := by
   rw [basisConstant, ENNReal.iSup_coe_lt_top, bddAbove_iff_exists_ge (0 : NNReal)]
   have hCpos : 0 ≤ C := by simpa [proj_zero] using hC 0
-  use C.toNNReal
-  constructor
-  · exact zero_le _
-  · rintro _ ⟨n, rfl⟩
-    rw [← NNReal.coe_le_coe, Real.coe_toNNReal C hCpos, coe_nnnorm]
-    exact hC n
+  refine ⟨C.toNNReal, zero_le _, ?_⟩
+  rintro _ ⟨n, rfl⟩
+  rw [← NNReal.coe_le_coe, Real.coe_toNNReal C hCpos, coe_nnnorm]
+  exact hC n
 
 /-- The basis constant is finite in the complete space case. -/
 theorem basisConstant_lt_top [CompleteSpace X] : b.basisConstant < ⊤ := by
@@ -375,7 +370,7 @@ def succ_sub (P : ℕ → X →L[𝕜] X) (n : ℕ) : X →L[𝕜] X := P (n + 1
 /-- The sum of succ_sub operators up to n equals P n. -/
 @[simp]
 lemma succ_sub_sum (P : ℕ → X →L[𝕜] X) (h0 : P 0 = 0) (n : ℕ) :
-∑ i ∈ Finset.range n, succ_sub P i = P n := by
+    ∑ i ∈ Finset.range n, succ_sub P i = P n := by
   induction n with
   | zero => simp [h0]
   | succ n ih => rw [Finset.sum_range_succ, ih, succ_sub]; abel
@@ -403,10 +398,10 @@ lemma succ_sub_rank_one {P : ℕ → X →L[𝕜] X}
     (hrank : ∀ n, Module.finrank 𝕜 (LinearMap.range (P n).toLinearMap) = n)
     (hcomp : ∀ n m, ∀ x : X, P n (P m x) = P (min n m) x) (n : ℕ) :
     Module.finrank 𝕜 (LinearMap.range (succ_sub P n).toLinearMap) = 1 := by
-  let Q := succ_sub P
-  let U := LinearMap.range (Q n).toLinearMap
+  let succSub := succ_sub P
+  let U := LinearMap.range (succSub n).toLinearMap
   let V := LinearMap.range (P n).toLinearMap
-  have h_range_Pn_succ : LinearMap.range (P (n + 1)).toLinearMap = U ⊔ V := by
+  have hrange : LinearMap.range (P (n + 1)).toLinearMap = U ⊔ V := by
     apply le_antisymm
     · rintro x ⟨y, rfl⟩; rw [ContinuousLinearMap.coe_coe, ← sub_add_cancel (P (n + 1) y) (P n y)]
       exact Submodule.add_mem_sup (LinearMap.mem_range_self _ _) (LinearMap.mem_range_self _ _)
@@ -421,15 +416,15 @@ lemma succ_sub_rank_one {P : ℕ → X →L[𝕜] X}
         exact hV y
       · rintro x ⟨y, rfl⟩
         exact hV y
-  have h_disjoint : U ⊓ V = ⊥ := by
+  have hdisj : U ⊓ V = ⊥ := by
     rw [Submodule.eq_bot_iff]
     rintro x ⟨⟨y, rfl⟩, ⟨z, hz⟩⟩
     dsimp only [ContinuousLinearMap.coe_coe] at *
-    have : Q n (P n z) = 0 := by
-      simp_rw [Q, SchauderBasis.succ_sub, ContinuousLinearMap.sub_apply, hcomp,
+    have : succSub n (P n z) = 0 := by
+      simp_rw [succSub, SchauderBasis.succ_sub, ContinuousLinearMap.sub_apply, hcomp,
         min_eq_right (Nat.le_succ n), min_self, sub_self]
     rw [← hz, ← this, hz, succ_sub_ortho hcomp, Pi.single_apply, if_pos rfl]
-  have h_fin_Pn (n : ℕ) : FiniteDimensional 𝕜 (LinearMap.range (P n).toLinearMap) := by
+  have hfinPn (n : ℕ) : FiniteDimensional 𝕜 (LinearMap.range (P n).toLinearMap) := by
     by_cases hn : n = 0
     · rw [hn]
       apply FiniteDimensional.of_rank_eq_zero
@@ -440,7 +435,7 @@ lemma succ_sub_rank_one {P : ℕ → X →L[𝕜] X}
     exact Nat.pos_of_ne_zero hn
   have : FiniteDimensional 𝕜 U := by
     have : U ≤ LinearMap.range (P (n+1)).toLinearMap := by
-      simp only [U, Q, SchauderBasis.succ_sub]
+      simp only [U, succSub, SchauderBasis.succ_sub]
       intro x ⟨y, hy⟩
       rw [← hy]
       apply Submodule.sub_mem _ (LinearMap.mem_range_self _ _)
@@ -448,9 +443,9 @@ lemma succ_sub_rank_one {P : ℕ → X →L[𝕜] X}
       dsimp only [ContinuousLinearMap.coe_coe]
       rw [hcomp (n+1) n y, min_eq_right (Nat.le_succ n)]
     exact Submodule.finiteDimensional_of_le this
-  have : FiniteDimensional 𝕜 V := by simp only [V]; exact h_fin_Pn n
+  have : FiniteDimensional 𝕜 V := by simp only [V]; exact hfinPn n
   have := Submodule.finrank_sup_add_finrank_inf_eq U V
-  rw [h_disjoint, finrank_bot, add_zero, ← h_range_Pn_succ, hrank, hrank, Nat.add_comm] at this
+  rw [hdisj, finrank_bot, add_zero, ← hrange, hrank, hrank, Nat.add_comm] at this
   exact Nat.add_right_cancel this.symm
 
 variable (𝕜 X : Type*) [NontriviallyNormedField 𝕜] [NormedAddCommGroup X] [NormedSpace 𝕜 X]
@@ -467,7 +462,7 @@ structure ProjectionData where
   hcomp : ∀ n m, ∀ x : X, P n (P m x) = P (min n m) x
   /-- The projections converge strongly to the identity. -/
   hlim : ∀ x, Tendsto (fun n ↦ P n x) atTop (𝓝 x)
-  /-- The vector e_n lies in the range of the difference operator Q_n = P_{n+1} - P_n. -/
+  /-- The vector e_n lies in the range of the difference operator `succ_sub P n = P (n+1) - P n`. -/
   he_in_range : ∀ n, e n ∈ LinearMap.range (succ_sub P n).toLinearMap
   /-- The vector e_n is non-zero. -/
   he_ne : ∀ n, e n ≠ 0
@@ -476,58 +471,51 @@ variable {𝕜 X}
 
 namespace ProjectionData
 
-/-- Specification: There exists a coefficient functional scaling `e n` to match `Q P n x`. -/
+/-- There exists a coefficient scaling `e n` to match `(succ_sub D.P n) x`. -/
 lemma exists_coeff (D : ProjectionData 𝕜 X) (n : ℕ) (x : X) :
     ∃ c : 𝕜, c • D.e n = (succ_sub D.P n) x := by
-  let Q_n := (succ_sub D.P n).toLinearMap
-  have h_rank : Module.finrank 𝕜 (LinearMap.range Q_n) = 1 :=
+  let succSubN := (succ_sub D.P n).toLinearMap
+  have hrank : Module.finrank 𝕜 (LinearMap.range succSubN) = 1 :=
     succ_sub_rank_one D.proj_zero D.finrank_range D.hcomp n
-  haveI : FiniteDimensional 𝕜 (LinearMap.range Q_n) :=
+  haveI : FiniteDimensional 𝕜 (LinearMap.range succSubN) :=
     FiniteDimensional.of_finrank_eq_succ (succ_sub_rank_one D.proj_zero D.finrank_range D.hcomp n)
-  have h_span : LinearMap.range Q_n = Submodule.span 𝕜 {D.e n} := by
+  have hspan : LinearMap.range succSubN = Submodule.span 𝕜 {D.e n} := by
     symm
     apply Submodule.eq_of_le_of_finrank_eq
     · rw [Submodule.span_le, Set.singleton_subset_iff]
       exact D.he_in_range n
     · rw [succ_sub_rank_one D.proj_zero D.finrank_range D.hcomp n,
         finrank_span_singleton (D.he_ne n)]
-  have h_mem : Q_n x ∈ Submodule.span 𝕜 {D.e n} := by
-    rw [← h_span]
-    exact LinearMap.mem_range_self Q_n x
-  exact Submodule.mem_span_singleton.mp h_mem
+  have hmem : succSubN x ∈ Submodule.span 𝕜 {D.e n} := by
+    rw [← hspan]
+    exact LinearMap.mem_range_self succSubN x
+  exact Submodule.mem_span_singleton.mp hmem
 
-/-- Auxiliary Def: The coefficient functional value. -/
+/-- The coefficient functional value for the basis construction. -/
 def basis_coeff (D : ProjectionData 𝕜 X) (n : ℕ) (x : X) : 𝕜 :=
-  -- We pass the explicit arguments to the lemma
   Classical.choose (exists_coeff D n x)
 
-/-- Specification: The coefficient satisfies the equation. -/
-lemma basis_coeff_spec (D : ProjectionData 𝕜 X)
-    (n : ℕ) (x : X) :
+/-- The coefficient satisfies `basis_coeff D n x • D.e n = (succ_sub D.P n) x`. -/
+lemma basis_coeff_spec (D : ProjectionData 𝕜 X) (n : ℕ) (x : X) :
     basis_coeff D n x • D.e n = (succ_sub D.P n) x :=
   Classical.choose_spec (exists_coeff D n x)
 
-
-/-- Main Definition: Constructs the Schauder basis from the projections. -/
+/-- Constructs a Schauder basis from projection data. -/
 def basis (D : ProjectionData 𝕜 X) : SchauderBasis 𝕜 X :=
-  -- 1. Use our helper for the raw coefficient function
-  let f_fun := basis_coeff D
-  -- 2. Establish the key property locally for convenience
-  have hQf : ∀ n x, (succ_sub D.P n) x = f_fun n x • D.e n := fun n x ↦
+  let coeff := basis_coeff D
+  have hcoeff : ∀ n x, (succ_sub D.P n) x = coeff n x • D.e n := fun n x ↦
     (basis_coeff_spec D n x).symm
-  -- 3. Construct the continuous linear functionals
-  let f (n : ℕ) : StrongDual 𝕜 X := LinearMap.mkContinuous (IsLinearMap.mk' (f_fun n) (by
+  let f (n : ℕ) : StrongDual 𝕜 X := LinearMap.mkContinuous (IsLinearMap.mk' (coeff n) (by
     constructor
     · intro x y; apply smul_left_injective 𝕜 (D.he_ne n); dsimp only [smul_eq_mul]
-      rw [← hQf, map_add, add_smul, hQf, hQf]
+      rw [← hcoeff, map_add, add_smul, hcoeff, hcoeff]
     · intro c x; apply smul_left_injective 𝕜 (D.he_ne n); dsimp only [smul_eq_mul]
-      rw [← hQf, map_smul, mul_smul, hQf]
+      rw [← hcoeff, map_smul, mul_smul, hcoeff]
     )) (‖succ_sub D.P n‖ / ‖D.e n‖) (by
       intro x; rw [div_mul_eq_mul_div, le_div_iff₀ (norm_pos_iff.mpr (D.he_ne n))]
-      calc ‖f_fun n x‖ * ‖D.e n‖ = ‖f_fun n x • D.e n‖ := (norm_smul _ _).symm
-        _ = ‖(succ_sub D.P n) x‖ := by rw [hQf]
+      calc ‖coeff n x‖ * ‖D.e n‖ = ‖coeff n x • D.e n‖ := (norm_smul _ _).symm
+        _ = ‖(succ_sub D.P n) x‖ := by rw [hcoeff]
         _ ≤ ‖succ_sub D.P n‖ * ‖x‖ := ContinuousLinearMap.le_opNorm _ _)
-  -- 4. Prove Biorthogonality
   have ortho : ∀ i j, f i (D.e j) = (Pi.single j (1 : 𝕜) : ℕ → 𝕜) i := by
     intro i j; apply smul_left_injective 𝕜 (D.he_ne i); dsimp only [smul_eq_mul]
     simp only [mkContinuous_apply, IsLinearMap.mk'_apply, Pi.single_apply, ite_smul, one_smul,
@@ -536,19 +524,15 @@ def basis (D : ProjectionData 𝕜 X) : SchauderBasis 𝕜 X :=
       obtain ⟨x, hx⟩ := D.he_in_range j
       rw [ContinuousLinearMap.coe_coe] at hx
       rw [← hx, succ_sub_ortho D.hcomp i j x]
-    rw [← hQf, this, Pi.single_apply]
-    split_ifs with hij
-    · subst hij; simp only
-    · simp only
-  -- 5. Prove Basis Expansion
+    rw [← hcoeff, this, Pi.single_apply]
+    split_ifs with hij <;> simp [hij]
   have lim (x : X) : HasSum (fun i ↦ (f i) x • D.e i) x (SummationFilter.conditional ℕ) := by
     rw [HasSum, SummationFilter.conditional_filter_eq_map_range]
     apply Tendsto.congr _ (D.hlim x)
     intro n; simp_rw [f]; dsimp only [mkContinuous_apply, IsLinearMap.mk'_apply]
-    simp_rw [← hQf, succ_sub]
+    simp_rw [← hcoeff, succ_sub]
     simp only [← succ_sub_sum D.P D.proj_zero n, ContinuousLinearMap.coe_sum', Finset.sum_apply]
     congr
-  -- 6. Bundle it all up
   SchauderBasis'.mk D.e f ortho lim
 
 /-- The projections of the constructed basis correspond to the input data P. -/
