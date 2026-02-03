@@ -95,6 +95,57 @@ private lemma nonzero_has_nonzero_coord {E : Type*} [NormedAddCommGroup E] [Norm
   rw [h_zero] at h_exp
   exact hx (HasSum.unique h_exp hasSum_zero)
 
+/-- A nonzero element in the closure of a basic sequence's span cannot be in the closure of all
+    tail spans. This is because some Schauder coordinate must be nonzero, but that coordinate
+    vanishes on sufficiently late tails. Extracted to reduce elaboration overhead. -/
+private lemma nonzero_not_in_all_tail_closures {E : Type*} [NormedAddCommGroup E] [NormedSpace 𝕜 E]
+    [CompleteSpace E] (b : BasicSequence 𝕜 E)
+    (w : E) (hw_in : w ∈ (Submodule.span 𝕜 (Set.range b.toFun)).topologicalClosure)
+    (hw_ne : w ≠ 0) :
+    ∃ N, w ∉ closure (Submodule.span 𝕜 (Set.range (fun n => b (n + N))) : Set E) := by
+  -- Setup: Y = span(b), Z = closure(Y)
+  let Y : Submodule 𝕜 E := Submodule.span 𝕜 (Set.range b.toFun)
+  let Z : Submodule 𝕜 E := Y.topologicalClosure
+  let w_Z : Z := ⟨w, hw_in⟩
+  have hw_Z_ne : w_Z ≠ 0 := fun h => hw_ne (congrArg Subtype.val h)
+  -- Build Schauder basis for Z from b
+  let basis_Z : SchauderBasis 𝕜 Z :=
+    BasicSequences.SchauderBasis_of_closure (Y := Y) b.basis b.basisConstant_lt_top
+  have h_basis_coe : ∀ n, (basis_Z n : E) = b.toFun n := fun n => by
+    rw [BasicSequences.SchauderBasis_of_closure_apply]; simp only [b.eq_basis]; rfl
+  -- w_Z ≠ 0 implies some coordinate is nonzero
+  have h_exists_coord : ∃ k, basis_Z.coord k w_Z ≠ 0 :=
+    nonzero_has_nonzero_coord basis_Z w_Z hw_Z_ne
+  obtain ⟨k, hk_ne⟩ := h_exists_coord
+  -- Use N = k + 1
+  use k + 1
+  intro h_contra
+  -- Define tail span
+  let tail_span : Submodule 𝕜 E := Submodule.span 𝕜 (Set.range (fun n => b.toFun (n + (k + 1))))
+  have h_tail_in_Y : tail_span ≤ Y := by
+    apply Submodule.span_mono; intro x hx; obtain ⟨n, rfl⟩ := hx; exact ⟨n + (k + 1), rfl⟩
+  have hb_in_Y : ∀ n, b.toFun n ∈ Y := fun n => Submodule.subset_span ⟨n, rfl⟩
+  -- Use helper lemma for coord vanishing on tail
+  have h_vanish_on_tail : ∀ v (hv : v ∈ tail_span),
+      basis_Z.coord k ⟨v, Y.le_topologicalClosure (h_tail_in_Y hv)⟩ = 0 :=
+    coord_vanish_on_tail_span basis_Z b.toFun hb_in_Y h_basis_coe k (k + 1)
+      (Nat.lt_succ_self k) tail_span rfl h_tail_in_Y
+  -- By continuity, coord_k w_Z = 0
+  have h_coord_w_zero : basis_Z.coord k w_Z = 0 := by
+    rw [mem_closure_iff_seq_limit] at h_contra
+    obtain ⟨u, hu_tail, hu_lim⟩ := h_contra
+    let u_Z : ℕ → Z := fun n => ⟨u n, Y.le_topologicalClosure (h_tail_in_Y (hu_tail n))⟩
+    have h_lim_Z : Filter.Tendsto u_Z Filter.atTop (nhds w_Z) := by
+      rw [Topology.IsEmbedding.tendsto_nhds_iff Topology.IsEmbedding.subtypeVal]; exact hu_lim
+    have h_tendsto :=
+      ((ContinuousLinearMap.continuous (basis_Z.coord k)).tendsto w_Z).comp h_lim_Z
+    have h_vals : ∀ n, basis_Z.coord k (u_Z n) = 0 := fun n => h_vanish_on_tail (u n) (hu_tail n)
+    have h_const : (basis_Z.coord k ∘ u_Z) = fun _ => 0 := by ext n; exact h_vals n
+    rw [h_const] at h_tendsto
+    exact (tendsto_const_nhds_iff.mp h_tendsto).symm
+  -- Contradiction
+  exact hk_ne h_coord_w_zero
+
 /-- If 0 ∈ closure of a translated set S - w, then w ∈ closure S.
     Extracted to reduce elaboration overhead in the main theorem. -/
 private lemma mem_closure_of_zero_in_translated_closure {E : Type*} [NormedAddCommGroup E]
@@ -154,6 +205,35 @@ noncomputable def NormedSpace.inclusionInDoubleDual_homeomorph_weak
     Equiv.ofInjective _ emb.injective
   -- The embedding induces the topology, so e is a homeomorphism
   exact e.toHomeomorphOfIsInducing (IsInducing.subtypeVal.of_comp_iff.mp emb.toIsInducing)
+
+/-- Elements of a basic sequence are nonzero because the underlying Schauder basis is linearly
+    independent. Extracted to reduce elaboration overhead in the main theorem. -/
+private lemma basic_sequence_element_nonzero {E : Type*} [NormedAddCommGroup E] [NormedSpace 𝕜 E]
+    (b : BasicSequence 𝕜 E) (n : ℕ) : b n ≠ 0 := fun hb0 => by
+  have h_indep := b.basis.linearIndependent
+  have h_ne := h_indep.ne_zero n
+  have h_basis_val : (b.basis n : E) = b.toFun n := by simp only [b.eq_basis]; rfl
+  exact h_ne (Subtype.ext (h_basis_val.trans hb0))
+
+/-- The Grünblum bound transfers through an isometry: if `b` is a basic sequence in `Y` and
+    `J : X →L[𝕜] Y` is an isometry with `J (x n) = b n`, then the Grünblum bound for `b`
+    implies the same bound for `x`. Extracted to reduce elaboration overhead. -/
+private lemma grunblum_bound_transfer_via_isometry {X Y : Type*}
+    [NormedAddCommGroup X] [NormedSpace 𝕜 X]
+    [NormedAddCommGroup Y] [NormedSpace 𝕜 Y]
+    (b : BasicSequence 𝕜 Y) (x : ℕ → X) (J : X →L[𝕜] Y)
+    (hJ_iso : ∀ y, ‖J y‖ = ‖y‖) (hx_J : ∀ n, J (x n) = b n)
+    (n m : ℕ) (a : ℕ → 𝕜) (hmn : m ≤ n) :
+    ‖∑ i ∈ Finset.range m, a i • x i‖ ≤ grunblumConstant b * ‖∑ i ∈ Finset.range n, a i • x i‖ := by
+  have h_sum_eq : ∀ k, J (∑ i ∈ Finset.range k, a i • x i) = ∑ i ∈ Finset.range k, a i • b i := by
+    intro k; simp only [map_sum, ContinuousLinearMap.map_smul, hx_J]
+  calc ‖∑ i ∈ Finset.range m, a i • x i‖
+      = ‖J (∑ i ∈ Finset.range m, a i • x i)‖ := (hJ_iso _).symm
+    _ = ‖∑ i ∈ Finset.range m, a i • b i‖ := by rw [h_sum_eq]
+    _ ≤ grunblumConstant b * ‖∑ i ∈ Finset.range n, a i • b i‖ :=
+        grunblum_bound_of_basic b n m a hmn
+    _ = grunblumConstant b * ‖J (∑ i ∈ Finset.range n, a i • x i)‖ := by rw [h_sum_eq]
+    _ = grunblumConstant b * ‖∑ i ∈ Finset.range n, a i • x i‖ := by rw [hJ_iso]
 
 --  set_option trace.profiler true in
 set_option maxHeartbeats 720000 in
@@ -238,7 +318,7 @@ theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
       obtain ⟨e, he_S', he_basic⟩ := h_basicS'
       rcases he_basic with ⟨b, rfl⟩
       have h_w_span : ∃ N : ℕ, w' ∉ closure (Submodule.span 𝕜 (Set.range (fun n => b (n+N)))) := by
-        -- 1. w is non-zero (since w ∉ J(X) and 0 ∈ J(X))
+        -- w is non-zero (since w ∉ J(X) and 0 ∈ J(X))
         have hw_ne : w' ≠ 0 := by
           intro h
           apply hw_not_JX
@@ -248,95 +328,12 @@ theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
             rw [h, map_zero]
           rw [hw0, image_univ]
           exact ⟨J 0, ⟨0, rfl⟩, by simp⟩
-
-        -- 2. Assume for contradiction that w is in the closure of *all* tail spans
+        -- If w is in closure of all tails, it's in the full closure (N=0), so apply helper
         by_contra h_contra
         push_neg at h_contra
-
-        -- 3. Get the basis structure for the closure of the span
-        let Y : Submodule 𝕜 Xbidual := Submodule.span 𝕜 (Set.range b.toFun)
-        let Z : Submodule 𝕜 Xbidual := Y.topologicalClosure
-
-        -- Since h_contra holds for N=0, w is in the closure of the whole span
-        have h_w'_in_Z : w' ∈ Z := by
+        have hw_in : w' ∈ (Submodule.span 𝕜 (Set.range b.toFun)).topologicalClosure := by
           simpa using h_contra 0
-
-        -- Lift w to the subspace K = closure Y
-        let w'_Z : Z := ⟨w', h_w'_in_Z⟩
-        have hw'_Z_ne : w'_Z ≠ 0 := fun h => hw_ne (congrArg Subtype.val h)
-
-        -- Use the theorem to treat b as a Schauder basis for K
-        let basis_Z : SchauderBasis 𝕜 Z :=
-          SchauderBasis_of_closure (Y := Y) b.basis b.basisConstant_lt_top
-
-        -- 4. Since w ≠ 0, it must have a non-zero coordinate k (using helper lemma)
-        have h_exists_coord : ∃ k, basis_Z.coord k w'_Z ≠ 0 :=
-          nonzero_has_nonzero_coord basis_Z w'_Z hw'_Z_ne
-
-        obtain ⟨k, hk_ne⟩ := h_exists_coord
-
-        -- 5. Use the hypothesis for N = k + 1 to derive a contradiction
-        -- The contradiction is: w ∈ closure(tail) implies coord k w = 0
-        specialize h_contra (k + 1)
-
-        -- The k-th coordinate functional is continuous on K
-        let coord_k : Z →L[𝕜] 𝕜 := basis_Z.coord k
-
-        -- We show coord_k vanishes on the tail span
-        -- The tail span is generated by b_{k+1}, b_{k+2}, ...
-        let tail_span : Submodule 𝕜 Xbidual :=
-          Submodule.span 𝕜 (Set.range (fun n => b.toFun (n + (k + 1))))
-
-        -- First show tail_span ⊆ Y
-        have h_tail_in_Y : tail_span ≤ Y := by
-          apply Submodule.span_mono
-          intro x hx
-          obtain ⟨n, rfl⟩ := hx
-          exact ⟨n + (k + 1), rfl⟩
-
-        -- Prove b.toFun n ∈ Y and basis coercion property for the helper
-        have hb_in_Y : ∀ n, b.toFun n ∈ Y := fun n => Submodule.subset_span ⟨n, rfl⟩
-        have h_basis_coe : ∀ n, (basis_Z n : Xbidual) = b.toFun n := fun n => by
-          rw [SchauderBasis_of_closure_apply]; simp only [b.eq_basis]; rfl
-
-        -- Use the extracted helper lemma for span_induction
-        have h_vanish_on_tail : ∀ v (hv : v ∈ tail_span),
-            coord_k ⟨v, Y.le_topologicalClosure (h_tail_in_Y hv)⟩ = 0 :=
-          coord_vanish_on_tail_span basis_Z b.toFun hb_in_Y h_basis_coe k (k + 1)
-            (Nat.lt_succ_self k) tail_span rfl h_tail_in_Y
-
-        -- 6. By continuity, coord_k w must be 0
-        have h_coord_w_zero : coord_k w'_Z = 0 := by
-          -- w is a limit of a sequence in tail_span
-          rw [mem_closure_iff_seq_limit] at h_contra
-          obtain ⟨u, hu_tail, hu_lim⟩ := h_contra
-
-          -- Lift the sequence to K
-          let u_K : ℕ → Z :=
-            fun n => ⟨u n, Y.le_topologicalClosure (h_tail_in_Y (hu_tail n))⟩
-
-          -- Convergence in K is equivalent to convergence in Xbidual for the subtype
-          have h_lim_K : Filter.Tendsto u_K Filter.atTop (nhds w'_Z) := by
-            rw [Topology.IsEmbedding.tendsto_nhds_iff Topology.IsEmbedding.subtypeVal]
-            exact hu_lim
-
-          -- coord_k is continuous, so coord_k (lim u_n) = lim (coord_k u_n)
-          have h_tendsto := ((ContinuousLinearMap.continuous coord_k).tendsto w'_Z).comp h_lim_K
-
-          -- But coord_k (u_n) is constantly 0
-          have h_vals : ∀ n, coord_k (u_K n) = 0 := fun n ↦ h_vanish_on_tail (u n) (hu_tail n)
-
-          -- The sequence coord_k ∘ u_K = fun _ => 0
-          have h_const : (coord_k ∘ u_K) = fun _ => 0 := by
-            ext n
-            exact h_vals n
-          rw [h_const] at h_tendsto
-          -- Now h_tendsto says: (fun _ => 0) tends to coord_k w'_Z
-          -- So coord_k w'_Z must be 0
-          exact (tendsto_const_nhds_iff.mp h_tendsto).symm
-
-        -- 7. Contradiction
-        exact hk_ne h_coord_w_zero
+        exact (nonzero_not_in_all_tail_closures b w' hw_in hw_ne).elim (fun N hN => hN (h_contra N))
 
 
       obtain ⟨N, h_w_notin_span⟩ := h_w_span
@@ -424,50 +421,22 @@ theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
       -- J is an isometric embedding, so J preserves the Grünblum condition
       -- If s is basic in Xbidual, then x is basic in X
       have hx_basic : IsBasicSequence 𝕜 x := by
-        -- Use isometry of J and transfer from h_basicS
-        -- J is an isometry
         have hJ_iso : ∀ y, ‖J y‖ = ‖y‖ := fun y =>
           (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).norm_map y
-        -- h_basicS gives us a basic sequence structure on s
         rcases h_basicS with ⟨b_s, hb_s_eq⟩
-        -- s n ≠ 0 since b_s is a basic sequence (has linearly independent basis)
-        have hs_nz : ∀ n, s n ≠ 0 := fun n hs0 => by
-          -- b_s.basis.linearIndependent gives linear independence on the submodule
-          have h_indep := b_s.basis.linearIndependent
-          have h_ne := h_indep.ne_zero n
-          -- b_s.eq_basis : b_s.basis = Set.codRestrict b_s.toFun ...
-          -- So b_s.basis n = ⟨b_s n, _⟩
-          -- b_s n = s n via hb_s_eq
-          have hbn : b_s.toFun n = s n := congrFun hb_s_eq n
-          -- Unfold the codRestrict to get (b_s.basis n).1 = b_s n
-          have h_basis_val : (b_s.basis n : Xbidual) = b_s.toFun n := by
-            simp only [b_s.eq_basis]; rfl
-          -- If s n = 0, then (b_s.basis n).1 = 0, so b_s.basis n = 0
-          have h_zero : b_s.basis n = 0 := Subtype.ext (h_basis_val.trans (hbn.trans hs0))
-          exact h_ne h_zero
-        -- x n ≠ 0 since s n = J(x n) ≠ 0 and J is injective
+        -- x n ≠ 0 since s n = J(x n) = b_s n ≠ 0 (by extracted lemma) and J is injective
         have hx_nz : ∀ n, x n ≠ 0 := fun n hx0 => by
-          have := hs_nz n
-          rw [← hx_J n, hx0, map_zero] at this
+          have := basic_sequence_element_nonzero b_s n
+          rw [congrFun hb_s_eq n, ← hx_J n, hx0, map_zero] at this
           exact this rfl
-        -- Bound on sums transfers via J being an isometry
-        have h_sum_eq : ∀ (a : ℕ → 𝕜) k, J (∑ i ∈ Finset.range k, a i • x i) = ∑ i ∈ Finset.range k, a i • s i := by
-          intro a k
-          simp only [map_sum, ContinuousLinearMap.map_smul, hx_J]
-        -- Transfer Grünblum bound
+        -- Transfer Grünblum bound using extracted lemma
+        have hx_J' : ∀ n, J (x n) = b_s n := fun n => (hx_J n).trans (congrFun hb_s_eq n).symm
         have h_bound : ∀ n m (a : ℕ → 𝕜), m ≤ n →
-            ‖∑ i ∈ Finset.range m, a i • x i‖ ≤ grunblumConstant b_s * ‖∑ i ∈ Finset.range n, a i • x i‖ := by
-          intro n m a hmn
-          calc ‖∑ i ∈ Finset.range m, a i • x i‖
-              = ‖J (∑ i ∈ Finset.range m, a i • x i)‖ := (hJ_iso _).symm
-            _ = ‖∑ i ∈ Finset.range m, a i • s i‖ := by rw [h_sum_eq]
-            _ = ‖∑ i ∈ Finset.range m, a i • b_s i‖ := by simp only [← hb_s_eq]
-            _ ≤ grunblumConstant b_s * ‖∑ i ∈ Finset.range n, a i • b_s i‖ :=
-                grunblum_bound_of_basic b_s n m a hmn
-            _ = grunblumConstant b_s * ‖∑ i ∈ Finset.range n, a i • s i‖ := by simp only [← hb_s_eq]
-            _ = grunblumConstant b_s * ‖J (∑ i ∈ Finset.range n, a i • x i)‖ := by rw [h_sum_eq]
-            _ = grunblumConstant b_s * ‖∑ i ∈ Finset.range n, a i • x i‖ := by rw [hJ_iso]
-        exact isBasicSequence_of_grunblum ⟨grunblumConstant b_s, grunblumConstant_ge_one b_s, h_bound⟩ hx_nz
+            ‖∑ i ∈ Finset.range m, a i • x i‖ ≤
+            grunblumConstant b_s * ‖∑ i ∈ Finset.range n, a i • x i‖ :=
+          fun n m a hmn => grunblum_bound_transfer_via_isometry b_s x J hJ_iso hx_J' n m a hmn
+        exact isBasicSequence_of_grunblum
+          ⟨grunblumConstant b_s, grunblumConstant_ge_one b_s, h_bound⟩ hx_nz
 
       exact h_no_basic x hx_S hx_basic
 
