@@ -1601,5 +1601,4 @@ theorem SchauderBasis_of_closure_coe [CompleteSpace X] {Y : Submodule 𝕜 X}
     ⇑(SchauderBasis_of_closure b h_bound) = fun n ↦ ⟨b n, Y.le_topologicalClosure (b n).2⟩ :=
   funext fun n => SchauderBasis_of_closure_apply b h_bound n
 
-
 end BasicSequences

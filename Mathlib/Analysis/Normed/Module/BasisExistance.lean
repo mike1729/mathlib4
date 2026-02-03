@@ -474,33 +474,29 @@ theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
     -- transfer compactness back to X via weak-weak* correspondence
     have hK_closed : IsClosed K := isClosed_closure
     have hK_bounded_preimage : Bornology.IsBounded (StrongDual.toWeakDual ⁻¹' K) := by
-      have h1 : Bornology.IsBounded (StrongDual.toWeakDual ⁻¹' K) := by
-        rw [Metric.isBounded_iff_subset_closedBall 0]
-        rw [Metric.isBounded_iff_subset_closedBall 0] at h_S_bidual_bounded
-        obtain ⟨R, hR⟩ := h_S_bidual_bounded
-        use R
-        intro x hx
-        rw [Set.mem_preimage] at hx
-        rw [Metric.mem_closedBall, dist_zero_right]
-        have h_sub : StrongDual.toWeakDual '' S_bidual ⊆ WeakDual.toStrongDual ⁻¹' Metric.closedBall 0 R := by
-          intro y hy
-          obtain ⟨z, hzS, rfl⟩ := hy
-          simp only [Set.mem_preimage, Metric.mem_closedBall, dist_zero_right,
-            WeakDual.coe_toStrongDual, StrongDual.coe_toWeakDual]
-          -- Now need: ‖z‖ ≤ R
-          have hz_ball := hR hzS
-          rw [Metric.mem_closedBall, dist_zero_right] at hz_ball
-          exact hz_ball
-        have h_closed : IsClosed (WeakDual.toStrongDual ⁻¹' Metric.closedBall (0 : Xbidual) R) :=
-          WeakDual.isClosed_closedBall (0 : Xbidual) R
-        have h_K_sub : K ⊆ WeakDual.toStrongDual ⁻¹' Metric.closedBall 0 R :=
-          closure_minimal h_sub h_closed
-        have hxK' : StrongDual.toWeakDual x ∈ WeakDual.toStrongDual ⁻¹' Metric.closedBall 0 R :=
-          h_K_sub hx
+      rw [Metric.isBounded_iff_subset_closedBall 0]
+      rw [Metric.isBounded_iff_subset_closedBall 0] at h_S_bidual_bounded
+      obtain ⟨R, hR⟩ := h_S_bidual_bounded
+      use R
+      intro x hx
+      rw [Set.mem_preimage] at hx
+      rw [Metric.mem_closedBall, dist_zero_right]
+      have h_sub :
+          StrongDual.toWeakDual '' S_bidual ⊆ WeakDual.toStrongDual ⁻¹' Metric.closedBall 0 R := by
+        intro y hy
+        obtain ⟨z, hzS, rfl⟩ := hy
         simp only [Set.mem_preimage, Metric.mem_closedBall, dist_zero_right,
-          WeakDual.coe_toStrongDual, StrongDual.coe_toWeakDual] at hxK'
-        exact hxK'
-      exact h1
+          WeakDual.coe_toStrongDual, StrongDual.coe_toWeakDual]
+        have hz_ball := hR hzS
+        rw [Metric.mem_closedBall, dist_zero_right] at hz_ball
+        exact hz_ball
+      have h_closed : IsClosed (WeakDual.toStrongDual ⁻¹' Metric.closedBall (0 : Xbidual) R) :=
+        WeakDual.isClosed_closedBall (0 : Xbidual) R
+      have hxK' :=
+        (closure_minimal h_sub h_closed : K ⊆ WeakDual.toStrongDual ⁻¹' Metric.closedBall 0 R) hx
+      simp only [Set.mem_preimage, Metric.mem_closedBall, dist_zero_right,
+        WeakDual.coe_toStrongDual, StrongDual.coe_toWeakDual] at hxK'
+      exact hxK'
     have hK_compact : IsCompact K := WeakDual.isCompact_of_bounded_of_closed hK_bounded_preimage hK_closed
 
     let emb := NormedSpace.inclusionInDoubleDual_isEmbedding_weak 𝕜 X
