@@ -45,6 +45,9 @@ This file defines Schauder bases in a normed space and develops their basic theo
 * `SchauderBasis'.linearIndependent`: A Schauder basis is linearly independent.
 * `SchauderBasis'.proj'_tendsto_id`: The projections `proj' A` converge to identity
   along the summation filter.
+* `SchauderBasis'.range_proj'`: The range of `proj' A` is the span of the basis elements in `A`.
+* `SchauderBasis'.proj'_comp`: Composition of projections satisfies
+  `proj' A (proj' B x) = proj' (A ∩ B) x`.
 * `SchauderBasis.proj_tendsto_id`: The canonical projections $P_n$ converge pointwise
   to the identity operator.
 * `SchauderBasis.proj_uniform_bound`: In a Banach space, the canonical projections
@@ -155,6 +158,37 @@ theorem proj'_tendsto_id (x : X) : Tendsto (fun A ↦ b.proj' A x) L.filter (�
   simp only [proj'_apply]
   exact b.expansion x
 
+/-- The range of the projection is the span of the basis elements in A. -/
+theorem range_proj' (A : Finset β) : LinearMap.range (b.proj' A).toLinearMap =
+    Submodule.span 𝕜 (b '' A) := by
+  apply le_antisymm
+  · rintro _ ⟨x, rfl⟩
+    rw [ContinuousLinearMap.coe_coe, proj'_apply]
+    apply Submodule.sum_mem
+    intros i hi
+    apply Submodule.smul_mem
+    apply Submodule.subset_span
+    exact ⟨i, hi, rfl⟩
+  · rw [Submodule.span_le]
+    rintro _ ⟨i, hi, rfl⟩
+    use b i
+    rw [ContinuousLinearMap.coe_coe, proj'_basis_element, if_pos (Finset.mem_coe.mp hi)]
+
+/-- Composition of projections: `proj' A (proj' B x) = proj' (A ∩ B) x`. -/
+theorem proj'_comp (A B : Finset β) (x : X) : b.proj' A (b.proj' B x) = b.proj' (A ∩ B) x := by
+  simp only [proj'_apply, map_sum, map_smul]
+  have h_ortho : ∀ i j, (b.coord i) (b j) = if i = j then 1 else 0 := by
+    intro i j
+    rw [b.ortho i j, Pi.single_apply]
+  simp_rw [h_ortho]
+  simp only [ite_smul, one_smul, zero_smul]
+  simp_rw [Finset.sum_ite_eq']
+  simp only [smul_ite, smul_zero]
+  rw [Finset.sum_ite, Finset.sum_const_zero, add_zero]
+  congr 1
+  ext i
+  simp only [Finset.mem_filter, Finset.mem_inter, and_comm]
+
 end SchauderBasis'
 
 /-! ### ℕ-indexed Schauder bases with conditional convergence -/
@@ -183,18 +217,13 @@ theorem proj_basis_element (n i : ℕ) : b.proj n (b i) = if i < n then b i else
 /-- The range of the canonical projection is the span of the first n basis elements. -/
 theorem range_proj (n : ℕ) : LinearMap.range (b.proj n).toLinearMap =
     Submodule.span 𝕜 (Set.range (fun i : Fin n => b i)) := by
-  apply le_antisymm
-  · rintro _ ⟨x, rfl⟩
-    rw [ContinuousLinearMap.coe_coe, proj_apply b]
-    apply Submodule.sum_mem
-    intros i hi
-    apply Submodule.smul_mem
-    apply Submodule.subset_span
-    exact ⟨⟨i, Finset.mem_range.mp hi⟩, rfl⟩
-  · rw [Submodule.span_le]
-    rintro _ ⟨i, rfl⟩
-    use b i
-    rw [ContinuousLinearMap.coe_coe, proj_basis_element , if_pos i.is_lt]
+  rw [proj, b.range_proj']
+  congr 1
+  ext x
+  simp only [Set.mem_image, Finset.mem_coe, Finset.mem_range, Set.mem_range]
+  constructor
+  · rintro ⟨i, hi, rfl⟩; exact ⟨⟨i, hi⟩, rfl⟩
+  · rintro ⟨i, rfl⟩; exact ⟨i, i.is_lt, rfl⟩
 
 /-- The dimension of the range of the canonical projection `P n` is `n`. -/
 theorem dim_range_proj (n : ℕ) :
@@ -211,19 +240,7 @@ theorem proj_tendsto_id (x : X) : Tendsto (fun n ↦ b.proj n x) atTop (𝓝 x) 
 
 /-- Composition of canonical projections: `proj n (proj m x) = proj (min n m) x`. -/
 theorem proj_comp (n m : ℕ) (x : X) : b.proj n (b.proj m x) = b.proj (min n m) x := by
-  simp only [proj_apply, map_sum, map_smul]
-  have h_ortho : ∀ i j, (b.coord i) (b j) = if i = j then 1 else 0 := by
-    intro i j
-    rw [b.ortho i j, Pi.single_apply]
-  simp_rw [h_ortho]
-  simp only [ite_smul, one_smul, zero_smul]
-  simp_rw [Finset.sum_ite_eq', Finset.mem_range]
-  simp only [smul_ite, smul_zero]
-  rw [Finset.sum_ite, Finset.sum_const_zero, add_zero]
-  congr 1
-  ext i
-  simp only [Finset.mem_filter, Finset.mem_range, and_comm]
-  exact Nat.lt_min.symm
+  simp only [proj, b.proj'_comp, Finset.range_inter_range]
 
 /-- The canonical projections are uniformly bounded (Banach-Steinhaus). -/
 theorem proj_uniform_bound [CompleteSpace X] : ∃ C : ℝ, ∀ n : ℕ, ‖b.proj n‖ ≤ C := by
