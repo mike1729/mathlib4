@@ -223,14 +223,11 @@ variable (b : UnconditionalSchauderBasis' β 𝕜 X)
 theorem proj'_uniform_bound [CompleteSpace X] : ∃ C : ℝ, ∀ A : Finset β, ‖b.proj' A‖ ≤ C := by
   apply banach_steinhaus
   intro x
-  -- The basis expansion gives HasSum, hence Summable for the unconditional filter
   have hsum : Summable (fun i ↦ b.coord i x • b i) := b.expansion x |>.summable
-  -- By the vanishing norm characterization, tails are small
   obtain ⟨A₀, hA₀⟩ := summable_iff_vanishing_norm.mp hsum 1 one_pos
-  -- Bound on finite sums over subsets of A₀
   have hne : (A₀.powerset.image fun B ↦ ‖b.proj' B x‖).Nonempty := by
     simp only [Finset.image_nonempty, Finset.powerset_nonempty]
-  let M := (A₀.powerset.image fun B ↦ ‖b.proj' B x‖).sup' hne _root_.id
+  let M := (A₀.powerset.image fun B ↦ ‖b.proj' B x‖).sup' hne id
   use M + 1
   intro A
   -- Split A = (A ∩ A₀) ∪ (A \ A₀)
@@ -398,52 +395,33 @@ lemma succ_sub_rank_one {P : ℕ → X →L[𝕜] X}
     (hrank : ∀ n, Module.finrank 𝕜 (LinearMap.range (P n).toLinearMap) = n)
     (hcomp : ∀ n m, ∀ x : X, P n (P m x) = P (min n m) x) (n : ℕ) :
     Module.finrank 𝕜 (LinearMap.range (succ_sub P n).toLinearMap) = 1 := by
-  let succSub := succ_sub P
-  let U := LinearMap.range (succSub n).toLinearMap
+  let U := LinearMap.range (succ_sub P n).toLinearMap
   let V := LinearMap.range (P n).toLinearMap
+  have hV (y : X) : P n y ∈ LinearMap.range (P (n + 1)).toLinearMap :=
+    ⟨P n y, by rw [ContinuousLinearMap.coe_coe, hcomp, min_eq_right (Nat.le_succ n)]⟩
+  have hUV : U ≤ LinearMap.range (P (n + 1)).toLinearMap := by
+    rintro _ ⟨y, rfl⟩
+    exact Submodule.sub_mem _ (LinearMap.mem_range_self _ _) (hV y)
   have hrange : LinearMap.range (P (n + 1)).toLinearMap = U ⊔ V := by
     apply le_antisymm
     · rintro x ⟨y, rfl⟩; rw [ContinuousLinearMap.coe_coe, ← sub_add_cancel (P (n + 1) y) (P n y)]
       exact Submodule.add_mem_sup (LinearMap.mem_range_self _ _) (LinearMap.mem_range_self _ _)
-    · rw [sup_le_iff]
-      have hV (y : X) : P n y ∈ LinearMap.range (P (n + 1)).toLinearMap := by
-        use P n y
-        rw [ContinuousLinearMap.coe_coe, hcomp (n + 1) n y, min_eq_right (Nat.le_succ n)]
-      constructor
-      · rintro x ⟨y, rfl⟩
-        apply Submodule.sub_mem _ (LinearMap.mem_range_self _ _)
-        dsimp only [ContinuousLinearMap.coe_coe]
-        exact hV y
-      · rintro x ⟨y, rfl⟩
-        exact hV y
+    · refine sup_le hUV ?_; rintro _ ⟨y, rfl⟩; exact hV y
   have hdisj : U ⊓ V = ⊥ := by
     rw [Submodule.eq_bot_iff]
     rintro x ⟨⟨y, rfl⟩, ⟨z, hz⟩⟩
     dsimp only [ContinuousLinearMap.coe_coe] at *
-    have : succSub n (P n z) = 0 := by
-      simp_rw [succSub, SchauderBasis.succ_sub, ContinuousLinearMap.sub_apply, hcomp,
-        min_eq_right (Nat.le_succ n), min_self, sub_self]
+    have : succ_sub P n (P n z) = 0 := by
+      simp only [succ_sub, ContinuousLinearMap.sub_apply, hcomp, min_eq_right (Nat.le_succ n),
+        min_self, sub_self]
     rw [← hz, ← this, hz, succ_sub_ortho hcomp, Pi.single_apply, if_pos rfl]
-  have hfinPn (n : ℕ) : FiniteDimensional 𝕜 (LinearMap.range (P n).toLinearMap) := by
-    by_cases hn : n = 0
-    · rw [hn]
-      apply FiniteDimensional.of_rank_eq_zero
-      apply Submodule.rank_eq_zero.mpr
-      exact LinearMap.range_eq_bot.mpr (by simp only [h0, ContinuousLinearMap.coe_zero])
-    apply FiniteDimensional.of_finrank_pos
-    rw [hrank n]
-    exact Nat.pos_of_ne_zero hn
-  have : FiniteDimensional 𝕜 U := by
-    have : U ≤ LinearMap.range (P (n+1)).toLinearMap := by
-      simp only [U, succSub, SchauderBasis.succ_sub]
-      intro x ⟨y, hy⟩
-      rw [← hy]
-      apply Submodule.sub_mem _ (LinearMap.mem_range_self _ _)
-      use P n y
-      dsimp only [ContinuousLinearMap.coe_coe]
-      rw [hcomp (n+1) n y, min_eq_right (Nat.le_succ n)]
-    exact Submodule.finiteDimensional_of_le this
-  have : FiniteDimensional 𝕜 V := by simp only [V]; exact hfinPn n
+  have hfinPn (m : ℕ) : FiniteDimensional 𝕜 (LinearMap.range (P m).toLinearMap) := by
+    rcases eq_or_ne m 0 with rfl | hm
+    · apply FiniteDimensional.of_rank_eq_zero
+      exact Submodule.rank_eq_zero.mpr (LinearMap.range_eq_bot.mpr (by simp [h0]))
+    · exact .of_finrank_pos (by rw [hrank]; exact Nat.pos_of_ne_zero hm)
+  haveI : FiniteDimensional 𝕜 U := Submodule.finiteDimensional_of_le hUV
+  haveI : FiniteDimensional 𝕜 V := hfinPn n
   have := Submodule.finrank_sup_add_finrank_inf_eq U V
   rw [hdisj, finrank_bot, add_zero, ← hrange, hrank, hrank, Nat.add_comm] at this
   exact Nat.add_right_cancel this.symm
