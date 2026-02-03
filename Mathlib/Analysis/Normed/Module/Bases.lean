@@ -16,23 +16,30 @@ This file defines Schauder bases in a normed space and develops their basic theo
 
 ## Main definitions
 
-* `SchauderBasis 𝕜 X e`: A structure representing a Schauder basis for a normed space `X`
-  over a field `𝕜`, where `e : ℕ → X` is the sequence of basis vectors.
+* `SchauderBasis' β 𝕜 X L`: A structure representing a generalized Schauder basis for a
+  normed space `X` over a field `𝕜`, indexed by a type `β` with a `SummationFilter L`.
   It includes:
-  - `coord`: The sequence of coordinate functionals (elements of the dual space).
+  - `basis`: The basis vectors indexed by `β`.
+  - `coord`: The coordinate functionals (elements of the dual space).
   - `ortho`: The biorthogonality condition $f_i(e_j) = \delta_{ij}$.
-  - `expansion`: The requirement that for every $x \in X$, the series
-    $\sum_{n=0}^\infty f_n(x)e_n$ converges to $x$.
+  - `expansion`: The requirement that for every $x \in X$, the series converges to $x$
+    along the summation filter `L`.
 
-* `SchauderBasis.proj b n`: The $n$-th canonical projection $P_n: X \to X$ associated
-  with the basis `b`, defined as $P_n(x) = \sum_{i < n} f_i(x)e_i$.
+* `SchauderBasis 𝕜 X`: The classical Schauder basis, an abbreviation for
+  `SchauderBasis' ℕ 𝕜 X (SummationFilter.conditional ℕ)`.
+
+* `UnconditionalSchauderBasis 𝕜 X`: An unconditional Schauder basis, an abbreviation for
+  `SchauderBasis' ℕ 𝕜 X (SummationFilter.unconditional ℕ)`.
+
+* `SchauderBasis.proj b n`: The $n$-th canonical projection $P_n: X \to X$,
+  defined as $P_n(x) = \sum_{i < n} f_i(x)e_i$.
 
 * `SchauderBasis.basisConstant`: The supremum of the norms of the canonical projections
   (often called the "basis constant").
 
 ## Main results
 
-* `SchauderBasis.linearIndependent`: A Schauder basis is linearly independent.
+* `SchauderBasis'.linearIndependent`: A Schauder basis is linearly independent.
 * `SchauderBasis.proj_tendsto_id`: The canonical projections $P_n$ converge pointwise
   to the identity operator.
 * `SchauderBasis.proj_uniform_bound`: In a Banach space, the canonical projections
@@ -59,33 +66,47 @@ open Filter Topology LinearMap Set ENNReal
 variable {𝕜 : Type*} [NontriviallyNormedField 𝕜]
 variable {X : Type*} [NormedAddCommGroup X] [NormedSpace 𝕜 X]
 
-/-- A Schauder basis is a sequence (e n) of vectors in X such that there exists a sequence of
-    continuous linear functionals (f n) (the coordinate functionals) satisfying:
-    1) f i (e j) = δ_{ij}
-    2) for every x : X, the series ∑_{n=0}^∞ f n (x) e n converges to x.
+/--
+A generalized Schauder basis indexed by `β` using a `SummationFilter`.
 
-    In other words, every vector in X can be uniquely represented as a convergent series of basis
-    vectors, with coefficients given by the coordinate functionals. -/
-structure SchauderBasis (𝕜 : Type*) (X : Type*) [NontriviallyNormedField 𝕜]
-    [NormedAddCommGroup X] [NormedSpace 𝕜 X] where
+See `SchauderBasis` for the classical ℕ-indexed case with conditional convergence,
+and `UnconditionalSchauderBasis` for the unconditional case.
+-/
+structure SchauderBasis' (β : Type*) [Preorder β] [LocallyFiniteOrder β] [DecidableEq β] (𝕜 : Type*)
+  (X : Type*) [NontriviallyNormedField 𝕜] [NormedAddCommGroup X] [NormedSpace 𝕜 X]
+  (L : SummationFilter β) where
   /-- The basis vectors. -/
-  basis : ℕ → X
+  basis : β → X
   /-- Coordinate functionals -/
-  coord : ℕ → StrongDual 𝕜 X
+  coord : β → StrongDual 𝕜 X
   /-- Biorthogonality -/
-  ortho : ∀ i j, coord i (basis j) = (Pi.single j (1 : 𝕜) : ℕ → 𝕜) i
-  /-- Convergence of partial sums -/
-  expansion : ∀ x : X, HasSum (fun i ↦ (coord i) x • basis i) x (SummationFilter.conditional ℕ)
+  ortho : ∀ i j, coord i (basis j) = (Pi.single j (1 : 𝕜) : β → 𝕜) i
+  /-- The sum converges to `x` along the provided `SummationFilter L`. -/
+  expansion : ∀ x : X, HasSum (fun i ↦ (coord i) x • basis i) x L
 
-instance : CoeFun (SchauderBasis 𝕜 X) (fun _ ↦ ℕ → X) where
+
+variable {β : Type*} [Preorder β] [LocallyFiniteOrder β] [DecidableEq β]
+variable {L : SummationFilter β}
+
+/-- A classical Schauder basis indexed by ℕ with conditional convergence. -/
+abbrev SchauderBasis (𝕜 : Type*) (X : Type*) [NontriviallyNormedField 𝕜]
+    [NormedAddCommGroup X] [NormedSpace 𝕜 X] :=
+  SchauderBasis' ℕ 𝕜 X (SummationFilter.conditional ℕ)
+
+/-- An unconditional Schauder basis indexed by ℕ with unconditional convergence. -/
+abbrev UnconditionalSchauderBasis (𝕜 : Type*) (X : Type*) [NontriviallyNormedField 𝕜]
+    [NormedAddCommGroup X] [NormedSpace 𝕜 X] :=
+  SchauderBasis' ℕ 𝕜 X (SummationFilter.unconditional ℕ)
+
+instance : CoeFun (SchauderBasis' β 𝕜 X L) (fun _ ↦ β → X) where
   coe b := b.basis
 
-namespace SchauderBasis
+namespace SchauderBasis'
 
-variable (b : SchauderBasis 𝕜 X)
+variable (b : SchauderBasis' β 𝕜 X L)
 
 /-- The basis vectors are linearly independent. -/
-theorem linearIndependent (b : SchauderBasis 𝕜 X) : LinearIndependent 𝕜 b := by
+theorem linearIndependent : LinearIndependent 𝕜 b := by
   rw [linearIndependent_iff]
   intro l hl
   ext i
@@ -98,6 +119,14 @@ theorem linearIndependent (b : SchauderBasis 𝕜 X) : LinearIndependent 𝕜 b 
   · simpa using happ
   · intro j _ hji; rw [b.ortho i j, Pi.single_apply, if_neg hji.symm, smul_eq_mul, mul_zero]
   · intro hi; simp only [Finsupp.notMem_support_iff.mp hi, smul_eq_mul, zero_mul]
+
+end SchauderBasis'
+
+/-! ### ℕ-indexed Schauder bases with conditional convergence -/
+
+namespace SchauderBasis
+
+variable (b : SchauderBasis 𝕜 X)
 
 /-- A canonical projection P_n associated to a Schauder basis given by coordinate functionals f_i:
     P_n x = ∑_{i < n} f_i(x) e_i -/
@@ -388,7 +417,7 @@ def basis (D : ProjectionData 𝕜 X) : SchauderBasis 𝕜 X :=
     simp only [← succ_sub_sum D.P D.proj_zero n, ContinuousLinearMap.coe_sum', Finset.sum_apply]
     congr
   -- 6. Bundle it all up
-  SchauderBasis.mk D.e f ortho lim
+  SchauderBasis'.mk D.e f ortho lim
 
 /-- The projections of the constructed basis correspond to the input data P. -/
 @[simp]
