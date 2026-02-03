@@ -11,37 +11,43 @@ public import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
 public import Mathlib.Topology.Algebra.Module.FiniteDimension
 
 /-!
-# Schauder bases in normed spaces
+# Schauder Bases and Generalized Bases
 
-This file defines Schauder bases in a normed space and develops their basic theory.
+This file defines the theory of bases in Banach spaces, unifying the classical
+sequential notion with modern generalized (extended) bases.
 
-## Main definitions
+## Overview
+
+A **basis** in a topological vector space allows every vector to be expanded as a
+(potentially infinite) linear combination of basis vectors. Historically, this
+was defined strictly for sequences $(x_n)_{n \in \mathbb{N}}$ with convergence
+of partial sums (the "classical Schauder basis").
+
+However, modern functional analysis requires bases indexed by arbitrary sets
+$\beta$ (e.g., for non-separable spaces or Hilbert spaces), where convergence
+is defined via nets over finite subsets (unconditional convergence).
+
+This file provides a unified structure `SchauderBasis'` that captures both:
+* **Classical Schauder Bases:** Indexed by `ℕ`, using `SummationFilter.conditional`
+  to enforce sequential convergence of partial sums.
+* **Unconditional/Extended Bases:** Indexed by arbitrary types `β`, using
+  `SummationFilter.unconditional` to enforce convergence of the net of all finite subsets.
+
+## Main Definitions
 
 * `SchauderBasis' β 𝕜 X L`: A structure representing a generalized Schauder basis for a
   normed space `X` over a field `𝕜`, indexed by a type `β` with a `SummationFilter L`.
-  It includes:
-  - `basis`: The basis vectors indexed by `β`.
-  - `coord`: The coordinate functionals (elements of the dual space).
-  - `ortho`: The biorthogonality condition $f_i(e_j) = \delta_{ij}$.
-  - `expansion`: The requirement that for every $x \in X$, the series converges to $x$
-    along the summation filter `L`.
-
 * `SchauderBasis 𝕜 X`: The classical Schauder basis, an abbreviation for
   `SchauderBasis' ℕ 𝕜 X (SummationFilter.conditional ℕ)`.
-
 * `UnconditionalSchauderBasis 𝕜 X`: An unconditional Schauder basis, an abbreviation for
   `SchauderBasis' ℕ 𝕜 X (SummationFilter.unconditional ℕ)`.
-
 * `SchauderBasis'.proj' b A`: The projection onto a finite set `A` of basis vectors,
   defined as $P_A(x) = \sum_{i \in A} f_i(x)e_i$.
-
 * `SchauderBasis.proj b n`: The $n$-th canonical projection $P_n: X \to X$,
   defined as $P_n(x) = \sum_{i < n} f_i(x)e_i$ (equals `proj' (Finset.range n)`).
+* `SchauderBasis.basisConstant`: The supremum of the norms of the canonical projections.
 
-* `SchauderBasis.basisConstant`: The supremum of the norms of the canonical projections
-  (often called the "basis constant").
-
-## Main results
+## Main Results
 
 * `SchauderBasis'.linearIndependent`: A Schauder basis is linearly independent.
 * `SchauderBasis'.proj'_tendsto_id`: The projections `proj' A` converge to identity
@@ -49,21 +55,16 @@ This file defines Schauder bases in a normed space and develops their basic theo
 * `SchauderBasis'.range_proj'`: The range of `proj' A` is the span of the basis elements in `A`.
 * `SchauderBasis'.proj'_comp`: Composition of projections satisfies
   `proj' A (proj' B x) = proj' (A ∩ B) x`.
-* `SchauderBasis.proj_tendsto_id`: The canonical projections $P_n$ converge pointwise
-  to the identity operator.
 * `SchauderBasis.proj_uniform_bound`: In a Banach space, the canonical projections
-  are uniformly bounded (a consequence of the Banach-Steinhaus Theorem).
-* `ProjectionData.basis`: Constructs a Schauder basis from a `ProjectionData` bundle
-  containing projections satisfying rank, composition, and convergence properties.
+  are uniformly bounded (Banach-Steinhaus Theorem).
+* `UnconditionalSchauderBasis.proj'_uniform_bound`: For unconditional bases, projections
+  onto *all* finite sets are uniformly bounded.
+* `ProjectionData.basis`: Constructs a Schauder basis from projection data.
 
-## Notation
+## References
 
-The file uses the `SummationFilter.conditional ℕ` to handle the convergence of the
-infinite sum, which corresponds to the convergence of partial sums.
-
-## Bibliography
-
-Based on Chapter 1. from Albiac, F., & Kalton, N. J. (2016). Topics in Banach Space Theory.
+* Albiac, F., & Kalton, N. J. (2016). *Topics in Banach Space Theory*.
+* Singer, I. (1970). *Bases in Banach Spaces*.
 -/
 
 @[expose] public section
@@ -76,7 +77,13 @@ variable {𝕜 : Type*} [NontriviallyNormedField 𝕜]
 variable {X : Type*} [NormedAddCommGroup X] [NormedSpace 𝕜 X]
 
 /--
-A generalized Schauder basis indexed by `β` using a `SummationFilter`.
+A generalized Schauder basis indexed by `β` with summation along filter `L`.
+
+The key fields are:
+- `basis`: The basis vectors $(e_i)_{i \in \beta}$
+- `coord`: The coordinate functionals $(f_i)_{i \in \beta}$ in the dual space
+- `ortho`: Biorthogonality condition $f_i(e_j) = \delta_{ij}$
+- `expansion`: Every $x$ equals $\sum_i f_i(x) e_i$, converging along `L`
 
 See `SchauderBasis` for the classical ℕ-indexed case with conditional convergence,
 and `UnconditionalSchauderBasis` for the unconditional case.
@@ -93,7 +100,6 @@ structure SchauderBasis' (β : Type*) [Preorder β] [LocallyFiniteOrder β] [Dec
   /-- The sum converges to `x` along the provided `SummationFilter L`. -/
   expansion : ∀ x : X, HasSum (fun i ↦ (coord i) x • basis i) x L
 
-
 variable {β : Type*} [Preorder β] [LocallyFiniteOrder β] [DecidableEq β]
 variable {L : SummationFilter β}
 
@@ -102,10 +108,15 @@ abbrev SchauderBasis (𝕜 : Type*) (X : Type*) [NontriviallyNormedField 𝕜]
     [NormedAddCommGroup X] [NormedSpace 𝕜 X] :=
   SchauderBasis' ℕ 𝕜 X (SummationFilter.conditional ℕ)
 
+/-- An unconditional Schauder basis indexed by `β` with unconditional convergence. -/
+abbrev UnconditionalSchauderBasis' (β : Type*) [Preorder β] [LocallyFiniteOrder β] [DecidableEq β]
+    (𝕜 : Type*) (X : Type*) [NontriviallyNormedField 𝕜] [NormedAddCommGroup X] [NormedSpace 𝕜 X] :=
+  SchauderBasis' β 𝕜 X (SummationFilter.unconditional β)
+
 /-- An unconditional Schauder basis indexed by ℕ with unconditional convergence. -/
 abbrev UnconditionalSchauderBasis (𝕜 : Type*) (X : Type*) [NontriviallyNormedField 𝕜]
     [NormedAddCommGroup X] [NormedSpace 𝕜 X] :=
-  SchauderBasis' ℕ 𝕜 X (SummationFilter.unconditional ℕ)
+  UnconditionalSchauderBasis' ℕ 𝕜 X
 
 instance : CoeFun (SchauderBasis' β 𝕜 X L) (fun _ ↦ β → X) where
   coe b := b.basis
@@ -178,28 +189,35 @@ theorem range_proj' (A : Finset β) : LinearMap.range (b.proj' A).toLinearMap =
 /-- Composition of projections: `proj' A (proj' B x) = proj' (A ∩ B) x`. -/
 theorem proj'_comp (A B : Finset β) (x : X) : b.proj' A (b.proj' B x) = b.proj' (A ∩ B) x := by
   simp only [proj'_apply, map_sum, map_smul]
-  have h_ortho : ∀ i j, (b.coord i) (b j) = if i = j then 1 else 0 := by
-    intro i j
-    rw [b.ortho i j, Pi.single_apply]
-  simp_rw [h_ortho]
-  simp only [ite_smul, one_smul, zero_smul]
-  simp_rw [Finset.sum_ite_eq']
-  simp only [smul_ite, smul_zero]
-  rw [Finset.sum_ite, Finset.sum_const_zero, add_zero]
-  congr 1
-  ext i
+  simp_rw [b.ortho, Pi.single_apply, ite_smul, one_smul, zero_smul, Finset.sum_ite_eq',
+    smul_ite, smul_zero, Finset.sum_ite, Finset.sum_const_zero, add_zero]
+  congr 1; ext i
   simp only [Finset.mem_filter, Finset.mem_inter, and_comm]
+
+/-- The dimension of the range of the projection `proj' A` equals the cardinality of `A`. -/
+theorem finrank_range_proj' (A : Finset β) :
+    Module.finrank 𝕜 (LinearMap.range (b.proj' A).toLinearMap) = A.card := by
+  rw [range_proj']
+  have h_eq : (b '' (A : Set β)) = Set.range (fun i : A => b i.val) := by
+    ext x
+    simp only [Set.mem_image, Set.mem_range, Finset.mem_coe]
+    constructor
+    · rintro ⟨i, hi, rfl⟩; exact ⟨⟨i, hi⟩, rfl⟩
+    · rintro ⟨⟨i, hi⟩, rfl⟩; exact ⟨i, hi, rfl⟩
+  rw [h_eq, finrank_span_eq_card]
+  · exact Fintype.card_coe A
+  · exact b.linearIndependent.comp (fun i : A => i.val) Subtype.val_injective
 
 end SchauderBasis'
 
 /-! ### Unconditional Schauder bases -/
 
-namespace UnconditionalSchauderBasis
+namespace UnconditionalSchauderBasis'
 
-variable (b : UnconditionalSchauderBasis 𝕜 X)
+variable (b : UnconditionalSchauderBasis' β 𝕜 X)
 
 /-- Projections are uniformly bounded for unconditional bases (Banach-Steinhaus). -/
-theorem proj'_uniform_bound [CompleteSpace X] : ∃ C : ℝ, ∀ A : Finset ℕ, ‖b.proj' A‖ ≤ C := by
+theorem proj'_uniform_bound [CompleteSpace X] : ∃ C : ℝ, ∀ A : Finset β, ‖b.proj' A‖ ≤ C := by
   apply banach_steinhaus
   intro x
   -- The basis expansion gives HasSum, hence Summable for the unconditional filter
@@ -240,10 +258,10 @@ theorem proj'_uniform_bound [CompleteSpace X] : ∃ C : ℝ, ∀ A : Finset ℕ,
     _ ≤ M + 1 := by linarith
 
 /-- The basis constant for unconditional bases (supremum over all finite sets). -/
-noncomputable def basisConstant' : ℝ≥0∞ := ⨆ A : Finset ℕ, ‖b.proj' A‖₊
+noncomputable def basisConstant' : ℝ≥0∞ := ⨆ A : Finset β, ‖b.proj' A‖₊
 
 /-- The basis constant is finite if there exists a uniform bound on projection norms. -/
-theorem basisConstant'_lt_top_of_bound {C : ℝ} (hC : ∀ A : Finset ℕ, ‖b.proj' A‖ ≤ C) :
+theorem basisConstant'_lt_top_of_bound {C : ℝ} (hC : ∀ A : Finset β, ‖b.proj' A‖ ≤ C) :
     b.basisConstant' < ⊤ := by
   rw [basisConstant', ENNReal.iSup_coe_lt_top, bddAbove_iff_exists_ge (0 : NNReal)]
   have hCpos : 0 ≤ C := by simpa [SchauderBasis'.proj'_empty] using hC ∅
@@ -260,11 +278,11 @@ theorem basisConstant'_lt_top [CompleteSpace X] : b.basisConstant' < ⊤ := by
   exact b.basisConstant'_lt_top_of_bound hC
 
 /-- The norm of any projection is bounded by the basis constant. -/
-theorem norm_proj'_le_basisConstant' (A : Finset ℕ) : ‖b.proj' A‖₊ ≤ b.basisConstant' := by
+theorem norm_proj'_le_basisConstant' (A : Finset β) : ‖b.proj' A‖₊ ≤ b.basisConstant' := by
   rw [basisConstant']
   exact le_iSup (fun A ↦ (‖b.proj' A‖₊ : ℝ≥0∞)) A
 
-end UnconditionalSchauderBasis
+end UnconditionalSchauderBasis'
 
 /-! ### ℕ-indexed Schauder bases with conditional convergence -/
 
@@ -303,9 +321,7 @@ theorem range_proj (n : ℕ) : LinearMap.range (b.proj n).toLinearMap =
 /-- The dimension of the range of the canonical projection `P n` is `n`. -/
 theorem dim_range_proj (n : ℕ) :
     Module.finrank 𝕜 (LinearMap.range (b.proj n).toLinearMap) = n := by
-  rw [range_proj, finrank_span_eq_card]
-  · exact Fintype.card_fin n
-  · exact b.linearIndependent.comp (fun (i : Fin n) => (i : ℕ)) Fin.val_injective
+  rw [proj, b.finrank_range_proj', Finset.card_range]
 
 /-- The canonical projections converge pointwise to the identity map. -/
 theorem proj_tendsto_id (x : X) : Tendsto (fun n ↦ b.proj n x) atTop (𝓝 x) := by
@@ -321,9 +337,9 @@ theorem proj_comp (n m : ℕ) (x : X) : b.proj n (b.proj m x) = b.proj (min n m)
 theorem proj_uniform_bound [CompleteSpace X] : ∃ C : ℝ, ∀ n : ℕ, ‖b.proj n‖ ≤ C := by
   apply banach_steinhaus
   intro x
-  let f: ℕ → X := fun n => b.proj n x
+  let f : ℕ → X := fun n => b.proj n x
   have : ∃ M : ℝ, ∀ x ∈ Set.range f, ‖x‖ ≤ M :=
-      isBounded_iff_forall_norm_le.mp (Metric.isBounded_range_of_tendsto f (proj_tendsto_id b x ))
+      isBounded_iff_forall_norm_le.mp (Metric.isBounded_range_of_tendsto f (proj_tendsto_id b x))
   rcases this with ⟨M, hM⟩
   rw [Set.forall_mem_range] at hM
   use M
@@ -344,7 +360,7 @@ theorem basisConstant_lt_top_uniform_bound {C : ℝ} (hC : ∀ n : ℕ, ‖b.pro
     exact hC n
 
 /-- The basis constant is finite in the complete space case. -/
-theorem basisConstant_lt_top_for_complete [CompleteSpace X] : b.basisConstant < ⊤ := by
+theorem basisConstant_lt_top [CompleteSpace X] : b.basisConstant < ⊤ := by
   obtain ⟨C, hC⟩ := b.proj_uniform_bound
   exact b.basisConstant_lt_top_uniform_bound hC
 
