@@ -91,7 +91,7 @@ private lemma nonzero_has_nonzero_coord {E : Type*} [NormedAddCommGroup E] [Norm
   by_contra! h_all_zero
   have h_exp := basis.expansion x
   have h_zero : (fun i ↦ basis.coord i x • basis i) = fun _ ↦ 0 := by
-    ext i; simp [h_all_zero i]
+    ext i; simp only [h_all_zero i, zero_smul]
   rw [h_zero] at h_exp
   exact hx (HasSum.unique h_exp hasSum_zero)
 
@@ -235,10 +235,105 @@ private lemma grunblum_bound_transfer_via_isometry {X Y : Type*}
     _ = grunblumConstant b * ‖J (∑ i ∈ Finset.range n, a i • x i)‖ := by rw [h_sum_eq]
     _ = grunblumConstant b * ‖∑ i ∈ Finset.range n, a i • x i‖ := by rw [hJ_iso]
 
---  set_option trace.profiler true in
-set_option maxHeartbeats 720000 in
--- Complex nested proof with Hahn-Banach separation and bidual embedding arguments
--- Complex nested proof with Hahn-Banach separation and bidual embedding arguments
+/-- Construct a functional that separates a basic sequence tail from w'.
+    Given J : X →L[𝕜] E with closed range, w' ∉ range J, and a sequence e where
+    each e n = J x - w' for some x, there exists f with f(e n) = 1 and f(w') = -1.
+    Extracted to reduce elaboration overhead. -/
+private lemma separation_functional_for_translated_sequence
+    {E : Type*} [NormedAddCommGroup E] [NormedSpace 𝕜 E] [CompleteSpace E]
+    (J : X →L[𝕜] E) (hJ_closed : IsClosed (range J))
+    (w' : E) (hw'_not_in_range : w' ∉ range J)
+    (e : ℕ → E) (he_form : ∀ n, ∃ x, e n = J x - w') :
+    ∃ f : StrongDual 𝕜 E, (∀ n, f (e n) = 1) ∧ f w' = -1 := by
+  let M := LinearMap.range (J : X →L[𝕜] E).toLinearMap
+  have hM_eq : (M : Set E) = range J := LinearMap.coe_range _
+  have hM_closed : IsClosed (M : Set E) := by rw [hM_eq]; exact hJ_closed
+  have hw'_not_in_M : w' ∉ (M : Set E) := by rw [hM_eq]; exact hw'_not_in_range
+  obtain ⟨f, hf_w', hf_vanish⟩ :=
+    BasicSequences.exists_functional_neg_one_and_vanishes_on_closed_submodule
+      M hM_closed w' hw'_not_in_M
+  refine ⟨f, ?_, hf_w'⟩
+  intro n
+  obtain ⟨x, he_eq⟩ := he_form n
+  calc f (e n) = f (J x - w') := by rw [he_eq]
+    _ = f (J x) - f w' := map_sub f _ _
+    _ = 0 - (-1) := by rw [hf_vanish (J x) (by rw [hM_eq]; exact mem_range_self x), hf_w']
+    _ = 1 := by ring
+
+/-- A translated tail of a basic sequence is still basic, under suitable functional conditions.
+    If b is a basic sequence, w' ∉ closure(span(tail)), and there exists f with f(b n) = 1
+    and f(w') = -1, then n ↦ b(n+N) + w' is basic. Extracted to reduce elaboration overhead. -/
+private lemma translated_tail_is_basic {E : Type*} [NormedAddCommGroup E] [NormedSpace 𝕜 E]
+    [CompleteSpace E] (b : BasicSequence 𝕜 E) (N : ℕ) (w' : E)
+    (f : StrongDual 𝕜 E) (hf_e : ∀ n, f (b (n + N)) = 1) (hf_w : f w' = -1)
+    (h_w_notin_span : w' ∉ closure (Submodule.span 𝕜 (Set.range (fun n => b (n + N))))) :
+    IsBasicSequence 𝕜 (fun n => b (n + N) + w') := by
+  have he_basic : IsBasicSequence 𝕜 (fun n => b (n + N)) := tail_basic_sequence b N
+  obtain ⟨b_tail, hb_tail_eq⟩ := he_basic
+  convert perturb_basic_sequence b_tail w' f ?_ hf_w ?_ using 1
+  · funext n; exact congrArg (· + w') (congrFun hb_tail_eq n).symm
+  · intro n; rw [congrFun hb_tail_eq n]; exact hf_e n
+  · rw [congrArg Set.range hb_tail_eq]; exact h_w_notin_span
+
+/-- Transfer compactness from the weak-star topology on the bidual back to the weak topology on X.
+    Given a compact set K in the weak-star bidual that contains the image of S, the preimage
+    in the weak topology on X is compact. Extracted to reduce context bloat. -/
+private lemma compactness_transfer_from_bidual
+    (S : Set X) (S_bidual : Set (StrongDual 𝕜 (StrongDual 𝕜 X)))
+    (hS_eq : S_bidual = NormedSpace.inclusionInDoubleDual 𝕜 X '' S)
+    (K : Set (WeakDual 𝕜 (StrongDual 𝕜 X)))
+    (hK_eq : K = closure (StrongDual.toWeakDual '' S_bidual))
+    (h_S_bidual_bounded : Bornology.IsBounded S_bidual)
+    (hK_subset : K ⊆ StrongDual.toWeakDual '' (NormedSpace.inclusionInDoubleDual 𝕜 X '' Set.univ)) :
+    IsCompact (closure (toWeakSpace 𝕜 X '' S)) := by
+  -- Key: inclusionInDoubleDual is a homeomorphism WeakSpace X ≃ₜ range(ι)
+  let J := NormedSpace.inclusionInDoubleDual 𝕜 X
+  let ι := fun x : WeakSpace 𝕜 X => StrongDual.toWeakDual (J x)
+  let homeo := NormedSpace.inclusionInDoubleDual_homeomorph_weak 𝕜 X
+  haveI : T2Space (WeakSpace 𝕜 X) := homeo.isEmbedding.t2Space
+  -- K is compact by Alaoglu: bounded preimage + closed
+  have hK_bounded_preimage : Bornology.IsBounded (StrongDual.toWeakDual ⁻¹' K) := by
+    obtain ⟨R, hR⟩ := Metric.isBounded_iff_subset_closedBall 0 |>.mp h_S_bidual_bounded
+    refine Metric.isBounded_iff_subset_closedBall 0 |>.mpr ⟨R, fun x hx => ?_⟩
+    have h_sub : StrongDual.toWeakDual '' S_bidual ⊆
+        WeakDual.toStrongDual ⁻¹' Metric.closedBall 0 R := by
+      rintro _ ⟨z, hz, rfl⟩
+      simpa [Metric.mem_closedBall, dist_zero_right] using hR hz
+    exact closure_minimal h_sub (WeakDual.isClosed_closedBall 0 R) (hK_eq ▸ hx)
+  have hK_compact : IsCompact K :=
+    WeakDual.isCompact_of_bounded_of_closed hK_bounded_preimage (hK_eq ▸ isClosed_closure)
+  -- K ⊆ range(ι), so we can pull back via the homeomorphism
+  have hK_in_range : K ⊆ Set.range ι := fun y hy => by
+    obtain ⟨z, hzJ, hz⟩ := hK_subset hy
+    obtain ⟨x, _, hx⟩ := hzJ
+    exact ⟨x, hz ▸ hx ▸ rfl⟩
+  let K_in_range : Set (Set.range ι) := Subtype.val ⁻¹' K
+  have hK_in_range_compact : IsCompact K_in_range := by
+    rw [IsEmbedding.subtypeVal.isCompact_iff]
+    convert hK_compact using 1
+    apply Set.eq_of_subset_of_subset
+    · intro y hy
+      obtain ⟨⟨_, _⟩, hK, rfl⟩ := hy
+      exact hK
+    · intro y hy
+      exact ⟨⟨y, hK_in_range hy⟩, hy, rfl⟩
+  have hK_weak_compact : IsCompact (homeo.symm '' K_in_range) :=
+    hK_in_range_compact.image homeo.symm.continuous
+  -- closure(toWeakSpace '' S) ⊆ homeo.symm '' K_in_range
+  refine hK_weak_compact.of_isClosed_subset isClosed_closure
+    (closure_minimal ?_ hK_weak_compact.isClosed)
+  intro z hz
+  obtain ⟨x, hxS, rfl⟩ := hz
+  have h_in_K : ι x ∈ K := by
+    rw [hK_eq]; apply subset_closure
+    exact ⟨J x, hS_eq ▸ ⟨x, hxS, rfl⟩, rfl⟩
+  have h_homeo : homeo (toWeakSpace 𝕜 X x) = ⟨ι x, x, rfl⟩ := Subtype.ext rfl
+  exact ⟨⟨ι x, x, rfl⟩, h_in_K, by rw [← h_homeo, Homeomorph.symm_apply_apply]⟩
+
+set_option maxHeartbeats 210000 in
+/-- Main theorem: in a Banach space, a set S that is bounded
+    and does not contain any basic sequence, has relatively weakly compact closure in the weak
+    topology. -/
 theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
     {S : Set X} (hS_ne : S.Nonempty) (h_norm : (0 : X) ∉ closure S)
     (h_bounded : Bornology.IsBounded S)
@@ -246,7 +341,15 @@ theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
     IsCompact (closure (toWeakSpace 𝕜 X '' S)) :=
 
     let Xbidual : Type _ := StrongDual 𝕜 (StrongDual 𝕜 X)
+    -- Cache expensive instances for dual and bidual to avoid repeated synthesis
+    letI : NormedAddCommGroup (StrongDual 𝕜 X) := inferInstance
+    letI : NormedSpace 𝕜 (StrongDual 𝕜 X) := inferInstance
+    letI : NormedAddCommGroup (StrongDual 𝕜 (StrongDual 𝕜 X)) := inferInstance
+    letI : NormedSpace 𝕜 (StrongDual 𝕜 (StrongDual 𝕜 X)) := inferInstance
+    letI : CompleteSpace (StrongDual 𝕜 (StrongDual 𝕜 X)) := inferInstance
     let J : X →L[𝕜] Xbidual := NormedSpace.inclusionInDoubleDual 𝕜 X
+    have hJ_iso : ∀ y, ‖J y‖ = ‖y‖ := fun y =>
+      (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).norm_map y
     let S_bidual : Set Xbidual := J '' S
 
     have h_S_bidual_bounded : Bornology.IsBounded S_bidual := by
@@ -257,8 +360,7 @@ theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
       obtain ⟨x, hxS, rfl⟩ := hy
       have hxS_norm : x ∈ closedBall 0 R := hR hxS
       rw [Metric.mem_closedBall, dist_zero_right] at *
-      have hJ_iso : ‖J x‖ = ‖x‖ := (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).norm_map x
-      exact hJ_iso.le.trans hxS_norm
+      exact (hJ_iso x).le.trans hxS_norm
 
     let K : Set (WeakDual 𝕜 (StrongDual 𝕜 X)) := closure (StrongDual.toWeakDual '' S_bidual)
 
@@ -318,58 +420,31 @@ theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
       obtain ⟨e, he_S', he_basic⟩ := h_basicS'
       rcases he_basic with ⟨b, rfl⟩
       have h_w_span : ∃ N : ℕ, w' ∉ closure (Submodule.span 𝕜 (Set.range (fun n => b (n+N)))) := by
-        -- w is non-zero (since w ∉ J(X) and 0 ∈ J(X))
-        have hw_ne : w' ≠ 0 := by
-          intro h
-          apply hw_not_JX
-          have hw0 : w = 0 := by
-            apply WeakDual.toStrongDual.injective
-            simp only [w'] at h
-            rw [h, map_zero]
-          rw [hw0, image_univ]
-          exact ⟨J 0, ⟨0, rfl⟩, by simp⟩
-        -- If w is in closure of all tails, it's in the full closure (N=0), so apply helper
-        by_contra h_contra
-        push_neg at h_contra
-        have hw_in : w' ∈ (Submodule.span 𝕜 (Set.range b.toFun)).topologicalClosure := by
-          simpa using h_contra 0
-        exact (nonzero_not_in_all_tail_closures b w' hw_in hw_ne).elim (fun N hN => hN (h_contra N))
+        -- w' ≠ 0 since w ∉ J(X) but 0 = J 0 ∈ J(X)
+        have hw_ne : w' ≠ 0 := fun h => hw_not_JX <| by
+          rw [show w = 0 from WeakDual.toStrongDual.injective (h.trans (map_zero _).symm), image_univ]
+          exact ⟨J 0, mem_range_self 0, by simp only [map_zero]⟩
+        -- If w' is in closure of all tails, it's in the full closure, contradicting helper
+        by_contra h_contra; push_neg at h_contra
+        exact (nonzero_not_in_all_tail_closures b w' (by simpa using h_contra 0) hw_ne).elim
+          (fun N hN => hN (h_contra N))
 
 
       obtain ⟨N, h_w_notin_span⟩ := h_w_span
       let e : ℕ → Xbidual := fun n => b (n + N)
 
       have h_sep : ∃ f : StrongDual 𝕜 Xbidual, (∀ n, f (e n) = 1) ∧ f w' = -1 := by
-        -- range J as a submodule
-        let M := LinearMap.range (J : X →L[𝕜] Xbidual).toLinearMap
-        have hM_eq : (M : Set Xbidual) = range J := LinearMap.coe_range _
-        have hM_closed : IsClosed (M : Set Xbidual) := by
-          rw [hM_eq]
-          exact (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).isometry
+        have hJ_closed : IsClosed (range J) :=
+          (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).isometry
             |>.isClosedEmbedding.isClosed_range
-        have hw'_not_in_M : w' ∉ (M : Set Xbidual) := by
-          rw [hM_eq]
-          intro ⟨x, hx⟩
-          apply hw_not_JX
-          rw [image_univ]
+        have hw'_not_in_range : w' ∉ range J := fun ⟨x, hx⟩ => by
+          apply hw_not_JX; rw [image_univ]
           exact ⟨J x, mem_range_self x, by simp [w', hx]⟩
-        -- Apply the shared Hahn-Banach lemma
-        obtain ⟨f, hf_w', hf_vanish⟩ :=
-          BasicSequences.exists_functional_neg_one_and_vanishes_on_closed_submodule
-            M hM_closed w' hw'_not_in_M
-        use f
-        constructor
-        · -- ∀ n, f (e n) = 1: e n = J x - w' for some x, so f(e n) = 0 - (-1) = 1
-          intro n
+        have he_form : ∀ n, ∃ x, e n = J x - w' := fun n => by
           have h_mem : b.toFun (n + N) ∈ S' := he_S' (n + N)
-          obtain ⟨t, ht_mem, ht_eq⟩ := h_mem
-          obtain ⟨x, _, rfl⟩ := ht_mem
-          have he_eq : e n = J x - w' := ht_eq.symm
-          calc f (e n) = f (J x - w') := by rw [he_eq]
-            _ = f (J x) - f w' := by rw [map_sub]
-            _ = 0 - (-1) := by rw [hf_vanish (J x) (by rw [hM_eq]; exact mem_range_self x), hf_w']
-            _ = 1 := by ring
-        · exact hf_w'
+          obtain ⟨t, ⟨x, _, rfl⟩, ht_eq⟩ := h_mem
+          exact ⟨x, ht_eq.symm⟩
+        exact separation_functional_for_translated_sequence J hJ_closed w' hw'_not_in_range e he_form
 
 
       obtain ⟨f, hf_e⟩ := h_sep
@@ -393,20 +468,9 @@ theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
         rw [sub_eq_iff_eq_add] at ht_eq
         exact ht_eq.symm
 
-      -- If s = b + w' is basic, we can pull back to S and contradict h_no_basic
-      -- Use perturb_basic_sequence: if e is basic, f(e n) = 1, f(w') = -1, and w' ∉ closure(span e),
-      -- then e + w' is basic.
-      have h_basicS : IsBasicSequence 𝕜 s := by
-        -- Use perturb_basic_sequence: the tail e is basic, and adding w' preserves basicness
-        -- under the conditions f(e n) = 1, f(w') = -1, w' ∉ closure(span e)
-        have he_basic : IsBasicSequence 𝕜 e := tail_basic_sequence b N
-        obtain ⟨b_tail, hb_tail_eq⟩ := he_basic
-        convert perturb_basic_sequence b_tail w' f ?_ hf_e.2 ?_ using 1
-        · funext n; exact congrArg (· + w') (congrFun hb_tail_eq n).symm
-        · intro n
-          have : b_tail.toFun n = e n := congrFun hb_tail_eq n
-          rw [this]; exact hf_e.1 n
-        · rw [congrArg Set.range hb_tail_eq]; exact h_w_notin_span
+      -- s = e + w' is basic by the extracted helper lemma
+      have h_basicS : IsBasicSequence 𝕜 s :=
+        translated_tail_is_basic (E := Xbidual) b N w' f hf_e.1 hf_e.2 h_w_notin_span
 
       have h_in_S : ∀ n, s n ∈ S_bidual := hs_in_S_bidual
 
@@ -421,91 +485,24 @@ theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
       -- J is an isometric embedding, so J preserves the Grünblum condition
       -- If s is basic in Xbidual, then x is basic in X
       have hx_basic : IsBasicSequence 𝕜 x := by
-        have hJ_iso : ∀ y, ‖J y‖ = ‖y‖ := fun y =>
-          (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).norm_map y
         rcases h_basicS with ⟨b_s, hb_s_eq⟩
         -- x n ≠ 0 since s n = J(x n) = b_s n ≠ 0 (by extracted lemma) and J is injective
         have hx_nz : ∀ n, x n ≠ 0 := fun n hx0 => by
-          have := basic_sequence_element_nonzero b_s n
+          have := basic_sequence_element_nonzero (E := Xbidual) b_s n
           rw [congrFun hb_s_eq n, ← hx_J n, hx0, map_zero] at this
           exact this rfl
         -- Transfer Grünblum bound using extracted lemma
         have hx_J' : ∀ n, J (x n) = b_s n := fun n => (hx_J n).trans (congrFun hb_s_eq n).symm
         have h_bound : ∀ n m (a : ℕ → 𝕜), m ≤ n →
             ‖∑ i ∈ Finset.range m, a i • x i‖ ≤
-            grunblumConstant b_s * ‖∑ i ∈ Finset.range n, a i • x i‖ :=
-          fun n m a hmn => grunblum_bound_transfer_via_isometry b_s x J hJ_iso hx_J' n m a hmn
+            grunblumConstant b_s * ‖∑ i ∈ Finset.range n, a i • x i‖ := fun n m a hmn =>
+          grunblum_bound_transfer_via_isometry (X := X) (Y := Xbidual) b_s x J hJ_iso hx_J' n m a hmn
         exact isBasicSequence_of_grunblum
           ⟨grunblumConstant b_s, grunblumConstant_ge_one b_s, h_bound⟩ hx_nz
 
       exact h_no_basic x hx_S hx_basic
 
-    -- transfer compactness back to X via weak-weak* correspondence
-    have hK_closed : IsClosed K := isClosed_closure
-    have hK_bounded_preimage : Bornology.IsBounded (StrongDual.toWeakDual ⁻¹' K) := by
-      rw [Metric.isBounded_iff_subset_closedBall 0]
-      rw [Metric.isBounded_iff_subset_closedBall 0] at h_S_bidual_bounded
-      obtain ⟨R, hR⟩ := h_S_bidual_bounded
-      use R
-      intro x hx
-      rw [Set.mem_preimage] at hx
-      rw [Metric.mem_closedBall, dist_zero_right]
-      have h_sub :
-          StrongDual.toWeakDual '' S_bidual ⊆ WeakDual.toStrongDual ⁻¹' Metric.closedBall 0 R := by
-        intro y hy
-        obtain ⟨z, hzS, rfl⟩ := hy
-        simp only [Set.mem_preimage, Metric.mem_closedBall, dist_zero_right,
-          WeakDual.coe_toStrongDual, StrongDual.coe_toWeakDual]
-        have hz_ball := hR hzS
-        rw [Metric.mem_closedBall, dist_zero_right] at hz_ball
-        exact hz_ball
-      have h_closed : IsClosed (WeakDual.toStrongDual ⁻¹' Metric.closedBall (0 : Xbidual) R) :=
-        WeakDual.isClosed_closedBall (0 : Xbidual) R
-      have hxK' :=
-        (closure_minimal h_sub h_closed : K ⊆ WeakDual.toStrongDual ⁻¹' Metric.closedBall 0 R) hx
-      simp only [Set.mem_preimage, Metric.mem_closedBall, dist_zero_right,
-        WeakDual.coe_toStrongDual, StrongDual.coe_toWeakDual] at hxK'
-      exact hxK'
-    have hK_compact : IsCompact K := WeakDual.isCompact_of_bounded_of_closed hK_bounded_preimage hK_closed
-
-    let emb := NormedSpace.inclusionInDoubleDual_isEmbedding_weak 𝕜 X
-    let ι := fun x : WeakSpace 𝕜 X => StrongDual.toWeakDual (J x)
-
-    have hK_in_range : K ⊆ Set.range ι := by
-      intro y hy
-      have h := hK_subset hy
-      simp only [Set.mem_image, Set.mem_univ, true_and] at h
-      obtain ⟨z, ⟨x, hx⟩, hz⟩ := h
-      exact ⟨x, hz ▸ hx ▸ rfl⟩
-
-    haveI : T2Space (WeakSpace 𝕜 X) := emb.t2Space
-
-    let homeo := NormedSpace.inclusionInDoubleDual_homeomorph_weak 𝕜 X
-    let K_in_range : Set (Set.range ι) := Subtype.val ⁻¹' K
-    have hK_in_range_compact : IsCompact K_in_range := by
-      rw [IsEmbedding.subtypeVal.isCompact_iff]
-      convert hK_compact using 1
-      ext y
-      simp only [K_in_range, Set.mem_image, Set.mem_preimage]
-      exact ⟨fun ⟨⟨_, _⟩, hK, rfl⟩ => hK, fun hy => ⟨⟨y, hK_in_range hy⟩, hy, rfl⟩⟩
-
-    let K_weak : Set (WeakSpace 𝕜 X) := homeo.symm '' K_in_range
-    have hK_weak_compact : IsCompact K_weak := hK_in_range_compact.image homeo.symm.continuous
-
-    have h_closure_subset : closure (toWeakSpace 𝕜 X '' S) ⊆ K_weak := by
-      have h_S_subset : toWeakSpace 𝕜 X '' S ⊆ K_weak := by
-        intro z hz
-        obtain ⟨x, hxS, rfl⟩ := hz
-        have h_in_K : ι x ∈ K := subset_closure ⟨J x, ⟨x, hxS, rfl⟩, rfl⟩
-        have h_in_K_range : (⟨ι x, x, rfl⟩ : Set.range ι) ∈ K_in_range := h_in_K
-        simp only [K_weak, Set.mem_image]
-        use ⟨ι x, x, rfl⟩, h_in_K_range
-        have h_homeo : homeo (toWeakSpace 𝕜 X x) = ⟨ι x, x, rfl⟩ := by
-          apply Subtype.ext; rfl
-        rw [← h_homeo, Homeomorph.symm_apply_apply]
-      have h_closed : IsClosed K_weak := hK_weak_compact.isClosed
-      exact closure_minimal h_S_subset h_closed
-
-    hK_weak_compact.of_isClosed_subset isClosed_closure h_closure_subset
+    -- Transfer compactness back to X via the extracted helper lemma
+    compactness_transfer_from_bidual S S_bidual rfl K rfl h_S_bidual_bounded hK_subset
 
 --
