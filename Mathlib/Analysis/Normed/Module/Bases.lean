@@ -5,6 +5,7 @@ Authors: Michał Świętek
 -/
 module
 
+public import Mathlib.Analysis.Normed.Group.InfiniteSum
 public import Mathlib.Analysis.Normed.Operator.BanachSteinhaus
 public import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
 public import Mathlib.Topology.Algebra.Module.FiniteDimension
@@ -190,6 +191,80 @@ theorem proj'_comp (A B : Finset β) (x : X) : b.proj' A (b.proj' B x) = b.proj'
   simp only [Finset.mem_filter, Finset.mem_inter, and_comm]
 
 end SchauderBasis'
+
+/-! ### Unconditional Schauder bases -/
+
+namespace UnconditionalSchauderBasis
+
+variable (b : UnconditionalSchauderBasis 𝕜 X)
+
+/-- Projections are uniformly bounded for unconditional bases (Banach-Steinhaus). -/
+theorem proj'_uniform_bound [CompleteSpace X] : ∃ C : ℝ, ∀ A : Finset ℕ, ‖b.proj' A‖ ≤ C := by
+  apply banach_steinhaus
+  intro x
+  -- The basis expansion gives HasSum, hence Summable for the unconditional filter
+  have hsum : Summable (fun i ↦ b.coord i x • b i) := b.expansion x |>.summable
+  -- By the vanishing norm characterization, tails are small
+  obtain ⟨A₀, hA₀⟩ := summable_iff_vanishing_norm.mp hsum 1 one_pos
+  -- Bound on finite sums over subsets of A₀
+  have hne : (A₀.powerset.image fun B ↦ ‖b.proj' B x‖).Nonempty := by
+    simp only [Finset.image_nonempty, Finset.powerset_nonempty]
+  let M := (A₀.powerset.image fun B ↦ ‖b.proj' B x‖).sup' hne _root_.id
+  use M + 1
+  intro A
+  -- Split A = (A ∩ A₀) ∪ (A \ A₀)
+  have hdecomp : b.proj' A x = b.proj' (A ∩ A₀) x + b.proj' (A \ A₀) x := by
+    simp only [SchauderBasis'.proj'_apply]
+    have hdisj : Disjoint (A ∩ A₀) (A \ A₀) := by
+      rw [Finset.disjoint_left]
+      intro i hi
+      simp only [Finset.mem_inter] at hi
+      simp only [Finset.mem_sdiff, hi.2, not_true_eq_false, and_false, not_false_eq_true]
+    rw [← Finset.sum_union hdisj]
+    congr 1
+    ext i
+    simp only [Finset.mem_union, Finset.mem_inter, Finset.mem_sdiff]
+    tauto
+  rw [hdecomp]
+  -- The tail (A \ A₀) is small since it's disjoint from A₀
+  have htail : ‖b.proj' (A \ A₀) x‖ < 1 := by
+    rw [SchauderBasis'.proj'_apply]
+    exact hA₀ (A \ A₀) (Finset.sdiff_disjoint)
+  -- The head (A ∩ A₀) is bounded by M
+  have hhead : ‖b.proj' (A ∩ A₀) x‖ ≤ M := by
+    apply Finset.le_sup' (f := _root_.id)
+    simp only [Finset.mem_image, Finset.mem_powerset]
+    exact ⟨A ∩ A₀, Finset.inter_subset_right, rfl⟩
+  calc ‖b.proj' (A ∩ A₀) x + b.proj' (A \ A₀) x‖
+      ≤ ‖b.proj' (A ∩ A₀) x‖ + ‖b.proj' (A \ A₀) x‖ := norm_add_le _ _
+    _ ≤ M + 1 := by linarith
+
+/-- The basis constant for unconditional bases (supremum over all finite sets). -/
+noncomputable def basisConstant' : ℝ≥0∞ := ⨆ A : Finset ℕ, ‖b.proj' A‖₊
+
+/-- The basis constant is finite if there exists a uniform bound on projection norms. -/
+theorem basisConstant'_lt_top_of_bound {C : ℝ} (hC : ∀ A : Finset ℕ, ‖b.proj' A‖ ≤ C) :
+    b.basisConstant' < ⊤ := by
+  rw [basisConstant', ENNReal.iSup_coe_lt_top, bddAbove_iff_exists_ge (0 : NNReal)]
+  have hCpos : 0 ≤ C := by simpa [SchauderBasis'.proj'_empty] using hC ∅
+  use C.toNNReal
+  constructor
+  · exact zero_le _
+  · rintro _ ⟨A, rfl⟩
+    rw [← NNReal.coe_le_coe, Real.coe_toNNReal C hCpos, coe_nnnorm]
+    exact hC A
+
+/-- The basis constant is finite in a complete space for unconditional bases. -/
+theorem basisConstant'_lt_top [CompleteSpace X] : b.basisConstant' < ⊤ := by
+  obtain ⟨C, hC⟩ := b.proj'_uniform_bound
+  exact b.basisConstant'_lt_top_of_bound hC
+
+/-- The norm of any projection is bounded by the basis constant. -/
+theorem norm_proj'_le_basisConstant' (A : Finset ℕ) : ‖b.proj' A‖₊ ≤ b.basisConstant' := by
+  rw [basisConstant']
+  exact le_iSup (fun A ↦ (‖b.proj' A‖₊ : ℝ≥0∞)) A
+
+end UnconditionalSchauderBasis
 
 /-! ### ℕ-indexed Schauder bases with conditional convergence -/
 
