@@ -60,6 +60,23 @@ open Filter Topology LinearMap Set ENNReal
 variable {𝕜 : Type*} [NontriviallyNormedField 𝕜]
 variable {X : Type*} [NormedAddCommGroup X] [NormedSpace 𝕜 X]
 
+/--
+A generalized Schauder basis indexed by `β` using a `SummationFilter`.
+The use of `φ.HasSum` is the standard dot-notation for `SummationFilter.HasSum φ`.
+-/
+structure SchauderBasis' (β : Type*) [Preorder β] [LocallyFiniteOrder β] [DecidableEq β] (𝕜 : Type*)
+  (X : Type*) [NontriviallyNormedField 𝕜] [NormedAddCommGroup X] [NormedSpace 𝕜 X]
+  (φ : SummationFilter β) where
+  /-- The basis vectors. -/
+  basis : β → X
+  /-- Coordinate functionals -/
+  coord : β → StrongDual 𝕜 X
+  /-- Biorthogonality -/
+  ortho : ∀ i j, coord i (basis j) = (Pi.single j (1 : 𝕜) : β → 𝕜) i
+  /-- The sum converges to `x` along the provided `SummationFilter`. -/
+  expansion : ∀ x : X, HasSum (fun i ↦ (coord i) x • basis i) x φ
+
+
 /-- A Schauder basis is a sequence (e n) of vectors in X such that there exists a sequence of
     continuous linear functionals (f n) (the coordinate functionals) satisfying:
     1) f i (e j) = δ_{ij}
@@ -70,16 +87,16 @@ variable {X : Type*} [NormedAddCommGroup X] [NormedSpace 𝕜 X]
 structure SchauderBasis (𝕜 : Type*) (X : Type*) [NontriviallyNormedField 𝕜]
     [NormedAddCommGroup X] [NormedSpace 𝕜 X] where
   /-- The basis vectors. -/
-  toFun : ℕ → X
+  basis : ℕ → X
   /-- Coordinate functionals -/
   coord : ℕ → StrongDual 𝕜 X
   /-- Biorthogonality -/
-  ortho : ∀ i j, coord i (toFun j) = (Pi.single j (1 : 𝕜) : ℕ → 𝕜) i
+  ortho : ∀ i j, coord i (basis j) = (Pi.single j (1 : 𝕜) : ℕ → 𝕜) i
   /-- Convergence of partial sums -/
-  expansion : ∀ x : X, HasSum (fun i ↦ (coord i) x • toFun i) x (SummationFilter.conditional ℕ)
+  expansion : ∀ x : X, HasSum (fun i ↦ (coord i) x • basis i) x (SummationFilter.conditional ℕ)
 
 instance : CoeFun (SchauderBasis 𝕜 X) (fun _ ↦ ℕ → X) where
-  coe b := b.toFun
+  coe b := b.basis
 
 
 namespace SchauderBasis
@@ -190,8 +207,9 @@ theorem proj_uniform_bound [CompleteSpace X] : ∃ C : ℝ, ∀ n : ℕ, ‖b.pr
   use M
 
 /-- The basis constant is the supremum of the norms of the canonical projections. -/
-def basisConstant : ℝ≥0∞ := ⨆ n, (‖b.proj n‖₊ : ℝ≥0∞)
+def basisConstant : ℝ≥0∞ := ⨆ n, ‖b.proj n‖₊
 
+/-- The basis constant is finite if there exists a bound on the norms of the projections. -/
 theorem basisConstant_lt_top_uniform_bound {C : ℝ} (hC : ∀ n : ℕ, ‖b.proj n‖ ≤ C) :
     b.basisConstant < ⊤ := by
   rw [basisConstant, ENNReal.iSup_coe_lt_top, bddAbove_iff_exists_ge (0 : NNReal)]
@@ -203,16 +221,15 @@ theorem basisConstant_lt_top_uniform_bound {C : ℝ} (hC : ∀ n : ℕ, ‖b.pro
     rw [← NNReal.coe_le_coe, Real.coe_toNNReal C hCpos, coe_nnnorm]
     exact hC n
 
--- /-- The basis constant is finite. -/
+-- /-- The basis constant is finite in the complete space case. -/
 theorem basisConstant_lt_top_for_complete [CompleteSpace X] : b.basisConstant < ⊤ := by
   obtain ⟨C, hC⟩ := b.proj_uniform_bound
   exact b.basisConstant_lt_top_uniform_bound hC
 
-/-- The norm of any projection is bounded by the basis constant (as a real number). -/
-theorem norm_proj_le_basisConstant (n : ℕ) : (‖b.proj n‖₊ : ℝ≥0∞) ≤ b.basisConstant := by
+/-- The norm of any projection is bounded by the basis constant. -/
+theorem norm_proj_le_basisConstant (n : ℕ) : ‖b.proj n‖₊ ≤ b.basisConstant := by
   rw [basisConstant]
   exact le_iSup (fun i ↦ (‖b.proj i‖₊ : ℝ≥0∞)) n
-
 
 /-- The difference operator P_{n+1} - P_n. -/
 def succ_sub (P : ℕ → X →L[𝕜] X) (n : ℕ) : X →L[𝕜] X := P (n + 1) - P n
@@ -227,7 +244,8 @@ lemma succ_sub_sum (P : ℕ → X →L[𝕜] X) (h0 : P 0 = 0) (n : ℕ) :
 
 /-- The operators `succ_sub P i` are orthogonal projections. -/
 lemma succ_sub_ortho {P : ℕ → X →L[𝕜] X} (hcomp : ∀ n m, ∀ x : X, P n (P m x) = P (min n m) x)
-    (i j : ℕ) (x : X) : (succ_sub P i) (succ_sub P j x) = (Pi.single j (succ_sub P j x) : ℕ → X) i := by
+    (i j : ℕ) (x : X) :
+    (succ_sub P i) (succ_sub P j x) = (Pi.single j (succ_sub P j x) : ℕ → X) i := by
   simp only [Pi.single_apply, succ_sub, ContinuousLinearMap.sub_apply, map_sub, hcomp,
     Nat.add_min_add_right]
   split_ifs with h
@@ -270,9 +288,9 @@ lemma succ_sub_rank_one {P : ℕ → X →L[𝕜] X}
     rintro x ⟨⟨y, rfl⟩, ⟨z, hz⟩⟩
     dsimp only [ContinuousLinearMap.coe_coe] at *
     have : Q n (P n z) = 0 := by
-      simp_rw [Q, SchauderBasis.Q, ContinuousLinearMap.sub_apply, hcomp,
+      simp_rw [Q, SchauderBasis.succ_sub, ContinuousLinearMap.sub_apply, hcomp,
         min_eq_right (Nat.le_succ n), min_self, sub_self]
-    rw [← hz, ← this, hz, Q_ortho hcomp, Pi.single_apply, if_pos rfl]
+    rw [← hz, ← this, hz, succ_sub_ortho hcomp, Pi.single_apply, if_pos rfl]
   have h_fin_Pn (n : ℕ) : FiniteDimensional 𝕜 (LinearMap.range (P n).toLinearMap) := by
     by_cases hn : n = 0
     · rw [hn]
@@ -284,7 +302,7 @@ lemma succ_sub_rank_one {P : ℕ → X →L[𝕜] X}
     exact Nat.pos_of_ne_zero hn
   have : FiniteDimensional 𝕜 U := by
     have : U ≤ LinearMap.range (P (n+1)).toLinearMap := by
-      simp only [U, Q, SchauderBasis.Q]
+      simp only [U, Q, SchauderBasis.succ_sub]
       intro x ⟨y, hy⟩
       rw [← hy]
       apply Submodule.sub_mem _ (LinearMap.mem_range_self _ _)
@@ -298,7 +316,7 @@ lemma succ_sub_rank_one {P : ℕ → X →L[𝕜] X}
   exact Nat.add_right_cancel this.symm
 
 variable (𝕜 X : Type*) [NontriviallyNormedField 𝕜] [NormedAddCommGroup X] [NormedSpace 𝕜 X]
-structure CanonicalProjectionProperties where
+structure ProjectionProperties where
   /-- The sequence of finite-rank projections. -/
   P : ℕ → X →L[𝕜] X
   /-- The sequence of candidate basis vectors. -/
@@ -312,50 +330,50 @@ structure CanonicalProjectionProperties where
   /-- The projections converge strongly to the identity. -/
   hlim : ∀ x, Tendsto (fun n ↦ P n x) atTop (𝓝 x)
   /-- The vector e_n lies in the range of the difference operator Q_n = P_{n+1} - P_n. -/
-  he_in_range : ∀ n, e n ∈ LinearMap.range (Q P n).toLinearMap
+  he_in_range : ∀ n, e n ∈ LinearMap.range (succ_sub P n).toLinearMap
   /-- The vector e_n is non-zero. -/
   he_ne : ∀ n, e n ≠ 0
 
 variable {𝕜 X}
-namespace CanonicalProjectionProperties
+namespace ProjectionProperties
 
 /-- Specification: There exists a coefficient functional scaling `e n` to match `Q P n x`. -/
-lemma exists_coeff (D : CanonicalProjectionProperties 𝕜 X) (n : ℕ) (x : X) :
-    ∃ c : 𝕜, c • D.e n = (Q D.P n) x := by
-  let Q_n := (Q D.P n).toLinearMap
+lemma exists_coeff (D : ProjectionProperties 𝕜 X) (n : ℕ) (x : X) :
+    ∃ c : 𝕜, c • D.e n = (succ_sub D.P n) x := by
+  let Q_n := (succ_sub D.P n).toLinearMap
   have h_rank : Module.finrank 𝕜 (LinearMap.range Q_n) = 1 :=
-    Q_rank_one D.h0 D.hdim D.hcomp n
+    succ_sub_rank_one D.h0 D.hdim D.hcomp n
   haveI : FiniteDimensional 𝕜 (LinearMap.range Q_n) :=
-    FiniteDimensional.of_finrank_eq_succ (Q_rank_one D.h0 D.hdim D.hcomp n)
+    FiniteDimensional.of_finrank_eq_succ (succ_sub_rank_one D.h0 D.hdim D.hcomp n)
   have h_span : LinearMap.range Q_n = Submodule.span 𝕜 {D.e n} := by
     symm
     apply Submodule.eq_of_le_of_finrank_eq
     · rw [Submodule.span_le, Set.singleton_subset_iff]
       exact D.he_in_range n
-    · rw [Q_rank_one D.h0 D.hdim D.hcomp n, finrank_span_singleton (D.he_ne n)]
+    · rw [succ_sub_rank_one D.h0 D.hdim D.hcomp n, finrank_span_singleton (D.he_ne n)]
   have h_mem : Q_n x ∈ Submodule.span 𝕜 {D.e n} := by
     rw [← h_span]
     exact LinearMap.mem_range_self Q_n x
   exact Submodule.mem_span_singleton.mp h_mem
 
 /-- Auxiliary Def: The coefficient functional value. -/
-def basis_coeff (D : CanonicalProjectionProperties 𝕜 X) (n : ℕ) (x : X) : 𝕜 :=
+def basis_coeff (D : ProjectionProperties 𝕜 X) (n : ℕ) (x : X) : 𝕜 :=
   -- We pass the explicit arguments to the lemma
   Classical.choose (exists_coeff D n x)
 
 /-- Specification: The coefficient satisfies the equation. -/
-lemma basis_coeff_spec (D : CanonicalProjectionProperties 𝕜 X)
+lemma basis_coeff_spec (D : ProjectionProperties 𝕜 X)
     (n : ℕ) (x : X) :
-    basis_coeff D n x • D.e n = (Q D.P n) x :=
+    basis_coeff D n x • D.e n = (succ_sub D.P n) x :=
   Classical.choose_spec (exists_coeff D n x)
 
 
 /-- Main Definition: Constructs the Schauder basis from the projections. -/
-def basis (D : CanonicalProjectionProperties 𝕜 X) : SchauderBasis 𝕜 X :=
+def basis (D : ProjectionProperties 𝕜 X) : SchauderBasis 𝕜 X :=
   -- 1. Use our helper for the raw coefficient function
   let f_fun := basis_coeff D
   -- 2. Establish the key property locally for convenience
-  have hQf : ∀ n x, (Q D.P n) x = f_fun n x • D.e n := fun n x ↦
+  have hQf : ∀ n x, (succ_sub D.P n) x = f_fun n x • D.e n := fun n x ↦
     (basis_coeff_spec D n x).symm
 
   -- 3. Construct the continuous linear functionals
@@ -365,20 +383,20 @@ def basis (D : CanonicalProjectionProperties 𝕜 X) : SchauderBasis 𝕜 X :=
       rw [← hQf, map_add, add_smul, hQf, hQf]
     · intro c x; apply smul_left_injective 𝕜 (D.he_ne n); dsimp only [smul_eq_mul]
       rw [← hQf, map_smul, mul_smul, hQf]
-    )) (‖Q D.P n‖ / ‖D.e n‖) (by
+    )) (‖succ_sub D.P n‖ / ‖D.e n‖) (by
       intro x; rw [div_mul_eq_mul_div, le_div_iff₀ (norm_pos_iff.mpr (D.he_ne n))]
       calc ‖f_fun n x‖ * ‖D.e n‖ = ‖f_fun n x • D.e n‖ := (norm_smul _ _).symm
-        _ = ‖(Q D.P n) x‖ := by rw [hQf]
-        _ ≤ ‖Q D.P n‖ * ‖x‖ := ContinuousLinearMap.le_opNorm _ _)
+        _ = ‖(succ_sub D.P n) x‖ := by rw [hQf]
+        _ ≤ ‖succ_sub D.P n‖ * ‖x‖ := ContinuousLinearMap.le_opNorm _ _)
   -- 4. Prove Biorthogonality
   have ortho : ∀ i j, f i (D.e j) = (Pi.single j (1 : 𝕜) : ℕ → 𝕜) i := by
     intro i j; apply smul_left_injective 𝕜 (D.he_ne i); dsimp only [smul_eq_mul]
     simp only [mkContinuous_apply, IsLinearMap.mk'_apply, Pi.single_apply, ite_smul, one_smul,
       zero_smul, f]
-    have : (Q D.P i) (D.e j) = (Pi.single j (D.e j) : ℕ → X) i := by
+    have : (succ_sub D.P i) (D.e j) = (Pi.single j (D.e j) : ℕ → X) i := by
       obtain ⟨x, hx⟩ := D.he_in_range j
       rw [ContinuousLinearMap.coe_coe] at hx
-      rw [← hx, Q_ortho D.hcomp i j x]
+      rw [← hx, succ_sub_ortho D.hcomp i j x]
     rw [← hQf, this, Pi.single_apply]
     split_ifs with hij
     · subst hij; simp only
@@ -388,17 +406,17 @@ def basis (D : CanonicalProjectionProperties 𝕜 X) : SchauderBasis 𝕜 X :=
     rw [HasSum, SummationFilter.conditional_filter_eq_map_range]
     apply Tendsto.congr _ (D.hlim x)
     intro n; simp_rw [f]; dsimp only [mkContinuous_apply, IsLinearMap.mk'_apply]
-    simp_rw [← hQf, Q]
-    simp only [← Q_sum D.P D.h0 n, ContinuousLinearMap.coe_sum', Finset.sum_apply]
-    sorry
+    simp_rw [← hQf, succ_sub]
+    simp only [← succ_sub_sum D.P D.h0 n, ContinuousLinearMap.coe_sum', Finset.sum_apply]
+    congr
   -- 6. Bundle it all up
   SchauderBasis.mk D.e f ortho lim
 
 /-- The projections of the constructed basis correspond to the input data P. -/
 @[simp]
-theorem basis_proj (D : CanonicalProjectionProperties 𝕜 X) : D.basis.proj = D.P := by
-  ext n x
-  rw [SchauderBasis.proj_apply, ← Q_sum D.P D.h0 n]
+theorem basis_proj (D : ProjectionProperties 𝕜 X) : D.basis.proj = D.P := by
+  ext n _
+  rw [SchauderBasis.proj_apply, ← succ_sub_sum D.P D.h0 n]
   simp only [ContinuousLinearMap.coe_sum', Finset.sum_apply]
   refine Finset.sum_congr rfl fun i _ ↦ ?_
   dsimp [basis, mkContinuous_apply, IsLinearMap.mk'_apply]
@@ -406,8 +424,8 @@ theorem basis_proj (D : CanonicalProjectionProperties 𝕜 X) : D.basis.proj = D
 
 /-- The sequence of the constructed basis corresponds to the input data e. -/
 @[simp]
-theorem basis_coe (D : CanonicalProjectionProperties 𝕜 X) : ⇑D.basis = D.e :=
+theorem basis_coe (D : ProjectionProperties 𝕜 X) : ⇑D.basis = D.e :=
   rfl
 
-end CanonicalProjectionProperties
+end ProjectionProperties
 end SchauderBasis

@@ -389,7 +389,7 @@ def basis (D : CanonicalProjectionProperties 𝕜 X) : SchauderBasis 𝕜 X :=
     intro n; simp_rw [f]; dsimp only [mkContinuous_apply, IsLinearMap.mk'_apply]
     simp_rw [← hQf, Q]
     simp only [← Q_sum D.P D.h0 n, ContinuousLinearMap.coe_sum', Finset.sum_apply]
-    sorry
+    congr
   -- 6. Bundle it all up
   SchauderBasis.mk D.e f ortho lim
 

@@ -17,6 +17,7 @@ public import Mathlib.Topology.Neighborhoods
 public import Mathlib.Topology.Constructions
 public import Mathlib.Topology.UniformSpace.UniformEmbedding
 public import Mathlib.Topology.Algebra.Module.WeakDual
+public import Mathlib.Topology.Maps.Basic
 
 
 /-!
@@ -30,18 +31,111 @@ open Submodule Set WeakDual Metric Filter Topology BasicSequences
 variable {𝕜 : Type*} [RCLike 𝕜]
 variable {X : Type*} [NormedAddCommGroup X] [NormedSpace 𝕜 X]
 
+/-- Helper lemma: a coordinate functional vanishes on the span of basis elements with larger index.
+    This is extracted to reduce elaboration overhead in the main theorem. -/
+private lemma coord_vanish_on_tail_span {E : Type*} [NormedAddCommGroup E] [NormedSpace 𝕜 E]
+    [CompleteSpace E] {Y : Submodule 𝕜 E}
+    (basis_Z : SchauderBasis 𝕜 Y.topologicalClosure)
+    (b : ℕ → E) (_hb_in_Y : ∀ n, b n ∈ Y)
+    (h_basis_coe : ∀ n, (basis_Z n : E) = b n)
+    (k N : ℕ) (hN : k < N)
+    (tail_span : Submodule 𝕜 E)
+    (h_tail_span_eq : tail_span = Submodule.span 𝕜 (Set.range (fun n => b (n + N))))
+    (h_tail_in_Y : tail_span ≤ Y)
+    (v : E) (hv : v ∈ tail_span) :
+    basis_Z.coord k ⟨v, Y.le_topologicalClosure (h_tail_in_Y hv)⟩ = 0 := by
+  -- First prove coord_k vanishes on basis elements with index > k
+  have h_vanish_basis : ∀ j > k, basis_Z.coord k (basis_Z j) = 0 := by
+    intro j hj
+    rw [basis_Z.ortho k j, Pi.single_apply, if_neg (ne_of_gt hj).symm]
+  -- Rewrite the membership using tail_span_eq so span_induction works
+  rw [h_tail_span_eq] at hv
+  -- Use span induction
+  induction hv using Submodule.span_induction with
+  | mem x hx =>
+    obtain ⟨n, rfl⟩ := hx
+    have h_mem' : b (n + N) ∈ tail_span := by
+      rw [h_tail_span_eq]; exact Submodule.subset_span ⟨n, rfl⟩
+    have h_eq : (⟨b (n + N), Y.le_topologicalClosure (h_tail_in_Y h_mem')⟩ : Y.topologicalClosure)
+        = basis_Z (n + N) := Subtype.ext (h_basis_coe (n + N)).symm
+    rw [h_eq]
+    exact h_vanish_basis (n + N) (by omega)
+  | zero =>
+    have h0 : (0 : E) ∈ tail_span := Submodule.zero_mem _
+    convert map_zero (basis_Z.coord k)
+  | add x y hx' hy' hx hy =>
+    have hx_tail : x ∈ tail_span := by rw [h_tail_span_eq]; exact hx'
+    have hy_tail : y ∈ tail_span := by rw [h_tail_span_eq]; exact hy'
+    have hxy_tail : x + y ∈ tail_span := Submodule.add_mem _ hx_tail hy_tail
+    have hx_Y : x ∈ Y.topologicalClosure := Y.le_topologicalClosure (h_tail_in_Y hx_tail)
+    have hy_Y : y ∈ Y.topologicalClosure := Y.le_topologicalClosure (h_tail_in_Y hy_tail)
+    have hxy_Y : x + y ∈ Y.topologicalClosure := Submodule.add_mem _ hx_Y hy_Y
+    have h_eq : basis_Z.coord k ⟨x + y, hxy_Y⟩ =
+        basis_Z.coord k ⟨x, hx_Y⟩ + basis_Z.coord k ⟨y, hy_Y⟩ := by
+      convert map_add (basis_Z.coord k) ⟨x, hx_Y⟩ ⟨y, hy_Y⟩ using 2
+    rw [h_eq, hx hx_tail, hy hy_tail, add_zero]
+  | smul c x hx' hx =>
+    have hx_tail : x ∈ tail_span := by rw [h_tail_span_eq]; exact hx'
+    have hcx_tail : c • x ∈ tail_span := Submodule.smul_mem _ c hx_tail
+    have hx_Y : x ∈ Y.topologicalClosure := Y.le_topologicalClosure (h_tail_in_Y hx_tail)
+    have hcx_Y : c • x ∈ Y.topologicalClosure := Submodule.smul_mem _ c hx_Y
+    have h_eq : basis_Z.coord k ⟨c • x, hcx_Y⟩ = c • basis_Z.coord k ⟨x, hx_Y⟩ := by
+      convert map_smul (basis_Z.coord k) c ⟨x, hx_Y⟩ using 2
+    rw [h_eq, hx hx_tail, smul_zero]
 
+/-- The inclusion of a normed space into its double dual is an embedding
+    from the weak topology to the weak-star topology. -/
+theorem NormedSpace.inclusionInDoubleDual_isEmbedding_weak
+    (𝕜 : Type*) [RCLike 𝕜] (X : Type*) [NormedAddCommGroup X] [NormedSpace 𝕜 X] :
+    IsEmbedding (fun x : WeakSpace 𝕜 X =>
+      StrongDual.toWeakDual (NormedSpace.inclusionInDoubleDual 𝕜 X x)) := by
+  let J := NormedSpace.inclusionInDoubleDual 𝕜 X
+  let ι := fun x : WeakSpace 𝕜 X => StrongDual.toWeakDual (J x)
+  -- Both topologies are induced by the same family of maps: x ↦ (fun f => f x)
+  -- WeakSpace 𝕜 X: induced by topDualPairing.flip; WeakDual 𝕜 X**: induced by eval
+  -- Composition: (ι x)(f) = (J x)(f) = f(x), so evalWeakDual ∘ ι = evalWeakSpace
+  let evalWeakSpace : WeakSpace 𝕜 X → (StrongDual 𝕜 X → 𝕜) := fun x f => f x
+  let evalWeakDual : WeakDual 𝕜 (StrongDual 𝕜 X) → (StrongDual 𝕜 X → 𝕜) := fun φ f => φ f
+  have h_commute : evalWeakDual ∘ ι = evalWeakSpace := by ext x f; rfl
+  -- Injectivity: J is injective (isometry) and toWeakDual is injective
+  have h_inj : Function.Injective ι := by
+    intro x y hxy
+    simp only [ι] at hxy
+    have h1 : J x = J y := StrongDual.toWeakDual.injective hxy
+    exact (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).injective h1
+  -- Inducing: both topologies are induced from Pi, and evalWeakDual ∘ ι = evalWeakSpace
+  have h_ind : IsInducing ι := by
+    constructor; symm
+    calc TopologicalSpace.induced ι (TopologicalSpace.induced evalWeakDual Pi.topologicalSpace)
+        = TopologicalSpace.induced (evalWeakDual ∘ ι) Pi.topologicalSpace := induced_compose
+      _ = TopologicalSpace.induced evalWeakSpace Pi.topologicalSpace := by rw [h_commute]
+  exact ⟨h_ind, h_inj⟩
 
-set_option maxHeartbeats 2000000 in
+/-- The inclusion of a normed space into its double dual is a homeomorphism
+    from the weak topology to the weak-star topology on the range. -/
+noncomputable def NormedSpace.inclusionInDoubleDual_homeomorph_weak
+    (𝕜 : Type*) [RCLike 𝕜] (X : Type*) [NormedAddCommGroup X] [NormedSpace 𝕜 X] :
+    WeakSpace 𝕜 X ≃ₜ Set.range (fun x : WeakSpace 𝕜 X =>
+      StrongDual.toWeakDual (NormedSpace.inclusionInDoubleDual 𝕜 X x)) := by
+  let emb := NormedSpace.inclusionInDoubleDual_isEmbedding_weak 𝕜 X
+  -- Construct the equiv using injectivity
+  let e : WeakSpace 𝕜 X ≃ Set.range (fun x : WeakSpace 𝕜 X =>
+      StrongDual.toWeakDual (NormedSpace.inclusionInDoubleDual 𝕜 X x)) :=
+    Equiv.ofInjective _ emb.injective
+  -- The embedding induces the topology, so e is a homeomorphism
+  exact e.toHomeomorphOfIsInducing (IsInducing.subtypeVal.of_comp_iff.mp emb.toIsInducing)
+
+set_option maxHeartbeats 800000 in
+-- Complex nested proof with Hahn-Banach separation and bidual embedding arguments
 theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
     {S : Set X} (hS_ne : S.Nonempty) (h_norm : (0 : X) ∉ closure S)
     (h_bounded : Bornology.IsBounded S)
     (h_no_basic : ∀ (e : ℕ → X), (∀ n, e n ∈ S) → ¬ IsBasicSequence 𝕜 e) :
     IsCompact (closure (toWeakSpace 𝕜 X '' S)) :=
 
-    let Xbidual := StrongDual 𝕜 (StrongDual 𝕜 X)
-    let J := NormedSpace.inclusionInDoubleDual 𝕜 X
-    let S_bidual := J '' S
+    let Xbidual : Type _ := StrongDual 𝕜 (StrongDual 𝕜 X)
+    let J : X →L[𝕜] Xbidual := NormedSpace.inclusionInDoubleDual 𝕜 X
+    let S_bidual : Set Xbidual := J '' S
 
     have h_S_bidual_bounded : Bornology.IsBounded S_bidual := by
       rw [Metric.isBounded_iff_subset_closedBall 0] at h_bounded ⊢
@@ -54,7 +148,7 @@ theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
       have hJ_iso : ‖J x‖ = ‖x‖ := (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).norm_map x
       exact hJ_iso.le.trans hxS_norm
 
-    let K := closure (StrongDual.toWeakDual '' S_bidual)
+    let K : Set (WeakDual 𝕜 (StrongDual 𝕜 X)) := closure (StrongDual.toWeakDual '' S_bidual)
 
     have hK_subset :  K ⊆ StrongDual.toWeakDual '' (J '' (Set.univ)) := by
       by_contra h_not_subset
@@ -64,7 +158,7 @@ theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
 
       -- Define S' in StrongDual (Xbidual) space as translation of S_bidual by -w'
       let w' : Xbidual := WeakDual.toStrongDual w
-      let S' := (fun y => y - w') '' S_bidual
+      let S' : Set Xbidual := (fun y => y - w') '' S_bidual
 
       have h_weak_starS' : (0 : WeakDual 𝕜 (StrongDual 𝕜 X)) ∈ closure (StrongDual.toWeakDual '' S') := by
         let A := StrongDual.toWeakDual '' S_bidual
@@ -158,8 +252,8 @@ theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
         push_neg at h_contra
 
         -- 3. Get the basis structure for the closure of the span
-        let Y := Submodule.span 𝕜 (Set.range b.toFun)
-        let Z := Y.topologicalClosure
+        let Y : Submodule 𝕜 Xbidual := Submodule.span 𝕜 (Set.range b.toFun)
+        let Z : Submodule 𝕜 Xbidual := Y.topologicalClosure
 
         -- Since h_contra holds for N=0, w is in the closure of the whole span
         have h_w'_in_Z : w' ∈ Z := by
@@ -170,10 +264,8 @@ theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
         have hw'_Z_ne : w'_Z ≠ 0 := fun h => hw_ne (congrArg Subtype.val h)
 
         -- Use the theorem to treat b as a Schauder basis for K
-        -- (Assuming SchauderBasis_of_closure is available as discussed)
-        let basis_Z :=
-        -- let basis_K : SchauderBasis 𝕜 Y.topologicalClosure :=
-          SchauderBasis_of_closure (Y:=Y) b.basis b.basisConstant_lt_top
+        let basis_Z : SchauderBasis 𝕜 Z :=
+          SchauderBasis_of_closure (Y := Y) b.basis b.basisConstant_lt_top
 
         -- 4. Since w ≠ 0, it must have a non-zero coordinate k
         have h_exists_coord : ∃ k, basis_Z.coord k w'_Z ≠ 0 := by
@@ -515,10 +607,78 @@ theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
             _ = grunblumConstant b_s * ‖∑ i ∈ Finset.range n, a i • x i‖ := by rw [hJ_iso]
         exact isBasicSequence_of_grunblum ⟨grunblumConstant b_s, grunblumConstant_ge_one b_s, h_bound⟩ hx_nz
 
-      -- Contradiction: x is a basic sequence in S, but h_no_basic says there's no such sequence
       exact h_no_basic x hx_S hx_basic
 
     -- transfer compactness back to X via weak-weak* correspondence
-    sorry
+    have hK_closed : IsClosed K := isClosed_closure
+    have hK_bounded_preimage : Bornology.IsBounded (StrongDual.toWeakDual ⁻¹' K) := by
+      have h1 : Bornology.IsBounded (StrongDual.toWeakDual ⁻¹' K) := by
+        rw [Metric.isBounded_iff_subset_closedBall 0]
+        rw [Metric.isBounded_iff_subset_closedBall 0] at h_S_bidual_bounded
+        obtain ⟨R, hR⟩ := h_S_bidual_bounded
+        use R
+        intro x hx
+        rw [Set.mem_preimage] at hx
+        rw [Metric.mem_closedBall, dist_zero_right]
+        have h_sub : StrongDual.toWeakDual '' S_bidual ⊆ WeakDual.toStrongDual ⁻¹' Metric.closedBall 0 R := by
+          intro y hy
+          obtain ⟨z, hzS, rfl⟩ := hy
+          simp only [Set.mem_preimage, Metric.mem_closedBall, dist_zero_right,
+            WeakDual.coe_toStrongDual, StrongDual.coe_toWeakDual]
+          -- Now need: ‖z‖ ≤ R
+          have hz_ball := hR hzS
+          rw [Metric.mem_closedBall, dist_zero_right] at hz_ball
+          exact hz_ball
+        have h_closed : IsClosed (WeakDual.toStrongDual ⁻¹' Metric.closedBall (0 : Xbidual) R) :=
+          WeakDual.isClosed_closedBall (0 : Xbidual) R
+        have h_K_sub : K ⊆ WeakDual.toStrongDual ⁻¹' Metric.closedBall 0 R :=
+          closure_minimal h_sub h_closed
+        have hxK' : StrongDual.toWeakDual x ∈ WeakDual.toStrongDual ⁻¹' Metric.closedBall 0 R :=
+          h_K_sub hx
+        simp only [Set.mem_preimage, Metric.mem_closedBall, dist_zero_right,
+          WeakDual.coe_toStrongDual, StrongDual.coe_toWeakDual] at hxK'
+        exact hxK'
+      exact h1
+    have hK_compact : IsCompact K := WeakDual.isCompact_of_bounded_of_closed hK_bounded_preimage hK_closed
+
+    let emb := NormedSpace.inclusionInDoubleDual_isEmbedding_weak 𝕜 X
+    let ι := fun x : WeakSpace 𝕜 X => StrongDual.toWeakDual (J x)
+
+    have hK_in_range : K ⊆ Set.range ι := by
+      intro y hy
+      have h := hK_subset hy
+      simp only [Set.mem_image, Set.mem_univ, true_and] at h
+      obtain ⟨z, ⟨x, hx⟩, hz⟩ := h
+      exact ⟨x, hz ▸ hx ▸ rfl⟩
+
+    haveI : T2Space (WeakSpace 𝕜 X) := emb.t2Space
+
+    let homeo := NormedSpace.inclusionInDoubleDual_homeomorph_weak 𝕜 X
+    let K_in_range : Set (Set.range ι) := Subtype.val ⁻¹' K
+    have hK_in_range_compact : IsCompact K_in_range := by
+      rw [IsEmbedding.subtypeVal.isCompact_iff]
+      convert hK_compact using 1
+      ext y
+      simp only [K_in_range, Set.mem_image, Set.mem_preimage]
+      exact ⟨fun ⟨⟨_, _⟩, hK, rfl⟩ => hK, fun hy => ⟨⟨y, hK_in_range hy⟩, hy, rfl⟩⟩
+
+    let K_weak : Set (WeakSpace 𝕜 X) := homeo.symm '' K_in_range
+    have hK_weak_compact : IsCompact K_weak := hK_in_range_compact.image homeo.symm.continuous
+
+    have h_closure_subset : closure (toWeakSpace 𝕜 X '' S) ⊆ K_weak := by
+      have h_S_subset : toWeakSpace 𝕜 X '' S ⊆ K_weak := by
+        intro z hz
+        obtain ⟨x, hxS, rfl⟩ := hz
+        have h_in_K : ι x ∈ K := subset_closure ⟨J x, ⟨x, hxS, rfl⟩, rfl⟩
+        have h_in_K_range : (⟨ι x, x, rfl⟩ : Set.range ι) ∈ K_in_range := h_in_K
+        simp only [K_weak, Set.mem_image]
+        use ⟨ι x, x, rfl⟩, h_in_K_range
+        have h_homeo : homeo (toWeakSpace 𝕜 X x) = ⟨ι x, x, rfl⟩ := by
+          apply Subtype.ext; rfl
+        rw [← h_homeo, Homeomorph.symm_apply_apply]
+      have h_closed : IsClosed K_weak := hK_weak_compact.isClosed
+      exact closure_minimal h_S_subset h_closed
+
+    hK_weak_compact.of_isClosed_subset isClosed_closure h_closure_subset
 
 --
