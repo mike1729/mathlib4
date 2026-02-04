@@ -426,6 +426,7 @@ lemma succ_sub_rank_one {P : ℕ → X →L[𝕜] X}
   rw [hdisj, finrank_bot, add_zero, ← hrange, hrank, hrank, Nat.add_comm] at this
   exact Nat.add_right_cancel this.symm
 
+/-- Data for constructing a Schauder basis from a sequence of finite-rank projections. -/
 variable (𝕜 X : Type*) [NontriviallyNormedField 𝕜] [NormedAddCommGroup X] [NormedSpace 𝕜 X]
 structure ProjectionData where
   /-- The sequence of finite-rank projections. -/
