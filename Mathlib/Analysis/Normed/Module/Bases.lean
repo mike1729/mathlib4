@@ -27,7 +27,7 @@ However, modern functional analysis requires bases indexed by arbitrary sets
 $\beta$ (e.g., for non-separable spaces or Hilbert spaces), where convergence
 is defined via nets over finite subsets (unconditional convergence).
 
-This file provides a unified structure `SchauderBasis'` that captures both:
+This file provides a unified structure `GeneralSchauderBasis` that captures both:
 * **Classical Schauder Bases:** Indexed by `ℕ`, using `SummationFilter.conditional`
   to enforce sequential convergence of partial sums.
 * **Unconditional/Extended Bases:** Indexed by arbitrary types `β`, using
@@ -35,13 +35,13 @@ This file provides a unified structure `SchauderBasis'` that captures both:
 
 ## Main Definitions
 
-* `SchauderBasis' β 𝕜 X L`: A structure representing a generalized Schauder basis for a
+* `GeneralSchauderBasis β 𝕜 X L`: A structure representing a generalized Schauder basis for a
   normed space `X` over a field `𝕜`, indexed by a type `β` with a `SummationFilter L`.
 * `SchauderBasis 𝕜 X`: The classical Schauder basis, an abbreviation for
-  `SchauderBasis' ℕ 𝕜 X (SummationFilter.conditional ℕ)`.
+  `GeneralSchauderBasis ℕ 𝕜 X (SummationFilter.conditional ℕ)`.
 * `UnconditionalSchauderBasis 𝕜 X`: An unconditional Schauder basis, an abbreviation for
-  `SchauderBasis' ℕ 𝕜 X (SummationFilter.unconditional ℕ)`.
-* `SchauderBasis'.proj' b A`: The projection onto a finite set `A` of basis vectors,
+  `GeneralSchauderBasis ℕ 𝕜 X (SummationFilter.unconditional ℕ)`.
+* `GeneralSchauderBasis.proj' b A`: The projection onto a finite set `A` of basis vectors,
   defined as $P_A(x) = \sum_{i \in A} f_i(x)e_i$.
 * `SchauderBasis.proj b n`: The $n$-th canonical projection $P_n: X \to X$,
   defined as $P_n(x) = \sum_{i < n} f_i(x)e_i$ (equals `proj' (Finset.range n)`).
@@ -49,11 +49,12 @@ This file provides a unified structure `SchauderBasis'` that captures both:
 
 ## Main Results
 
-* `SchauderBasis'.linearIndependent`: A Schauder basis is linearly independent.
-* `SchauderBasis'.proj'_tendsto_id`: The projections `proj' A` converge to identity
+* `GeneralSchauderBasis.linearIndependent`: A Schauder basis is linearly independent.
+* `GeneralSchauderBasis.proj'_tendsto_id`: The projections `proj' A` converge to identity
   along the summation filter.
-* `SchauderBasis'.range_proj'`: The range of `proj' A` is the span of the basis elements in `A`.
-* `SchauderBasis'.proj'_comp`: Composition of projections satisfies
+* `GeneralSchauderBasis.range_proj'`: The range of `proj' A` is the span of the basis
+  elements in `A`.
+* `GeneralSchauderBasis.proj'_comp`: Composition of projections satisfies
   `proj' A (proj' B x) = proj' (A ∩ B) x`.
 * `SchauderBasis.proj_uniform_bound`: In a Banach space, the canonical projections
   are uniformly bounded (Banach-Steinhaus Theorem).
@@ -88,7 +89,7 @@ The key fields are:
 See `SchauderBasis` for the classical ℕ-indexed case with conditional convergence,
 and `UnconditionalSchauderBasis` for the unconditional case.
 -/
-structure SchauderBasis' (β : Type*) [Preorder β] [LocallyFiniteOrder β] [DecidableEq β] (𝕜 : Type*)
+structure GeneralSchauderBasis (β : Type*) [DecidableEq β] (𝕜 : Type*)
   (X : Type*) [NontriviallyNormedField 𝕜] [NormedAddCommGroup X] [NormedSpace 𝕜 X]
   (L : SummationFilter β) where
   /-- The basis vectors. -/
@@ -100,13 +101,13 @@ structure SchauderBasis' (β : Type*) [Preorder β] [LocallyFiniteOrder β] [Dec
   /-- The sum converges to `x` along the provided `SummationFilter L`. -/
   expansion : ∀ x : X, HasSum (fun i ↦ (coord i) x • basis i) x L
 
-variable {β : Type*} [Preorder β] [LocallyFiniteOrder β] [DecidableEq β]
+variable {β : Type*} [DecidableEq β]
 variable {L : SummationFilter β}
 
 /-- A classical Schauder basis indexed by ℕ with conditional convergence. -/
 abbrev SchauderBasis (𝕜 : Type*) (X : Type*) [NontriviallyNormedField 𝕜]
     [NormedAddCommGroup X] [NormedSpace 𝕜 X] :=
-  SchauderBasis' ℕ 𝕜 X (SummationFilter.conditional ℕ)
+  GeneralSchauderBasis ℕ 𝕜 X (SummationFilter.conditional ℕ)
 
 /--
 An unconditional Schauder basis indexed by `β`.
@@ -119,21 +120,21 @@ In the literature, this is known as:
 This structure generalizes the classical Schauder basis by replacing sequential
 convergence with summability over the directed set of finite subsets.
 -/
-abbrev UnconditionalSchauderBasis' (β : Type*) [Preorder β] [LocallyFiniteOrder β] [DecidableEq β]
+abbrev UnconditionalSchauderBasis' (β : Type*) [DecidableEq β]
     (𝕜 : Type*) (X : Type*) [NontriviallyNormedField 𝕜] [NormedAddCommGroup X] [NormedSpace 𝕜 X] :=
-  SchauderBasis' β 𝕜 X (SummationFilter.unconditional β)
+  GeneralSchauderBasis β 𝕜 X (SummationFilter.unconditional β)
 
 /-- An unconditional Schauder basis indexed by ℕ with unconditional convergence. -/
 abbrev UnconditionalSchauderBasis (𝕜 : Type*) (X : Type*) [NontriviallyNormedField 𝕜]
     [NormedAddCommGroup X] [NormedSpace 𝕜 X] :=
   UnconditionalSchauderBasis' ℕ 𝕜 X
 
-instance : CoeFun (SchauderBasis' β 𝕜 X L) (fun _ ↦ β → X) where
+instance : CoeFun (GeneralSchauderBasis β 𝕜 X L) (fun _ ↦ β → X) where
   coe b := b.basis
 
-namespace SchauderBasis'
+namespace GeneralSchauderBasis
 
-variable (b : SchauderBasis' β 𝕜 X L)
+variable (b : GeneralSchauderBasis β 𝕜 X L)
 
 /-- The basis vectors are linearly independent. -/
 theorem linearIndependent : LinearIndependent 𝕜 b := by
@@ -211,7 +212,7 @@ theorem finrank_range_proj' (A : Finset β) :
   · exact Fintype.card_coe A
   · exact b.linearIndependent.comp (fun i : A => i.val) Subtype.val_injective
 
-end SchauderBasis'
+end GeneralSchauderBasis
 
 /-! ### Unconditional Schauder bases -/
 
@@ -232,7 +233,7 @@ theorem proj'_uniform_bound [CompleteSpace X] : ∃ C : ℝ, ∀ A : Finset β, 
   intro A
   -- Split A = (A ∩ A₀) ∪ (A \ A₀)
   have hdecomp : b.proj' A x = b.proj' (A ∩ A₀) x + b.proj' (A \ A₀) x := by
-    simp only [SchauderBasis'.proj'_apply]
+    simp only [GeneralSchauderBasis.proj'_apply]
     have hdisj : Disjoint (A ∩ A₀) (A \ A₀) := by
       rw [Finset.disjoint_left]; intro i hi
       simp only [Finset.mem_inter] at hi
@@ -242,7 +243,7 @@ theorem proj'_uniform_bound [CompleteSpace X] : ∃ C : ℝ, ∀ A : Finset β, 
   rw [hdecomp]
   -- The tail (A \ A₀) is small since it's disjoint from A₀
   have htail : ‖b.proj' (A \ A₀) x‖ < 1 := by
-    rw [SchauderBasis'.proj'_apply]
+    rw [GeneralSchauderBasis.proj'_apply]
     exact hA₀ (A \ A₀) (Finset.sdiff_disjoint)
   -- The head (A ∩ A₀) is bounded by M
   have hhead : ‖b.proj' (A ∩ A₀) x‖ ≤ M := by
@@ -260,7 +261,7 @@ noncomputable def basisConstant' : ℝ≥0∞ := ⨆ A : Finset β, ‖b.proj' A
 theorem basisConstant'_lt_top_of_bound {C : ℝ} (hC : ∀ A : Finset β, ‖b.proj' A‖ ≤ C) :
     b.basisConstant' < ⊤ := by
   rw [basisConstant', ENNReal.iSup_coe_lt_top, bddAbove_iff_exists_ge (0 : NNReal)]
-  have hCpos : 0 ≤ C := by simpa [SchauderBasis'.proj'_empty] using hC ∅
+  have hCpos : 0 ≤ C := by simpa [GeneralSchauderBasis.proj'_empty] using hC ∅
   refine ⟨C.toNNReal, zero_le _, ?_⟩
   rintro _ ⟨A, rfl⟩
   rw [← NNReal.coe_le_coe, Real.coe_toNNReal C hCpos, coe_nnnorm]
@@ -512,7 +513,7 @@ def basis (D : ProjectionData 𝕜 X) : SchauderBasis 𝕜 X :=
     simp_rw [← hcoeff, succ_sub]
     simp only [← succ_sub_sum D.P D.proj_zero n, ContinuousLinearMap.coe_sum', Finset.sum_apply]
     congr
-  SchauderBasis'.mk D.e f ortho lim
+  GeneralSchauderBasis.mk D.e f ortho lim
 
 /-- The projections of the constructed basis correspond to the input data P. -/
 @[simp]
