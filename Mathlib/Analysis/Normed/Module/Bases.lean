@@ -45,12 +45,14 @@ This file provides a unified structure `GeneralSchauderBasis` that captures both
   defined as $P_A(x) = \sum_{i \in A} f_i(x)e_i$.
 * `SchauderBasis.proj b n`: The $n$-th canonical projection $P_n: X \to X$,
   defined as $P_n(x) = \sum_{i < n} f_i(x)e_i$ (equals `proj (Finset.range n)`).
-* `SchauderBasis.basisConstant`: The supremum of the norms of the canonical projections.
+* `UnconditionalSchauderBasis.enormProjBound`: The supremum of projection norms (`ℝ≥0∞`).
+* `UnconditionalSchauderBasis.normProjBound`: The supremum of projection norms (`ℝ≥0`,
+  requires `CompleteSpace`).
 
 ## Main Results
 
 * `GeneralSchauderBasis.linearIndependent`: A Schauder basis is linearly independent.
-* `GeneralSchauderBasis.proj_tendsto_id`: The projections `proj A` converge to identity
+* `GeneralSchauderBasis.tendsto_proj`: The projections `proj A` converge to identity
   along the summation filter.
 * `GeneralSchauderBasis.range_proj`: The range of `proj A` is the span of the basis
   elements in `A`.
@@ -228,10 +230,6 @@ theorem norm_proj_le_enormProjBound (A : Finset β) : ‖b.proj A‖ₑ ≤ b.en
   rw [enormProjBound]
   exact le_iSup (fun A ↦ ‖b.proj A‖ₑ) A
 
-/-- The basis constant for unconditional bases (supremum over all finite sets) as nnnorm.
-    Requires completeness to guarantee the supremum is finite. -/
-noncomputable def normProjBound [CompleteSpace X] : ℝ≥0 := ⨆ A : Finset β, ‖b.proj A‖₊
-
 open scoped Classical in
 /-- Projections are uniformly bounded for unconditional bases (Banach-Steinhaus). -/
 theorem proj_uniform_bound [CompleteSpace X] : ∃ C : ℝ, ∀ A : Finset β, ‖b.proj A‖ ≤ C := by
@@ -266,6 +264,10 @@ theorem proj_uniform_bound [CompleteSpace X] : ∃ C : ℝ, ∀ A : Finset β, �
   calc ‖b.proj (A ∩ A₀) x + b.proj (A \ A₀) x‖
       ≤ ‖b.proj (A ∩ A₀) x‖ + ‖b.proj (A \ A₀) x‖ := norm_add_le _ _
     _ ≤ M + 1 := by linarith
+
+/-- The basis constant for unconditional bases (supremum over all finite sets) as nnnorm.
+    Requires completeness to guarantee the supremum is finite. -/
+noncomputable def normProjBound [CompleteSpace X] : ℝ≥0 := ⨆ A : Finset β, ‖b.proj A‖₊
 
 /-- The projection norms are bounded above in a complete space (Banach-Steinhaus). -/
 theorem normProjBound_bddAbove [CompleteSpace X] :
@@ -319,7 +321,7 @@ theorem finrank_range_proj (n : ℕ) :
   rw [proj, GeneralSchauderBasis.finrank_range_proj, Finset.card_range]
 
 /-- The canonical projections converge pointwise to the identity map. -/
-theorem proj_tendsto_id (x : X) : Tendsto (fun n ↦ b.proj n x) atTop (𝓝 x) := by
+theorem tendsto_proj (x : X) : Tendsto (fun n ↦ b.proj n x) atTop (𝓝 x) := by
   have := GeneralSchauderBasis.tendsto_proj b x
   rw [SummationFilter.conditional_filter_eq_map_range] at this
   exact this
@@ -338,33 +340,37 @@ theorem proj_uniform_bound [CompleteSpace X] : ∃ C : ℝ, ∀ n : ℕ, ‖b.pr
   intro x
   let f : ℕ → X := fun n => b.proj n x
   have : ∃ M : ℝ, ∀ x ∈ Set.range f, ‖x‖ ≤ M :=
-      isBounded_iff_forall_norm_le.mp (Metric.isBounded_range_of_tendsto f (proj_tendsto_id b x))
+      isBounded_iff_forall_norm_le.mp (Metric.isBounded_range_of_tendsto f (tendsto_proj b x))
   rcases this with ⟨M, hM⟩
   rw [Set.forall_mem_range] at hM
   use M
 
-/-- The basis constant is the supremum of the norms of the canonical projections. -/
-def basisConstant : ℝ≥0∞ := ⨆ n, ‖b.proj n‖₊
+/-- The basis constant for Schauder bases (supremum over canonical projections) as enorm. -/
+noncomputable def enormProjBound : ℝ≥0∞ := ⨆ n, ‖b.proj n‖₊
 
-/-- The basis constant is finite if there exists a bound on the norms of the projections. -/
-theorem basisConstant_lt_top_uniform_bound {C : ℝ} (hC : ∀ n : ℕ, ‖b.proj n‖ ≤ C) :
-    b.basisConstant < ⊤ := by
-  rw [basisConstant, ENNReal.iSup_coe_lt_top, bddAbove_iff_exists_ge (0 : NNReal)]
+/-- The norm of any projection is bounded by the basis constant (general case). -/
+theorem norm_proj_le_enormProjBound (n : ℕ) : ‖b.proj n‖₊ ≤ b.enormProjBound := by
+  rw [enormProjBound]
+  exact le_iSup (fun i ↦ (‖b.proj i‖₊ : ℝ≥0∞)) n
+
+/-- The basis constant for Schauder bases (supremum over canonical projections) as nnnorm.
+    Requires completeness to guarantee the supremum is finite. -/
+noncomputable def normProjBound [CompleteSpace X] : ℝ≥0 := ⨆ n, ‖b.proj n‖₊
+
+/-- The projection norms are bounded above in a complete space (Banach-Steinhaus). -/
+theorem normProjBound_bddAbove [CompleteSpace X] :
+    BddAbove (Set.range (fun n : ℕ => ‖b.proj n‖₊)) := by
+  obtain ⟨C, hC⟩ := b.proj_uniform_bound
   have hCpos : 0 ≤ C := by simpa [proj_zero] using hC 0
-  refine ⟨C.toNNReal, zero_le _, ?_⟩
+  refine ⟨C.toNNReal, ?_⟩
   rintro _ ⟨n, rfl⟩
   rw [← NNReal.coe_le_coe, Real.coe_toNNReal C hCpos, coe_nnnorm]
   exact hC n
 
-/-- The basis constant is finite in the complete space case. -/
-theorem basisConstant_lt_top [CompleteSpace X] : b.basisConstant < ⊤ := by
-  obtain ⟨C, hC⟩ := b.proj_uniform_bound
-  exact b.basisConstant_lt_top_uniform_bound hC
-
 /-- The norm of any projection is bounded by the basis constant. -/
-theorem norm_proj_le_basisConstant (n : ℕ) : ‖b.proj n‖₊ ≤ b.basisConstant := by
-  rw [basisConstant]
-  exact le_iSup (fun i ↦ (‖b.proj i‖₊ : ℝ≥0∞)) n
+theorem norm_proj_le_normProjBound [CompleteSpace X] (n : ℕ) :
+    ‖b.proj n‖₊ ≤ b.normProjBound :=
+  le_ciSup (normProjBound_bddAbove b) n
 
 /-!
 ### Construction of Schauder basis
