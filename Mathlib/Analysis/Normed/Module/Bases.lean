@@ -165,8 +165,7 @@ theorem proj_apply (A : Finset β) (x : X) : b.proj A x = ∑ i ∈ A, b.coord i
 
 open scoped Classical in
 /-- The action of the projection on a basis element e i. -/
-theorem proj_apply_basis (A : Finset β) (i : β) :
-    b.proj A (b i) = if i ∈ A then b i else 0 := by
+theorem proj_apply_basis (A : Finset β) (i : β) : b.proj A (b i) = if i ∈ A then b i else 0 := by
   rw [proj_apply]
   by_cases hiA : i ∈ A
   · rw [Finset.sum_eq_single_of_mem i hiA]
@@ -311,8 +310,8 @@ theorem proj_basis_element (n i : ℕ) : b.proj n (b i) = if i < n then b i else
   simp only [proj, GeneralSchauderBasis.proj_apply_basis, Finset.mem_range]
 
 /-- The range of the canonical projection is the span of the first n basis elements. -/
-theorem range_proj (n : ℕ) : LinearMap.range (b.proj n).toLinearMap =
-    Submodule.span 𝕜 (b '' ↑(Finset.range n)) := by
+theorem range_proj (n : ℕ) :
+    LinearMap.range (b.proj n).toLinearMap = Submodule.span 𝕜 (b '' ↑(Finset.range n)) := by
   rw [proj, GeneralSchauderBasis.range_proj]
 
 /-- The dimension of the range of the canonical projection `P n` is `n`. -/
