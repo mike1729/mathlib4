@@ -266,7 +266,7 @@ theorem proj_uniform_bound [CompleteSpace X] : ∃ C : ℝ, ∀ A : Finset β, �
 
 /-- The basis constant for unconditional bases (supremum over all finite sets) as nnnorm.
     Requires completeness to guarantee the supremum is finite. -/
-noncomputable def normProjBound [CompleteSpace X] : ℝ≥0 := ⨆ A : Finset β, ‖b.proj A‖₊
+noncomputable def normProjBound : ℝ≥0 := ⨆ A : Finset β, ‖b.proj A‖₊
 
 /-- The projection norms are bounded above in a complete space (Banach-Steinhaus). -/
 theorem normProjBound_bddAbove [CompleteSpace X] :
@@ -354,7 +354,7 @@ theorem norm_proj_le_enormProjBound (n : ℕ) : ‖b.proj n‖₊ ≤ b.enormPro
 
 /-- The basis constant for Schauder bases (supremum over canonical projections) as nnnorm.
     Requires completeness to guarantee the supremum is finite. -/
-noncomputable def normProjBound [CompleteSpace X] : ℝ≥0 := ⨆ n, ‖b.proj n‖₊
+noncomputable def normProjBound : ℝ≥0 := ⨆ n, ‖b.proj n‖₊
 
 /-- The projection norms are bounded above in a complete space (Banach-Steinhaus). -/
 theorem normProjBound_bddAbove [CompleteSpace X] :
