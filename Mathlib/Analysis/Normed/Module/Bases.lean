@@ -20,11 +20,11 @@ sequential notion with modern generalized bases.
 
 A **basis** in a normed space allows every vector to be expanded as a
 (potentially infinite) linear combination of basis vectors. Historically, this
-was defined strictly for sequences $(x_n)_{n \in \mathbb{N}}$ with convergence
+was defined strictly for sequences $(x_n)_{n \in ℕ}$ with convergence
 of partial sums (the "classical Schauder basis").
 
 However, modern functional analysis requires bases indexed by arbitrary sets
-$\beta$ (e.g., for non-separable spaces or Hilbert spaces), where convergence
+`β` (e.g., for non-separable spaces or Hilbert spaces), where convergence
 is defined via nets over finite subsets (unconditional convergence).
 
 This file provides a unified structure `GeneralSchauderBasis` that captures both:
@@ -66,8 +66,8 @@ This file provides a unified structure `GeneralSchauderBasis` that captures both
 
 ## References
 
-* Albiac, F., & Kalton, N. J. (2016). *Topics in Banach Space Theory*.
-* Singer, I. (1970). *Bases in Banach Spaces*.
+* [Albiac_Kalton_2016].
+* [Singer_1970].
 -/
 
 @[expose] public section
