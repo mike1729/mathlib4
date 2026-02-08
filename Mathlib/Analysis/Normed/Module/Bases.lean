@@ -130,7 +130,7 @@ abbrev UnconditionalSchauderBasis (β : Type*)
 /-- Coercion from a `GeneralSchauderBasis` to the underlying basis function. -/
 instance : CoeFun (GeneralSchauderBasis β 𝕜 X L) (fun _ ↦ β → X) where
   coe b := b.basis
-
+attribute [coe] GeneralSchauderBasis.basis
 namespace GeneralSchauderBasis
 
 variable (b : GeneralSchauderBasis β 𝕜 X L)
@@ -144,8 +144,7 @@ theorem linearIndependent : LinearIndependent 𝕜 b := by
   have hsum : ∑ i ∈ l.support, l i • b i = 0 := hl
   -- Apply the i-th coordinate functional to the linear combination
   have happ : b.coord i (∑ j ∈ l.support, l j • b j) = 0 := by rw [hsum, map_zero]
-  rw [map_sum] at happ
-  simp_rw [ContinuousLinearMap.map_smul] at happ
+  simp_rw [map_sum, map_smul] at happ
   rw [Finset.sum_eq_single i, b.ortho i i] at happ
   · simpa using happ
   · intro j _ hji; rw [b.ortho i j, Pi.single_apply, if_neg hji.symm, smul_eq_mul, mul_zero]
@@ -154,7 +153,7 @@ theorem linearIndependent : LinearIndependent 𝕜 b := by
 /-- Projection onto a finite set of basis vectors. -/
 def proj (A : Finset β) : X →L[𝕜] X := ∑ i ∈ A, (b.coord i).smulRight (b i)
 
-/-- The canonical projection on the empty set is the zero map. -/
+/-- The projection on the empty set is the zero map. -/
 @[simp]
 theorem proj_empty : b.proj ∅ = 0 := by simp [proj]
 
@@ -170,27 +169,24 @@ theorem proj_apply_basis (A : Finset β) (i : β) : b.proj A (b i) = if i ∈ A 
   by_cases hiA : i ∈ A
   · rw [Finset.sum_eq_single_of_mem i hiA]
     · simp only [b.ortho, Pi.single_apply, ↓reduceIte, one_smul, if_pos hiA]
-    · intro j _ hji; rw [b.ortho j i, Pi.single_apply, if_neg hji, zero_smul]
+    · intro _ _ hji; simp [b.ortho, Pi.single_apply, if_neg hji]
   rw [if_neg hiA, Finset.sum_eq_zero]
-  intro j hj
-  rw [b.ortho j i, Pi.single_apply, if_neg, zero_smul]
-  exact fun h => hiA (h ▸ hj)
+  simp only [b.ortho, Pi.single_apply, ite_smul, one_smul, zero_smul, ite_eq_right_iff]
+  exact fun _ h hi ↦ (hiA (hi ▸ h)).elim
 
 /-- Projections converge to identity along the summation filter. -/
 theorem tendsto_proj (x : X) : Tendsto (fun A ↦ b.proj A x) L.filter (𝓝 x) := by
-  simp only [proj_apply]
-  exact b.expansion x
+  simpa using b.expansion x
 
-/-- The range of the projection is the span of the basis elements in A. -/
+/-- The range of the projection is the span of the basis elements in `A`. -/
 theorem range_proj (A : Finset β) :
     LinearMap.range (b.proj A).toLinearMap = Submodule.span 𝕜 (b '' A) := by
   apply le_antisymm
   · rintro _ ⟨x, rfl⟩
     rw [ContinuousLinearMap.coe_coe, proj_apply]
     apply Submodule.sum_mem
-    intros i hi
-    apply Submodule.smul_mem
-    apply Submodule.subset_span
+    intro i hi
+    apply Submodule.smul_mem _ _ (Submodule.subset_span _ )
     exact ⟨i, hi, rfl⟩
   · rw [Submodule.span_le]
     rintro _ ⟨i, hi, rfl⟩
