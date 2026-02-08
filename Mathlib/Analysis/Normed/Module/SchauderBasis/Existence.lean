@@ -38,7 +38,7 @@ private lemma coord_vanish_on_tail_span {E : Type*} [NormedAddCommGroup E] [Norm
   -- First prove coord_k vanishes on basis elements with index > k
   have h_vanish_basis : ∀ j > k, basis_Z.coord k (basis_Z j) = 0 := by
     intro j hj
-    rw [basis_Z.ortho k j, Pi.single_apply, if_neg (ne_of_gt hj).symm]
+    simp [basis_Z.ortho k j, ne_of_gt hj]
   -- Rewrite the membership using tail_span_eq so span_induction works
   rw [h_tail_span_eq] at hv
   -- Use span induction
@@ -90,7 +90,7 @@ private lemma nonzero_has_nonzero_coord {E : Type*} [NormedAddCommGroup E] [Norm
     tail spans. This is because some Schauder coordinate must be nonzero, but that coordinate
     vanishes on sufficiently late tails. Extracted to reduce elaboration overhead. -/
 private lemma nonzero_not_in_all_tail_closures {E : Type*} [NormedAddCommGroup E] [NormedSpace 𝕜 E]
-    [CompleteSpace E] (b : BasicSequence 𝕜 E)
+    [CompleteSpace E] (b : BasicSequence 𝕜 E) (h_bound : b.basis.enormProjBound < ⊤)
     (w : E) (hw_in : w ∈ (Submodule.span 𝕜 (Set.range b.toFun)).topologicalClosure)
     (hw_ne : w ≠ 0) :
     ∃ N, w ∉ closure (Submodule.span 𝕜 (Set.range (fun n => b (n + N))) : Set E) := by
@@ -101,9 +101,10 @@ private lemma nonzero_not_in_all_tail_closures {E : Type*} [NormedAddCommGroup E
   have hw_Z_ne : w_Z ≠ 0 := fun h => hw_ne (congrArg Subtype.val h)
   -- Build Schauder basis for Z from b
   let basis_Z : SchauderBasis 𝕜 Z :=
-    BasicSequences.SchauderBasis_of_closure (Y := Y) b.basis b.basisConstant_lt_top
+    BasicSequences.SchauderBasis_of_closure (Y := Y) b.basis h_bound
   have h_basis_coe : ∀ n, (basis_Z n : E) = b.toFun n := fun n => by
-    rw [BasicSequences.SchauderBasis_of_closure_apply]; simp only [b.eq_basis]; rfl
+    rw [BasicSequences.SchauderBasis_of_closure_apply]
+    exact congrArg Subtype.val (congr_fun b.basis_eq n)
   -- w_Z ≠ 0 implies some coordinate is nonzero
   have h_exists_coord : ∃ k, basis_Z.coord k w_Z ≠ 0 :=
     nonzero_has_nonzero_coord basis_Z w_Z hw_Z_ne
@@ -203,7 +204,8 @@ private lemma basic_sequence_element_nonzero {E : Type*} [NormedAddCommGroup E] 
     (b : BasicSequence 𝕜 E) (n : ℕ) : b n ≠ 0 := fun hb0 => by
   have h_indep := b.basis.linearIndependent
   have h_ne := h_indep.ne_zero n
-  have h_basis_val : (b.basis n : E) = b.toFun n := by simp only [b.eq_basis]; rfl
+  have h_basis_val : (b.basis n : E) = b.toFun n :=
+    congrArg Subtype.val (congr_fun b.basis_eq n)
   exact h_ne (Subtype.ext (h_basis_val.trans hb0))
 
 /-- The Grünblum bound transfers through an isometry: if `b` is a basic sequence in `Y` and
@@ -212,7 +214,7 @@ private lemma basic_sequence_element_nonzero {E : Type*} [NormedAddCommGroup E] 
 private lemma grunblum_bound_transfer_via_isometry {X Y : Type*}
     [NormedAddCommGroup X] [NormedSpace 𝕜 X]
     [NormedAddCommGroup Y] [NormedSpace 𝕜 Y]
-    (b : BasicSequence 𝕜 Y) (x : ℕ → X) (J : X →L[𝕜] Y)
+    (b : BasicSequence 𝕜 Y) (h_bound : b.basis.enormProjBound < ⊤) (x : ℕ → X) (J : X →L[𝕜] Y)
     (hJ_iso : ∀ y, ‖J y‖ = ‖y‖) (hx_J : ∀ n, J (x n) = b n)
     (n m : ℕ) (a : ℕ → 𝕜) (hmn : m ≤ n) :
     ‖∑ i ∈ Finset.range m, a i • x i‖ ≤ grunblumConstant b * ‖∑ i ∈ Finset.range n, a i • x i‖ := by
@@ -222,7 +224,7 @@ private lemma grunblum_bound_transfer_via_isometry {X Y : Type*}
       = ‖J (∑ i ∈ Finset.range m, a i • x i)‖ := (hJ_iso _).symm
     _ = ‖∑ i ∈ Finset.range m, a i • b i‖ := by rw [h_sum_eq]
     _ ≤ grunblumConstant b * ‖∑ i ∈ Finset.range n, a i • b i‖ :=
-        grunblum_bound_of_basic b n m a hmn
+        grunblum_bound_of_basic b h_bound n m a hmn
     _ = grunblumConstant b * ‖J (∑ i ∈ Finset.range n, a i • x i)‖ := by rw [h_sum_eq]
     _ = grunblumConstant b * ‖∑ i ∈ Finset.range n, a i • x i‖ := by rw [hJ_iso]
 
@@ -255,13 +257,14 @@ private lemma separation_functional_for_translated_sequence
     If b is a basic sequence, w' ∉ closure(span(tail)), and there exists f with f(b n) = 1
     and f(w') = -1, then n ↦ b(n+N) + w' is basic. Extracted to reduce elaboration overhead. -/
 private lemma translated_tail_is_basic {E : Type*} [NormedAddCommGroup E] [NormedSpace 𝕜 E]
-    [CompleteSpace E] (b : BasicSequence 𝕜 E) (N : ℕ) (w' : E)
+    [CompleteSpace E] (b : BasicSequence 𝕜 E)
+    (h_bound : b.basis.enormProjBound < ⊤) (N : ℕ) (w' : E)
     (f : StrongDual 𝕜 E) (hf_e : ∀ n, f (b (n + N)) = 1) (hf_w : f w' = -1)
     (h_w_notin_span : w' ∉ closure (Submodule.span 𝕜 (Set.range (fun n => b (n + N))))) :
     IsBasicSequence 𝕜 (fun n => b (n + N) + w') := by
-  have he_basic : IsBasicSequence 𝕜 (fun n => b (n + N)) := tail_basic_sequence b N
-  obtain ⟨b_tail, hb_tail_eq⟩ := he_basic
-  convert perturb_basic_sequence b_tail w' f ?_ hf_w ?_ using 1
+  have he_basic : IsBasicSequence 𝕜 (fun n => b (n + N)) := tail_basic_sequence b h_bound N
+  obtain ⟨b_tail, hb_tail_eq, hb_tail_bound⟩ := he_basic
+  convert perturb_basic_sequence b_tail hb_tail_bound w' f ?_ hf_w ?_ using 1
   · funext n; exact congrArg (· + w') (congrFun hb_tail_eq n).symm
   · intro n; rw [congrFun hb_tail_eq n]; exact hf_e n
   · rw [congrArg Set.range hb_tail_eq]; exact h_w_notin_span
@@ -402,14 +405,14 @@ theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
         rfl
 
       have h_basicS' : ∃ e : ℕ → Xbidual, (∀ n, e n ∈ S') ∧ IsBasicSequence 𝕜 e := by
-        obtain ⟨b, hb_mem, -⟩ := basic_sequence_selection_dual h_weak_starS' h_normS' zero_lt_one
+        obtain ⟨b, hb_mem, -, hb_bound⟩ := basic_sequence_selection_dual h_weak_starS' h_normS' zero_lt_one
         use b
         constructor
         · exact hb_mem
-        · exact ⟨b, rfl⟩
+        · exact ⟨b, rfl, hb_bound⟩
 
       obtain ⟨e, he_S', he_basic⟩ := h_basicS'
-      rcases he_basic with ⟨b, rfl⟩
+      rcases he_basic with ⟨b, rfl, hb_bound⟩
       have h_w_span : ∃ N : ℕ, w' ∉ closure (Submodule.span 𝕜 (Set.range (fun n => b (n+N)))) := by
         -- w' ≠ 0 since w ∉ J(X) but 0 = J 0 ∈ J(X)
         have hw_ne : w' ≠ 0 := fun h => hw_not_JX <| by
@@ -417,7 +420,7 @@ theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
           exact ⟨J 0, mem_range_self 0, by simp only [map_zero]⟩
         -- If w' is in closure of all tails, it's in the full closure, contradicting helper
         by_contra h_contra; push_neg at h_contra
-        exact (nonzero_not_in_all_tail_closures b w' (by simpa using h_contra 0) hw_ne).elim
+        exact (nonzero_not_in_all_tail_closures b hb_bound w' (by simpa using h_contra 0) hw_ne).elim
           (fun N hN => hN (h_contra N))
 
 
@@ -461,7 +464,7 @@ theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
 
       -- s = e + w' is basic by the extracted helper lemma
       have h_basicS : IsBasicSequence 𝕜 s :=
-        translated_tail_is_basic (E := Xbidual) b N w' f hf_e.1 hf_e.2 h_w_notin_span
+        translated_tail_is_basic (E := Xbidual) b hb_bound N w' f hf_e.1 hf_e.2 h_w_notin_span
 
       have h_in_S : ∀ n, s n ∈ S_bidual := hs_in_S_bidual
 
@@ -476,7 +479,7 @@ theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
       -- J is an isometric embedding, so J preserves the Grünblum condition
       -- If s is basic in Xbidual, then x is basic in X
       have hx_basic : IsBasicSequence 𝕜 x := by
-        rcases h_basicS with ⟨b_s, hb_s_eq⟩
+        rcases h_basicS with ⟨b_s, hb_s_eq, h_bs_bound⟩
         -- x n ≠ 0 since s n = J(x n) = b_s n ≠ 0 (by extracted lemma) and J is injective
         have hx_nz : ∀ n, x n ≠ 0 := fun n hx0 => by
           have := basic_sequence_element_nonzero (E := Xbidual) b_s n
@@ -484,12 +487,12 @@ theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
           exact this rfl
         -- Transfer Grünblum bound using extracted lemma
         have hx_J' : ∀ n, J (x n) = b_s n := fun n => (hx_J n).trans (congrFun hb_s_eq n).symm
-        have h_bound : ∀ n m (a : ℕ → 𝕜), m ≤ n →
+        have h_grunblum : ∀ n m (a : ℕ → 𝕜), m ≤ n →
             ‖∑ i ∈ Finset.range m, a i • x i‖ ≤
             grunblumConstant b_s * ‖∑ i ∈ Finset.range n, a i • x i‖ := fun n m a hmn =>
-          grunblum_bound_transfer_via_isometry (X := X) (Y := Xbidual) b_s x J hJ_iso hx_J' n m a hmn
+          grunblum_bound_transfer_via_isometry (X := X) (Y := Xbidual) b_s h_bs_bound x J hJ_iso hx_J' n m a hmn
         exact isBasicSequence_of_grunblum
-          ⟨grunblumConstant b_s, grunblumConstant_ge_one b_s, h_bound⟩ hx_nz
+          ⟨grunblumConstant_ge_one b_s, h_grunblum⟩ hx_nz
 
       exact h_no_basic x hx_S hx_basic
 
