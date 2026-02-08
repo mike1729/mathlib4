@@ -371,6 +371,18 @@ theorem norm_proj_le_normProjBound [CompleteSpace X] (n : ℕ) :
     ‖b.proj n‖₊ ≤ b.normProjBound :=
   le_ciSup (normProjBound_bddAbove b) n
 
+/-- If the projection norms are uniformly bounded by `C`, then `enormProjBound < ⊤`. -/
+theorem enormProjBound_lt_top_of_bound {C : ℝ}
+    (h : ∀ n, ‖b.proj n‖ ≤ C) : b.enormProjBound < ⊤ := by
+  have hC : 0 ≤ C := by simpa [proj_zero] using h 0
+  apply lt_of_le_of_lt _ ENNReal.ofReal_lt_top
+  show (⨆ n, ‖b.proj n‖₊ : ℝ≥0∞) ≤ ENNReal.ofReal C
+  apply iSup_le
+  intro n
+  rw [← ENNReal.ofReal_coe_nnreal, ENNReal.ofReal_le_ofReal_iff hC]
+  simp only [coe_nnnorm]
+  exact h n
+
 /-!
 ### Construction of Schauder basis
 
