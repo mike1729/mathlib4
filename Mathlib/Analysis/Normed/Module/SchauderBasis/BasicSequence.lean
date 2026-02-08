@@ -39,31 +39,26 @@ open Submodule Set WeakDual Metric Filter Topology
 variable {𝕜 : Type*} [RCLike 𝕜]
 variable {X : Type*} [NormedAddCommGroup X] [NormedSpace 𝕜 X]
 
-/-- A `GeneralBasicSequence` is a bundled sequence indexed by `β` that forms a
-    generalized Schauder basis for its algebraic span. No boundedness field is included;
-    boundedness is tracked separately via `enormProjBound`. -/
-structure GeneralBasicSequence (β : Type*) (𝕜 : Type*) (X : Type*)
-    [NontriviallyNormedField 𝕜] [NormedAddCommGroup X] [NormedSpace 𝕜 X]
-    (L : SummationFilter β) where
-  toFun : β → X
-  basis : GeneralSchauderBasis β 𝕜 (Submodule.span 𝕜 (Set.range toFun)) L
-  basis_eq : ⇑basis = Set.codRestrict toFun (Submodule.span 𝕜 (Set.range toFun))
-      (fun i ↦ Submodule.subset_span (Set.mem_range_self i))
-
-instance {β : Type*} {L : SummationFilter β} :
-    CoeFun (GeneralBasicSequence β 𝕜 X L) (fun _ ↦ β → X) where
-  coe b := b.toFun
-
-/-- A `BasicSequence` is a sequence indexed by `ℕ` that forms a Schauder basis
-    for its closed span. No boundedness field; track via `enormProjBound`. -/
 structure BasicSequence (𝕜 : Type*) (X : Type*) [RCLike 𝕜]
     [NormedAddCommGroup X] [NormedSpace 𝕜 X] where
   toFun : ℕ → X
   basis : SchauderBasis 𝕜 (Submodule.span 𝕜 (Set.range toFun))
   basis_eq : ⇑basis = Set.codRestrict toFun (Submodule.span 𝕜 (Set.range toFun))
       (fun i ↦ Submodule.subset_span (Set.mem_range_self i))
+  basisConstant_lt_top : basis.enormProjBound < ⊤
 
 instance : CoeFun (BasicSequence 𝕜 X) (fun _ ↦ ℕ → X) where
+  coe b := b.toFun
+
+structure UnconditionalBasicSequence (β : Type*) (𝕜 : Type*) (X : Type*)
+    [NontriviallyNormedField 𝕜] [NormedAddCommGroup X] [NormedSpace 𝕜 X] where
+  toFun : β → X
+  basis : UnconditionalSchauderBasis β 𝕜 (Submodule.span 𝕜 (Set.range toFun))
+  basis_eq : ⇑basis = Set.codRestrict toFun (Submodule.span 𝕜 (Set.range toFun))
+      (fun i ↦ Submodule.subset_span (Set.mem_range_self i))
+  basisConstant_lt_top : basis.enormProjBound < ⊤
+
+instance {β : Type*} : CoeFun (UnconditionalBasicSequence β 𝕜 X) (fun _ ↦ β → X) where
   coe b := b.toFun
 
 /-- A sequence `e` is a basic sequence if there exists a `BasicSequence` structure
@@ -72,13 +67,13 @@ def IsBasicSequence (𝕜 : Type*) {X : Type*} [RCLike 𝕜]
     [NormedAddCommGroup X] [NormedSpace 𝕜 X] (e : ℕ → X) : Prop :=
   ∃ b : BasicSequence 𝕜 X, ⇑b = e ∧ b.basis.enormProjBound < ⊤
 
-/-- A sequence `e : β → X` is a general basic sequence if there exists a
-    `GeneralBasicSequence` structure whose underlying sequence equals `e`
+/-- A sequence `e : β → X` is an unconditional basic sequence if there exists a
+    `UnconditionalBasicSequence` structure whose underlying sequence equals `e`
     and whose projection bound is finite. -/
-def IsGeneralBasicSequence (β : Type*) (𝕜 : Type*) {X : Type*}
+def IsUnconditionalBasicSequence (β : Type*) (𝕜 : Type*) {X : Type*}
     [NontriviallyNormedField 𝕜] [NormedAddCommGroup X] [NormedSpace 𝕜 X]
-    (L : SummationFilter β) (e : β → X) : Prop :=
-  ∃ b : GeneralBasicSequence β 𝕜 X L,
+    (e : β → X) : Prop :=
+  ∃ b : UnconditionalBasicSequence β 𝕜 X,
     b.toFun = e ∧ (⨆ A : Finset β, ‖b.basis.proj A‖ₑ) < ⊤
 
 namespace BasicSequences
