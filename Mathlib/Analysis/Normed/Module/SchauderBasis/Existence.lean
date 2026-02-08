@@ -5,17 +5,8 @@ Authors: Michał Świętek
 -/
 module
 
-public import Mathlib.Analysis.Normed.Module.Bases
-public import Mathlib.Analysis.Normed.Module.BasicSequences
-public import Mathlib.Analysis.Normed.Module.WeakDual
-public import Mathlib.Analysis.LocallyConvex.Separation
-public import Mathlib.Analysis.Normed.Operator.Extend
-public import Mathlib.Data.ENNReal.Real
-public import Mathlib.Topology.MetricSpace.HausdorffDistance
-public import Mathlib.Topology.MetricSpace.ProperSpace
-public import Mathlib.Topology.Neighborhoods
+public import Mathlib.Analysis.Normed.Module.SchauderBasis.Closure
 public import Mathlib.Topology.Constructions
-public import Mathlib.Topology.UniformSpace.UniformEmbedding
 public import Mathlib.Topology.Algebra.Module.WeakDual
 public import Mathlib.Topology.Maps.Basic
 
