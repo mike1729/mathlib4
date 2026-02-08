@@ -164,7 +164,6 @@ theorem proj_apply (A : Finset β) (x : X) : b.proj A x = ∑ i ∈ A, b.coord i
 
 open scoped Classical in
 /-- The action of the projection on a basis element e i. -/
-@[simp]
 theorem proj_apply_basis (A : Finset β) (i : β) : b.proj A (b i) = if i ∈ A then b i else 0 := by
   rw [proj_apply]
   by_cases hiA : i ∈ A
