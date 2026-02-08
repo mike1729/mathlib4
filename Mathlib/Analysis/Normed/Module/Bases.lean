@@ -148,7 +148,7 @@ theorem linearIndependent : LinearIndependent 𝕜 b := by
   rw [Finset.sum_eq_single i, b.ortho i i] at happ
   · simpa using happ
   · intro j _ hji; rw [b.ortho i j, Pi.single_apply, if_neg hji.symm, smul_eq_mul, mul_zero]
-  · intro hi; simp only [Finsupp.notMem_support_iff.mp hi, smul_eq_mul, zero_mul]
+  · intro hi; simp [Finsupp.notMem_support_iff.mp hi, smul_eq_mul, zero_mul]
 
 /-- Projection onto a finite set of basis vectors. -/
 def proj (A : Finset β) : X →L[𝕜] X := ∑ i ∈ A, (b.coord i).smulRight (b i)
@@ -160,15 +160,16 @@ theorem proj_empty : b.proj ∅ = 0 := by simp [proj]
 /-- The action of the projection on a vector x. -/
 @[simp]
 theorem proj_apply (A : Finset β) (x : X) : b.proj A x = ∑ i ∈ A, b.coord i x • b i := by
-  simp only [proj, ContinuousLinearMap.sum_apply, ContinuousLinearMap.smulRight_apply]
+  simp [proj, ContinuousLinearMap.sum_apply, ContinuousLinearMap.smulRight_apply]
 
 open scoped Classical in
 /-- The action of the projection on a basis element e i. -/
+@[simp]
 theorem proj_apply_basis (A : Finset β) (i : β) : b.proj A (b i) = if i ∈ A then b i else 0 := by
   rw [proj_apply]
   by_cases hiA : i ∈ A
   · rw [Finset.sum_eq_single_of_mem i hiA]
-    · simp only [b.ortho, Pi.single_apply, ↓reduceIte, one_smul, if_pos hiA]
+    · simp [b.ortho, one_smul, if_pos hiA]
     · intro _ _ hji; simp [b.ortho, Pi.single_apply, if_neg hji]
   rw [if_neg hiA, Finset.sum_eq_zero]
   simp only [b.ortho, Pi.single_apply, ite_smul, one_smul, zero_smul, ite_eq_right_iff]
@@ -200,7 +201,7 @@ theorem proj_comp (A B : Finset β) (x : X) : b.proj A (b.proj B x) = b.proj (A 
   simp_rw [b.ortho, Pi.single_apply, ite_smul, one_smul, zero_smul, Finset.sum_ite_eq',
     smul_ite, smul_zero, Finset.sum_ite, Finset.sum_const_zero, add_zero]
   congr 1; ext i
-  simp only [Finset.mem_filter, Finset.mem_inter, and_comm]
+  simp [Finset.mem_filter, Finset.mem_inter, and_comm]
 
 /-- The dimension of the range of the projection `proj A` equals the cardinality of `A`. -/
 theorem finrank_range_proj (A : Finset β) :
@@ -294,16 +295,16 @@ def proj (n : ℕ) : X →L[𝕜] X := GeneralSchauderBasis.proj b (Finset.range
 /-- The canonical projection at 0 is the zero map. -/
 @[simp]
 theorem proj_zero : b.proj 0 = 0 := by
-  simp only [proj, Finset.range_zero, GeneralSchauderBasis.proj_empty]
+  rw [proj, Finset.range_zero, GeneralSchauderBasis.proj_empty]
 
 /-- The action of the canonical projection on a vector x. -/
 @[simp]
 theorem proj_apply (n : ℕ) (x : X) : b.proj n x = ∑ i ∈ Finset.range n, b.coord i x • b i := by
-  simp only [proj, GeneralSchauderBasis.proj_apply]
+  rw [proj, GeneralSchauderBasis.proj_apply]
 
 /-- The action of the canonical projection on a basis element e i. -/
-theorem proj_basis_element (n i : ℕ) : b.proj n (b i) = if i < n then b i else 0 := by
-  simp only [proj, GeneralSchauderBasis.proj_apply_basis, Finset.mem_range]
+theorem proj_apply_basis (n i : ℕ) : b.proj n (b i) = if i < n then b i else 0 := by
+  simp_rw [proj, GeneralSchauderBasis.proj_apply_basis, Finset.mem_range]
 
 /-- The range of the canonical projection is the span of the first n basis elements. -/
 theorem range_proj (n : ℕ) :
