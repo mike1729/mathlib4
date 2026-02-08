@@ -43,76 +43,8 @@ variable {X : Type*} [NormedAddCommGroup X] [NormedSpace 𝕜 X]
 
 namespace BasicSequences
 
-/-- The **Basis Constant** of a basic sequence. -/
-noncomputable def basicSequenceConstant (bs : BasicSequence 𝕜 X) : ℝ :=
-  bs.basis.enormProjBound.toReal
 
-/-- A sequence satisfies the **Grünblum Condition** with constant `K` if partial sums
-    over initial segments are bounded by `K` times the full sum. -/
-def SatisfiesGrunblumCondition (𝕜 : Type*) {X : Type*} [RCLike 𝕜]
-    [NormedAddCommGroup X] [NormedSpace 𝕜 X] (e : ℕ → X) (K : ℝ) : Prop :=
-  1 ≤ K ∧ ∀ (n m : ℕ) (a : ℕ → 𝕜), m ≤ n →
-    ‖∑ i ∈ Finset.range m, a i • e i‖ ≤ K * ‖∑ i ∈ Finset.range n, a i • e i‖
 
-/-- The Grünblum constant for a basic sequence is max(1, basicSequenceConstant). -/
-def grunblumConstant (bs : BasicSequence 𝕜 X) : ℝ := max 1 (basicSequenceConstant bs)
-
-theorem grunblumConstant_ge_one (bs : BasicSequence 𝕜 X) : 1 ≤ grunblumConstant bs :=
-  le_max_left 1 _
-
-/-- The **Basis Constant** of a general basic sequence. -/
-noncomputable def generalBasicSequenceConstant {β : Type*}
-    {L : SummationFilter β}
-    (bs : GeneralBasicSequence β 𝕜 X L) : ℝ :=
-  (⨆ A : Finset β, ‖bs.basis.proj A‖ₑ).toReal
-
-/-- A sequence satisfies the **General Grünblum Condition** with constant `K`
-    if partial sums over subsets are bounded by `K` times any larger
-    sum. -/
-def GeneralSatisfiesGrunblumCondition (𝕜 : Type*) {X : Type*}
-    [RCLike 𝕜] [NormedAddCommGroup X] [NormedSpace 𝕜 X]
-    {β : Type*} (e : β → X) (K : ℝ) : Prop :=
-  1 ≤ K ∧ ∀ (A B : Finset β) (a : β → 𝕜), A ⊆ B →
-    ‖∑ i ∈ A, a i • e i‖ ≤ K * ‖∑ i ∈ B, a i • e i‖
-
-/-- The general Grünblum constant is max(1, generalBasicSequenceConstant). -/
-noncomputable def generalGrunblumConstant {β : Type*}
-    {L : SummationFilter β}
-    (bs : GeneralBasicSequence β 𝕜 X L) : ℝ :=
-  max 1 (generalBasicSequenceConstant bs)
-
-theorem generalGrunblumConstant_ge_one {β : Type*}
-    {L : SummationFilter β}
-    (bs : GeneralBasicSequence β 𝕜 X L) :
-    1 ≤ generalGrunblumConstant bs :=
-  le_max_left 1 _
-
-/-- A general basic sequence with finite projection bound satisfies the
-    generalized Grünblum condition. -/
-theorem general_satisfiesGrunblum {β : Type*}
-    {L : SummationFilter β}
-    (bs : GeneralBasicSequence β 𝕜 X L)
-    (h_bound : (⨆ A : Finset β, ‖bs.basis.proj A‖ₑ) < ⊤) :
-    GeneralSatisfiesGrunblumCondition 𝕜 bs
-      (generalGrunblumConstant bs) := by
-  sorry
-
-/-- A sequence satisfying the general Grünblum condition with nonzero
-    elements is linearly independent. -/
-lemma linearIndependent_of_general_grunblum {β : Type*}
-    {e : β → X} {K : ℝ}
-    (h : GeneralSatisfiesGrunblumCondition 𝕜 e K)
-    (h_nz : ∀ i, e i ≠ 0) : LinearIndependent 𝕜 e := by
-  sorry
-
-/-- If a sequence satisfies the general Grünblum condition, it is a
-    general basic sequence. -/
-theorem isGeneralBasicSequence_of_grunblum [CompleteSpace X]
-    {β : Type*} {L : SummationFilter β} {e : β → X} {K : ℝ}
-    (h : GeneralSatisfiesGrunblumCondition 𝕜 e K)
-    (h_nz : ∀ i, e i ≠ 0) :
-    IsGeneralBasicSequence β 𝕜 L e := by
-  sorry
 
 /-- A basic sequence with finite projection bound satisfies the Grünblum condition. -/
 theorem satisfiesGrunblum (bs : BasicSequence 𝕜 X)
@@ -134,7 +66,7 @@ theorem satisfiesGrunblum (bs : BasicSequence 𝕜 X)
     rw [← ENNReal.toReal_le_toReal ENNReal.coe_ne_top hK_lt_top] at h
     simp only [ENNReal.coe_toReal, coe_nnnorm] at h
     exact h.trans (le_max_right _ _)
-  -- The rest requires showing P_m(∑_{i<n} a_i • e_i) = ∑_{i<m} a_i • e_i
+  -- The rest requires showing P_m(∑_{i< n} a_i • e_i) = ∑_{i< m} a_i • e_i
   -- This is a standard property of Schauder basis projections
   -- First, lift the sums to the subspace S
   let sum_n : S := ⟨∑ i ∈ Finset.range n, a i • bs i, hsum_mem n⟩
@@ -153,7 +85,7 @@ theorem satisfiesGrunblum (bs : BasicSequence 𝕜 X)
   have h_proj_eq : bs.basis.proj m sum_n = sum_m := by
     -- Use proj_apply: proj m x = ∑ i ∈ range m, coord i x • basis i
     rw [SchauderBasis.proj_apply]
-    -- For sum_n = ∑_{i<n} a_i • basis_i, coord j (sum_n) = a_j for j < n
+    -- For sum_n = ∑_{i< n} a_i • basis_i, coord j (sum_n) = a_j for j < n
     -- Since m ≤ n, for all j < m we have j < n, so coord j (sum_n) = a_j
     ext
     simp only [Submodule.coe_sum, Submodule.coe_smul, h_basis_eq]

@@ -215,76 +215,6 @@ theorem finrank_range_proj (A : Finset β) :
 
 end GeneralSchauderBasis
 
-/-! ### Unconditional Schauder bases -/
-
-namespace UnconditionalSchauderBasis
-
-variable (b : UnconditionalSchauderBasis β 𝕜 X)
-
-/-- The basis constant for unconditional bases (supremum over all finite sets) as enorm. -/
-noncomputable def enormProjBound : ℝ≥0∞ := ⨆ A : Finset β, ‖b.proj A‖ₑ
-
-/-- The norm of any projection is bounded by the basis constant (general case). -/
-theorem norm_proj_le_enormProjBound (A : Finset β) : ‖b.proj A‖ₑ ≤ b.enormProjBound := by
-  rw [enormProjBound]
-  exact le_iSup (fun A ↦ ‖b.proj A‖ₑ) A
-
-open scoped Classical in
-/-- Projections are uniformly bounded for unconditional bases (Banach-Steinhaus). -/
-theorem proj_uniform_bound [CompleteSpace X] : ∃ C : ℝ, ∀ A : Finset β, ‖b.proj A‖ ≤ C := by
-  apply banach_steinhaus
-  intro x
-  have hsum : Summable (fun i ↦ b.coord i x • b i) := b.expansion x |>.summable
-  obtain ⟨A₀, hA₀⟩ := summable_iff_vanishing_norm.mp hsum 1 one_pos
-  have hne : (A₀.powerset.image fun B ↦ ‖b.proj B x‖).Nonempty := by
-    simp only [Finset.image_nonempty, Finset.powerset_nonempty]
-  let M := (A₀.powerset.image fun B ↦ ‖b.proj B x‖).sup' hne id
-  use M + 1
-  intro A
-  -- Split A = (A ∩ A₀) ∪ (A \ A₀)
-  have hdecomp : b.proj A x = b.proj (A ∩ A₀) x + b.proj (A \ A₀) x := by
-    simp only [GeneralSchauderBasis.proj_apply]
-    have hdisj : Disjoint (A ∩ A₀) (A \ A₀) := by
-      rw [Finset.disjoint_left]; intro i hi
-      simp only [Finset.mem_inter] at hi
-      simp only [Finset.mem_sdiff, hi.2, not_true_eq_false, and_false, not_false_eq_true]
-    rw [← Finset.sum_union hdisj]
-    congr 1; ext i; simp only [Finset.mem_union, Finset.mem_inter, Finset.mem_sdiff]; tauto
-  rw [hdecomp]
-  -- The tail (A \ A₀) is small since it's disjoint from A₀
-  have htail : ‖b.proj (A \ A₀) x‖ < 1 := by
-    rw [GeneralSchauderBasis.proj_apply]
-    exact hA₀ (A \ A₀) (Finset.sdiff_disjoint)
-  -- The head (A ∩ A₀) is bounded by M
-  have hhead : ‖b.proj (A ∩ A₀) x‖ ≤ M := by
-    apply Finset.le_sup' (f := _root_.id)
-    simp only [Finset.mem_image, Finset.mem_powerset]
-    exact ⟨A ∩ A₀, Finset.inter_subset_right, rfl⟩
-  calc ‖b.proj (A ∩ A₀) x + b.proj (A \ A₀) x‖
-      ≤ ‖b.proj (A ∩ A₀) x‖ + ‖b.proj (A \ A₀) x‖ := norm_add_le _ _
-    _ ≤ M + 1 := by linarith
-
-/-- The basis constant for unconditional bases (supremum over all finite sets) as nnnorm.
-    Requires completeness to guarantee the supremum is finite. -/
-noncomputable def normProjBound : ℝ≥0 := ⨆ A : Finset β, ‖b.proj A‖₊
-
-/-- The projection norms are bounded above in a complete space (Banach-Steinhaus). -/
-theorem normProjBound_bddAbove [CompleteSpace X] :
-    BddAbove (Set.range (fun A : Finset β => ‖b.proj A‖₊)) := by
-  obtain ⟨C, hC⟩ := b.proj_uniform_bound
-  have hCpos : 0 ≤ C := by simpa [GeneralSchauderBasis.proj_empty] using hC ∅
-  refine ⟨C.toNNReal, ?_⟩
-  rintro _ ⟨A, rfl⟩
-  rw [← NNReal.coe_le_coe, Real.coe_toNNReal C hCpos, coe_nnnorm]
-  exact hC A
-
-/-- The norm of any projection is bounded by the basis constant. -/
-theorem norm_proj_le_normProjBound [CompleteSpace X] (A : Finset β) :
-    ‖b.proj A‖₊ ≤ b.normProjBound :=
-  le_ciSup (normProjBound_bddAbove b) A
-
-end UnconditionalSchauderBasis
-
 /-! ### ℕ-indexed Schauder bases with conditional convergence -/
 
 namespace SchauderBasis
@@ -563,3 +493,91 @@ theorem basis_coe (D : ProjectionData 𝕜 X) : ⇑D.basis = D.e :=
 
 end ProjectionData
 end SchauderBasis
+
+/-! ### Unconditional Schauder bases -/
+
+namespace UnconditionalSchauderBasis
+
+variable (b : UnconditionalSchauderBasis ℕ 𝕜 X)
+
+def toSchauderBasis : SchauderBasis 𝕜 X := {
+  basis := b.basis
+  coord := b.coord
+  ortho := b.ortho
+  expansion := fun x => (b.expansion x).mono_left SummationFilter.le_atTop
+}
+
+variable (b : UnconditionalSchauderBasis β 𝕜 X)
+
+/-- The basis constant for unconditional bases (supremum over all finite sets) as enorm. -/
+noncomputable def enormProjBound : ℝ≥0∞ := ⨆ A : Finset β, ‖b.proj A‖ₑ
+
+/-- The norm of any projection is bounded by the basis constant (general case). -/
+theorem norm_proj_le_enormProjBound (A : Finset β) : ‖b.proj A‖ₑ ≤ b.enormProjBound := by
+  rw [enormProjBound]
+  exact le_iSup (fun A ↦ ‖b.proj A‖ₑ) A
+
+open scoped Classical in
+/-- Projections are uniformly bounded for unconditional bases (Banach-Steinhaus). -/
+theorem proj_uniform_bound [CompleteSpace X] : ∃ C : ℝ, ∀ A : Finset β, ‖b.proj A‖ ≤ C := by
+  apply banach_steinhaus
+  intro x
+  have hsum : Summable (fun i ↦ b.coord i x • b i) := b.expansion x |>.summable
+  obtain ⟨A₀, hA₀⟩ := summable_iff_vanishing_norm.mp hsum 1 one_pos
+  have hne : (A₀.powerset.image fun B ↦ ‖b.proj B x‖).Nonempty := by
+    simp only [Finset.image_nonempty, Finset.powerset_nonempty]
+  let M := (A₀.powerset.image fun B ↦ ‖b.proj B x‖).sup' hne id
+  use M + 1
+  intro A
+  -- Split A = (A ∩ A₀) ∪ (A \ A₀)
+  have hdecomp : b.proj A x = b.proj (A ∩ A₀) x + b.proj (A \ A₀) x := by
+    simp only [GeneralSchauderBasis.proj_apply]
+    have hdisj : Disjoint (A ∩ A₀) (A \ A₀) := by
+      rw [Finset.disjoint_left]; intro i hi
+      simp only [Finset.mem_inter] at hi
+      simp only [Finset.mem_sdiff, hi.2, not_true_eq_false, and_false, not_false_eq_true]
+    rw [← Finset.sum_union hdisj]
+    congr 1; ext i; simp only [Finset.mem_union, Finset.mem_inter, Finset.mem_sdiff]; tauto
+  rw [hdecomp]
+  -- The tail (A \ A₀) is small since it's disjoint from A₀
+  have htail : ‖b.proj (A \ A₀) x‖ < 1 := by
+    rw [GeneralSchauderBasis.proj_apply]
+    exact hA₀ (A \ A₀) (Finset.sdiff_disjoint)
+  -- The head (A ∩ A₀) is bounded by M
+  have hhead : ‖b.proj (A ∩ A₀) x‖ ≤ M := by
+    apply Finset.le_sup' (f := _root_.id)
+    simp only [Finset.mem_image, Finset.mem_powerset]
+    exact ⟨A ∩ A₀, Finset.inter_subset_right, rfl⟩
+  calc ‖b.proj (A ∩ A₀) x + b.proj (A \ A₀) x‖
+      ≤ ‖b.proj (A ∩ A₀) x‖ + ‖b.proj (A \ A₀) x‖ := norm_add_le _ _
+    _ ≤ M + 1 := by linarith
+
+/-- The basis constant for unconditional bases (supremum over all finite sets) as nnnorm.
+    Requires completeness to guarantee the supremum is finite. -/
+noncomputable def normProjBound : ℝ≥0 := ⨆ A : Finset β, ‖b.proj A‖₊
+
+/-- The projection norms are bounded above in a complete space (Banach-Steinhaus). -/
+theorem normProjBound_bddAbove [CompleteSpace X] :
+    BddAbove (Set.range (fun A : Finset β => ‖b.proj A‖₊)) := by
+  obtain ⟨C, hC⟩ := b.proj_uniform_bound
+  have hCpos : 0 ≤ C := by simpa [GeneralSchauderBasis.proj_empty] using hC ∅
+  refine ⟨C.toNNReal, ?_⟩
+  rintro _ ⟨A, rfl⟩
+  rw [← NNReal.coe_le_coe, Real.coe_toNNReal C hCpos, coe_nnnorm]
+  exact hC A
+
+/-- The norm of any projection is bounded by the basis constant. -/
+theorem norm_proj_le_normProjBound [CompleteSpace X] (A : Finset β) :
+    ‖b.proj A‖₊ ≤ b.normProjBound :=
+  le_ciSup (normProjBound_bddAbove b) A
+
+variable (b : UnconditionalSchauderBasis ℕ 𝕜 X)
+
+/-- The Schauder basis constant of `toSchauderBasis` is bounded by the unconditional constant. -/
+theorem toSchauderBasis_enormProjBound_le :
+    b.toSchauderBasis.enormProjBound ≤ b.enormProjBound := by
+  simp only [SchauderBasis.enormProjBound, enormProjBound, SchauderBasis.proj, toSchauderBasis]
+  apply iSup_le fun n => ?_
+  exact le_iSup (fun A => ‖GeneralSchauderBasis.proj b A‖ₑ) (Finset.range n)
+
+end UnconditionalSchauderBasis
