@@ -1,0 +1,1776 @@
+/-
+Copyright (c) 2026 Michał Świętek. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Michał Świętek
+-/
+module
+
+public import Mathlib.Analysis.Normed.Module.Bases
+public import Mathlib.Analysis.Normed.Module.WeakDual
+public import Mathlib.Topology.MetricSpace.HausdorffDistance
+public import Mathlib.Data.ENNReal.Real
+public import Mathlib.Topology.MetricSpace.ProperSpace
+public import Mathlib.Topology.Neighborhoods
+public import Mathlib.Analysis.Normed.Operator.Extend
+public import Mathlib.Topology.Constructions
+public import Mathlib.Topology.UniformSpace.UniformEmbedding
+public import Mathlib.Topology.Algebra.Module.WeakDual
+
+
+/-!
+# Basic Sequences in Banach Spaces
+-/
+
+noncomputable section
+
+open Submodule Set WeakDual Metric
+
+variable {𝕜 : Type*} [RCLike 𝕜]
+variable {X : Type*} [NormedAddCommGroup X] [NormedSpace 𝕜 X]
+
+/-- A `BasicSequence` is a bundled sequence that forms a Schauder basis
+    for its algebraic span, with a finite basis constant.
+    TODO add a comment about closed span version -/
+structure BasicSequence (𝕜 : Type*) (X : Type*) [RCLike 𝕜]
+    [NormedAddCommGroup X] [NormedSpace 𝕜 X] where
+  toFun : ℕ → X
+  -- The basis field now just takes the types, not the sequence function
+  basis : SchauderBasis 𝕜 (Submodule.span 𝕜 (Set.range toFun))
+  -- We explicitly link the basis vectors to the sequence
+  eq_basis : ⇑basis = Set.codRestrict toFun (Submodule.span 𝕜 (Set.range toFun))
+                        (fun n ↦ Submodule.subset_span (Set.mem_range_self n))
+  basisConstant_lt_top : basis.basisConstant < ⊤
+
+-- Enable treating the BasicSequence as a function `ℕ → X`
+instance : CoeFun (BasicSequence 𝕜 X) (fun _ ↦ ℕ → X) where
+  coe b := b.toFun
+
+/-- A sequence `e` is a basic sequence if there exists a `BasicSequence` structure
+    whose underlying sequence is equal to `e`. -/
+def IsBasicSequence (𝕜 : Type*) {X : Type*} [RCLike 𝕜]
+    [NormedAddCommGroup X] [NormedSpace 𝕜 X] (e : ℕ → X) : Prop :=
+  ∃ b : BasicSequence 𝕜 X, ⇑b = e
+
+-- TODO check where complete space is needed
+namespace BasicSequences
+
+/-- The **Basis Constant** of a basic sequence. -/
+noncomputable def basicSequenceConstant (bs : BasicSequence 𝕜 X) : ℝ :=
+  bs.basis.basisConstant.toReal
+
+/-- A sequence satisfies the **Grünblum Condition** if the norms of the projections
+onto the span of its first `n` elements are uniformly bounded. -/
+def SatisfiesGrunblumCondition (𝕜 : Type*) {X : Type*} [RCLike 𝕜]
+    [NormedAddCommGroup X] [NormedSpace 𝕜 X] (e : ℕ → X) : Prop :=
+  ∃ K, 1 ≤ K ∧ ∀ (n m : ℕ) (a : ℕ → 𝕜), m ≤ n →
+    ‖∑ i ∈ Finset.range m, a i • e i‖ ≤ K * ‖∑ i ∈ Finset.range n, a i • e i‖
+
+/-- The Grünblum constant for a basic sequence is max(1, basicSequenceConstant). -/
+def grunblumConstant (bs : BasicSequence 𝕜 X) : ℝ := max 1 (basicSequenceConstant bs)
+
+theorem grunblumConstant_ge_one (bs : BasicSequence 𝕜 X) : 1 ≤ grunblumConstant bs :=
+  le_max_left 1 _
+
+/-- A basic sequence implies the Grünblum inequality holds for its basis constant. -/
+theorem grunblum_of_basic (bs : BasicSequence 𝕜 X) : SatisfiesGrunblumCondition 𝕜 bs := by
+  -- Use K = max(1, basisConstant) to ensure K ≥ 1
+  let K := max 1 bs.basis.basisConstant.toReal
+  have hK_ge : 1 ≤ K := le_max_left 1 _
+  have hK_lt_top : bs.basis.basisConstant ≠ ⊤ := bs.basisConstant_lt_top.ne
+  refine ⟨K, hK_ge, fun n m a hmn => ?_⟩
+  -- The key idea: the partial sum up to m is the projection P_m applied to the full sum
+  -- and ‖P_m‖ ≤ basisConstant ≤ K
+  let S := Submodule.span 𝕜 (Set.range bs.toFun)
+  have hsum_mem (k : ℕ) : ∑ i ∈ Finset.range k, a i • bs i ∈ S :=
+    Submodule.sum_mem _ (fun i _ => Submodule.smul_mem _ _ (Submodule.subset_span ⟨i, rfl⟩))
+  -- The projection bound: ‖P_m‖ ≤ basisConstant ≤ K
+  have h_proj_bound : ‖bs.basis.proj m‖ ≤ K := by
+    have h := bs.basis.norm_proj_le_basisConstant m
+    rw [← ENNReal.toReal_le_toReal ENNReal.coe_ne_top hK_lt_top] at h
+    simp only [ENNReal.coe_toReal, coe_nnnorm] at h
+    exact h.trans (le_max_right _ _)
+  -- The rest requires showing P_m(∑_{i<n} a_i • e_i) = ∑_{i<m} a_i • e_i
+  -- This is a standard property of Schauder basis projections
+  -- First, lift the sums to the subspace S
+  let sum_n : S := ⟨∑ i ∈ Finset.range n, a i • bs i, hsum_mem n⟩
+  let sum_m : S := ⟨∑ i ∈ Finset.range m, a i • bs i, hsum_mem m⟩
+  -- Show that basis i = codRestrict bs.toFun ... i, so (basis i : X) = bs i
+  have h_basis_eq : ∀ i, (bs.basis i : X) = bs i := fun i ↦ by
+    have h := congrFun bs.eq_basis i
+    simp only at h
+    rw [h]
+    rfl
+  -- Express sum_n as a sum of basis elements in S
+  have h_sum_n_basis : sum_n = ∑ j ∈ Finset.range n, a j • bs.basis j := by
+    apply Subtype.ext
+    simp only [sum_n, Submodule.coe_sum, Submodule.coe_smul, h_basis_eq]
+  -- Key: proj m (sum_n) = sum_m
+  have h_proj_eq : bs.basis.proj m sum_n = sum_m := by
+    -- Use proj_apply: proj m x = ∑ i ∈ range m, coord i x • basis i
+    rw [SchauderBasis.proj_apply]
+    -- For sum_n = ∑_{i<n} a_i • basis_i, coord j (sum_n) = a_j for j < n
+    -- Since m ≤ n, for all j < m we have j < n, so coord j (sum_n) = a_j
+    ext
+    simp only [Submodule.coe_sum, Submodule.coe_smul, h_basis_eq]
+    apply Finset.sum_congr rfl
+    intro i hi
+    have hi_lt_n : i < n := Nat.lt_of_lt_of_le (Finset.mem_range.mp hi) hmn
+    -- Show: coord i (sum_n) = a_i
+    have h_coord : bs.basis.coord i sum_n = a i := by
+      rw [h_sum_n_basis]
+      rw [map_sum]
+      -- coord i (∑_j a_j • basis_j) = ∑_j a_j • coord i (basis_j) = ∑_j a_j • δ_{ij} = a_i
+      simp only [map_smul]
+      rw [Finset.sum_eq_single_of_mem i (Finset.mem_range.mpr hi_lt_n)]
+      · -- When j = i: a_i • coord i (basis i) = a_i • 1 = a_i
+        have h_ortho : bs.basis.coord i (bs.basis i) = 1 := by
+          rw [bs.basis.ortho i i, Pi.single_eq_same]
+        rw [h_ortho, smul_eq_mul, mul_one]
+      · -- When j ≠ i: a_j • coord i (basis j) = a_j • 0 = 0
+        intro j _ hji
+        have h_ortho : bs.basis.coord i (bs.basis j) = 0 := by
+          rw [bs.basis.ortho i j, Pi.single_apply, if_neg (Ne.symm hji)]
+        rw [h_ortho, smul_zero]
+    rw [h_coord]
+  -- Now use the operator norm bound
+  calc ‖∑ i ∈ Finset.range m, a i • bs i‖
+    _ = ‖(sum_m : X)‖ := rfl
+    _ = ‖sum_m‖ := (norm_coe sum_m).symm
+    _ = ‖bs.basis.proj m sum_n‖ := by rw [h_proj_eq]
+    _ ≤ ‖bs.basis.proj m‖ * ‖sum_n‖ := ContinuousLinearMap.le_opNorm _ _
+    _ ≤ K * ‖sum_n‖ := by apply mul_le_mul_of_nonneg_right h_proj_bound (norm_nonneg _)
+    _ = K * ‖(sum_n : X)‖ := by rw [norm_coe]
+    _ = K * ‖∑ i ∈ Finset.range n, a i • bs i‖ := rfl
+
+/-- The explicit Grünblum bound using `grunblumConstant`. -/
+theorem grunblum_bound_of_basic (bs : BasicSequence 𝕜 X) (n m : ℕ) (a : ℕ → 𝕜) (hmn : m ≤ n) :
+    ‖∑ i ∈ Finset.range m, a i • bs i‖ ≤
+    grunblumConstant bs * ‖∑ i ∈ Finset.range n, a i • bs i‖ := by
+  -- Directly prove the bound using the same technique as grunblum_of_basic
+  let K := grunblumConstant bs
+  have hK_lt_top : bs.basis.basisConstant ≠ ⊤ := bs.basisConstant_lt_top.ne
+  let S := Submodule.span 𝕜 (Set.range bs.toFun)
+  have hsum_mem (k : ℕ) : ∑ i ∈ Finset.range k, a i • bs i ∈ S :=
+    Submodule.sum_mem _ (fun i _ => Submodule.smul_mem _ _ (Submodule.subset_span ⟨i, rfl⟩))
+  have h_proj_bound : ‖bs.basis.proj m‖ ≤ K := by
+    have h := bs.basis.norm_proj_le_basisConstant m
+    rw [← ENNReal.toReal_le_toReal ENNReal.coe_ne_top hK_lt_top] at h
+    simp only [ENNReal.coe_toReal, coe_nnnorm] at h
+    exact h.trans (le_max_right _ _)
+  let sum_n : S := ⟨∑ i ∈ Finset.range n, a i • bs i, hsum_mem n⟩
+  let sum_m : S := ⟨∑ i ∈ Finset.range m, a i • bs i, hsum_mem m⟩
+  have h_basis_eq : ∀ i, (bs.basis i : X) = bs i := fun i ↦ by
+    have h := congrFun bs.eq_basis i
+    simp only at h
+    rw [h]
+    rfl
+  have h_sum_n_basis : sum_n = ∑ j ∈ Finset.range n, a j • bs.basis j := by
+    apply Subtype.ext
+    simp only [sum_n, Submodule.coe_sum, Submodule.coe_smul, h_basis_eq]
+  have h_proj_eq : bs.basis.proj m sum_n = sum_m := by
+    rw [SchauderBasis.proj_apply]
+    ext
+    simp only [Submodule.coe_sum, Submodule.coe_smul, h_basis_eq]
+    apply Finset.sum_congr rfl
+    intro i hi
+    have hi_lt_n : i < n := Nat.lt_of_lt_of_le (Finset.mem_range.mp hi) hmn
+    have h_coord : bs.basis.coord i sum_n = a i := by
+      rw [h_sum_n_basis]
+      rw [map_sum]
+      simp only [map_smul]
+      rw [Finset.sum_eq_single_of_mem i (Finset.mem_range.mpr hi_lt_n)]
+      · have h_ortho : bs.basis.coord i (bs.basis i) = 1 := by
+          rw [bs.basis.ortho i i, Pi.single_eq_same]
+        rw [h_ortho, smul_eq_mul, mul_one]
+      · intro j _ hji
+        have h_ortho : bs.basis.coord i (bs.basis j) = 0 := by
+          rw [bs.basis.ortho i j, Pi.single_apply, if_neg (Ne.symm hji)]
+        rw [h_ortho, smul_zero]
+    rw [h_coord]
+  calc ‖∑ i ∈ Finset.range m, a i • bs i‖
+    _ = ‖(sum_m : X)‖ := rfl
+    _ = ‖sum_m‖ := (norm_coe sum_m).symm
+    _ = ‖bs.basis.proj m sum_n‖ := by rw [h_proj_eq]
+    _ ≤ ‖bs.basis.proj m‖ * ‖sum_n‖ := ContinuousLinearMap.le_opNorm _ _
+    _ ≤ K * ‖sum_n‖ := by apply mul_le_mul_of_nonneg_right h_proj_bound (norm_nonneg _)
+    _ = K * ‖(sum_n : X)‖ := by rw [norm_coe]
+    _ = K * ‖∑ i ∈ Finset.range n, a i • bs i‖ := rfl
+
+lemma linearIndependent_of_grunblum {e : ℕ → X} (h_grunblum : SatisfiesGrunblumCondition 𝕜 e)
+    (h_nz : ∀ n, e n ≠ 0) : LinearIndependent 𝕜 e := by
+  rcases h_grunblum with ⟨K, -, hK⟩
+  rw [linearIndependent_iff']
+  intros s g hg_sum i hi_s
+  -- 1. Define coefficients 'c' globally and pick a sufficiently large N
+  let c := fun j ↦ if j ∈ s then g j else 0
+  let N := s.sup id + 1
+  have h_bound : ∀ j ∈ s, j < N := fun j hj ↦ Nat.lt_succ_of_le (Finset.le_sup hj (f := id))
+  -- 2. Show the sum over 'range N' is zero (because it matches 's' where c=g, and is 0 elsewhere)
+  have h_total : ∑ j ∈ Finset.range N, c j • e j = 0 := by
+    rw [← Finset.sum_subset (fun j hj ↦ Finset.mem_range.2 (h_bound j hj))
+      (fun x _ hj ↦ by simp [c, hj])]
+    convert hg_sum using 1
+    exact Finset.sum_congr rfl (fun j hj ↦ by simp [c, hj])
+  -- 3. Use Grünblum to show ALL partial sums up to N are zero
+  have h_partial : ∀ m ≤ N, ∑ j ∈ Finset.range m, c j • e j = 0 := fun m hm ↦
+    norm_le_zero_iff.1 <| by simpa [h_total] using hK N m c hm
+  -- 4. The term at 'i' is the difference of two zero partial sums (S_{i+1} - S_i)
+  have h_term : c i • e i = 0 := by
+    rw [← Finset.sum_range_succ_sub_sum (fun j ↦ c j • e j),
+        h_partial (i + 1) (h_bound i hi_s),
+        h_partial i (le_of_lt (h_bound i hi_s)), sub_zero]
+  -- 5. Conclude g i = 0
+  simpa [c, hi_s, h_nz i] using h_term
+
+/--
+**The Grünblum Criterion**:
+If a sequence satisfies the Grünblum condition (bounded projections on the span),
+and the elements are non-zero, then it is a Basic Sequence.
+-/
+theorem isBasicSequence_of_grunblum [CompleteSpace X] {e : ℕ → X}
+    (h_grunblum : SatisfiesGrunblumCondition 𝕜 e)
+    (h_nz : ∀ n, e n ≠ 0) : IsBasicSequence 𝕜 e := by
+  have h_indep := linearIndependent_of_grunblum h_grunblum h_nz
+  rcases h_grunblum with ⟨K, hK_ge_1, hK⟩
+  -- 1. Prove Linear Independence
+  -- The Grünblum condition implies that if a finite combination is 0,
+  -- its partial sums must have norm 0.
+  let S := Submodule.span 𝕜 (Set.range e)
+  let b_S := Module.Basis.span h_indep
+  let e_Y : ℕ → S := b_S
+  have hbS : ∀ n, (b_S n : X) = e n := Module.Basis.span_apply h_indep
+  let P_span (k : ℕ) : S →ₗ[𝕜] S := b_S.constr 𝕜 (fun i => if i < k then b_S i else 0)
+  have h_P_span_apply (k : ℕ) (x : S) :
+      P_span k x = ∑ i ∈ Finset.range k, b_S.repr x i • b_S i := by
+    rw [Module.Basis.constr_apply, Finsupp.sum]
+    refine Finset.sum_congr_of_eq_on_inter ?_ ?_ ?_ <;> intro i h1 h2
+    · -- Case: i ∈ supp \ range k
+      rw [if_neg (by simpa using h2), smul_zero]
+    · -- Case: i ∈ range k \ supp
+      rw [Finsupp.notMem_support_iff.mp h2, zero_smul]
+    · -- Case: i ∈ supp ∩ range k
+      rw [if_pos (by simpa using h2)]
+  have h_P_span_bound (k : ℕ) (x : S) : ‖P_span k x‖ ≤ K * ‖x‖ := by
+    let a := b_S.repr x
+    let N := max k (a.support.sup id + 1)
+    have hk_le_N : k ≤ N := le_max_left _ _
+    -- 1. Express x as a sum in X
+    have hx : (x : X) = ∑ i ∈ Finset.range N, (b_S.repr x) i • b_S i := by
+      nth_rw 1 [← b_S.linearCombination_repr x]
+      rw [Finsupp.linearCombination_apply]
+      rw [← h_P_span_apply N x]
+      dsimp only [P_span]
+      rw [b_S.constr_apply, Finsupp.sum_congr]
+      intro i hi
+      rw [if_pos]
+      calc i
+        _ ≤ (b_S.repr x).support.sup id   := Finset.le_sup hi (f := id)
+        _ < (b_S.repr x).support.sup id + 1 := Nat.lt_succ_self _
+        _ ≤ N                    := le_max_right _ _
+    rw [← norm_coe, ← norm_coe, hx,  h_P_span_apply]
+    simp_rw [Submodule.coe_sum, Submodule.coe_smul, hbS]
+    exact hK N k (b_S.repr x) hk_le_N
+  let P (k : ℕ) : S →L[𝕜] S := LinearMap.mkContinuous (P_span k) K (h_P_span_bound k)
+  -- Verify Schauder Basis Conditions
+  have h0 : P 0 = 0 := by
+    have : P_span 0 = 0 := by
+      ext; simp_rw [h_P_span_apply, Finset.range_zero, Finset.sum_empty]; rfl
+    ext _
+    dsimp only [P]
+    simp only [LinearMap.mkContinuous_apply, ContinuousLinearMap.zero_apply, ZeroMemClass.coe_zero,
+      ZeroMemClass.coe_eq_zero]
+    rw [h_P_span_apply]
+    simp only [Finset.range_zero, Finset.sum_empty]
+  have hdim (n : ℕ) : Module.finrank 𝕜 (LinearMap.range (P n).toLinearMap) = n := by
+    -- Define the target span W
+    let W := Submodule.span 𝕜 (Set.range (fun i : Fin n ↦ b_S i))
+    have h_range : LinearMap.range (P n).toLinearMap = W := by
+      apply le_antisymm
+      · rintro _ ⟨x, rfl⟩
+        simp only [ContinuousLinearMap.coe_coe, P, LinearMap.mkContinuous_apply]
+        rw [h_P_span_apply]
+        refine Submodule.sum_mem _ (fun i hi ↦ ?_)
+        apply Submodule.smul_mem
+        apply Submodule.subset_span
+        exact ⟨⟨i, Finset.mem_range.mp hi⟩, rfl⟩
+      · rw [Submodule.span_le]
+        rintro _ ⟨i, rfl⟩
+        use b_S i
+        simp only [ContinuousLinearMap.coe_coe]
+        dsimp only [P]
+        simp only [LinearMap.mkContinuous_apply]
+        dsimp only [P_span]
+        rw [b_S.constr_basis]
+        rw [if_pos i.isLt]
+    rw [h_range, finrank_span_eq_card]
+    · exact Fintype.card_fin n
+    · exact b_S.linearIndependent.comp (fun i : Fin n => i.val) Fin.val_injective
+  have hcomp (n m : ℕ) (y : S) : P n (P m y) = P (min n m) y := by
+    simp only [P, LinearMap.mkContinuous_apply]
+    conv_lhs => rw [h_P_span_apply m y, h_P_span_apply]
+    rw [h_P_span_apply]
+    simp only [map_sum, map_smul, Module.Basis.repr_self]
+    -- Simplify the inner sum: (∑ k in range m, coeff k • δ_k) evaluated at j
+    simp_rw [Finsupp.finset_sum_apply, Finsupp.smul_apply, Finsupp.single_apply,
+             smul_eq_mul, mul_ite, mul_one, mul_zero, Finset.sum_ite_eq', Finset.mem_range]
+    -- Convert (if ... then c else 0) • x to if ... then c • x else 0
+    simp_rw [ite_smul, zero_smul]
+    rw [← Finset.sum_filter]
+    congr 1
+    ext j
+    simp only [Finset.mem_filter, Finset.mem_range, lt_min_iff]
+  have h_bound_P : ∀ n, ‖P n‖ ≤ K := fun n ↦ by
+    refine ContinuousLinearMap.opNorm_le_bound _ (zero_le_one.trans hK_ge_1) (fun x ↦ ?_)
+    exact h_P_span_bound n x
+  have hlim (x : S) : Filter.Tendsto (fun n ↦ P n x) Filter.atTop (nhds x) := by
+    let N := (b_S.repr x).support.sup id + 1
+    rw [Metric.tendsto_atTop]
+    intro ε hε
+    use N
+    intro n hn
+    dsimp only [P]
+    simp only [LinearMap.mkContinuous_apply]
+    rw [dist_eq_norm]
+    have h_eq : P_span n x = x := by
+      rw [h_P_span_apply]
+      conv_rhs => rw [← b_S.linearCombination_repr x, Finsupp.linearCombination_apply]
+      symm
+      apply Finset.sum_subset
+      · intro i hi
+        apply Finset.mem_range.mpr
+        calc i ≤ (b_S.repr x).support.sup id := Finset.le_sup hi (f := id)
+          _ < N := Nat.lt_succ_self _
+          _ ≤ n := hn
+      · intro i _ hi
+        simp [Finsupp.notMem_support_iff.mp hi]
+    rw [h_eq, sub_self, norm_zero]
+    exact hε
+  -- Conclusion: use basis_of_canonical_projections
+  -- Key: b_S n = ⟨e n, _⟩ as elements of S
+  have hbS_eq : ∀ n, b_S n = ⟨e n, subset_span (mem_range_self n)⟩ := fun n ↦
+    Subtype.ext (hbS n)
+  -- The goal's e_Y is definitionally fun n ↦ ⟨e n, _⟩
+  -- Show this is in the range of Q n = P (n+1) - P n
+  have he_in_range : ∀ n, ⟨e n, subset_span (mem_range_self n)⟩ ∈
+      LinearMap.range (SchauderBasis.Q P n).toLinearMap := fun n ↦ by
+    rw [← hbS_eq, LinearMap.mem_range]
+    use b_S n
+    simp only [SchauderBasis.Q, ContinuousLinearMap.coe_sub, P,
+               LinearMap.mkContinuous_coe, LinearMap.sub_apply]
+    rw [h_P_span_apply, h_P_span_apply, Finset.sum_range_succ, add_sub_cancel_left]
+    simp only [Module.Basis.repr_self, Finsupp.single_eq_same, one_smul]
+  -- ⟨e n, _⟩ ≠ 0 follows from h_nz
+  have he_ne : ∀ n, (⟨e n, subset_span (mem_range_self n)⟩ : S) ≠ 0 := fun n h ↦
+    h_nz n (by simpa using congrArg Subtype.val h)
+  -- 2. Obtain the bundled SchauderBasis on the subspace S
+-- 1. Bundle all the subspace data into our structure
+  -- Note: 'e_Y' is 'e' lifted to S, and 'P' is the sequence of projections on S
+  let D : SchauderBasis.CanonicalProjectionProperties 𝕜 S := {
+    P := P
+    e := e_Y
+    h0 := h0
+    hdim := hdim
+    hcomp := hcomp
+    hlim := hlim
+    he_in_range := fun n ↦ by
+      -- Rewrite b_S n to ⟨e n, ...⟩ so it matches your local proof
+      dsimp only [e_Y]
+      rw [hbS_eq]
+      exact he_in_range n
+    he_ne := fun n ↦ by
+      -- Rewrite b_S n to ⟨e n, ...⟩
+      dsimp only [e_Y]
+      rw [hbS_eq]
+      exact he_ne n
+  }
+  -- 2. Construct the Schauder Basis on S
+  let b_S := D.basis
+  -- 3. Construct the BasicSequence on X
+  let seq : BasicSequence 𝕜 X := {
+    toFun := e
+    basis := b_S
+
+    eq_basis := by
+      -- Goal: ⇑b_S = e_Y (roughly)
+      -- D.basis_coe gives us: ⇑b_S = D.e
+      ext n
+      rw [SchauderBasis.CanonicalProjectionProperties.basis_coe D]
+      -- D.e is defined as e_Y, which is e lifted to S
+      dsimp only [val_codRestrict_apply]
+      exact hbS n
+
+    basisConstant_lt_top := by
+      -- Goal: b_S.basisConstant < ⊤
+      apply SchauderBasis.basisConstant_lt_top_uniform_bound
+      · intro n
+        -- Use the simplification lemma to switch from basis.proj to P
+        rw [SchauderBasis.CanonicalProjectionProperties.basis_proj D]
+      -- Use the bound we proved earlier (renamed from h_unif to h_bound_P)
+        exact h_bound_P n
+  }
+  -- 4. Conclude
+  use seq
+
+/-- A version of `isBasicSequence_of_grunblum` that also provides an explicit bound
+    on the basis constant. If a sequence satisfies the Grünblum condition with constant K,
+    the resulting basic sequence has basis constant at most K. -/
+theorem isBasicSequence_of_grunblum_with_bound [CompleteSpace X] {e : ℕ → X} {K : ℝ}
+    (hK_ge : 1 ≤ K)
+    (hK_bound : ∀ (n m : ℕ) (a : ℕ → 𝕜), m ≤ n →
+      ‖∑ i ∈ Finset.range m, a i • e i‖ ≤ K * ‖∑ i ∈ Finset.range n, a i • e i‖)
+    (h_nz : ∀ n, e n ≠ 0) :
+    ∃ (b : BasicSequence 𝕜 X), ⇑b = e ∧ basicSequenceConstant b ≤ K := by
+  have h_grunblum : SatisfiesGrunblumCondition 𝕜 e := ⟨K, hK_ge, hK_bound⟩
+  have h_indep := linearIndependent_of_grunblum h_grunblum h_nz
+  let S := Submodule.span 𝕜 (Set.range e)
+  let b_S := Module.Basis.span h_indep
+  let e_Y : ℕ → S := b_S
+  have hbS : ∀ n, (b_S n : X) = e n := Module.Basis.span_apply h_indep
+  let P_span (k : ℕ) : S →ₗ[𝕜] S := b_S.constr 𝕜 (fun i => if i < k then b_S i else 0)
+  have h_P_span_apply (k : ℕ) (x : S) :
+      P_span k x = ∑ i ∈ Finset.range k, b_S.repr x i • b_S i := by
+    rw [Module.Basis.constr_apply, Finsupp.sum]
+    refine Finset.sum_congr_of_eq_on_inter ?_ ?_ ?_ <;> intro i h1 h2
+    · rw [if_neg (by simpa using h2), smul_zero]
+    · rw [Finsupp.notMem_support_iff.mp h2, zero_smul]
+    · rw [if_pos (by simpa using h2)]
+  have h_P_span_bound (k : ℕ) (x : S) : ‖P_span k x‖ ≤ K * ‖x‖ := by
+    let a := b_S.repr x
+    let N := max k (a.support.sup id + 1)
+    have hk_le_N : k ≤ N := le_max_left _ _
+    have hx : (x : X) = ∑ i ∈ Finset.range N, (b_S.repr x) i • b_S i := by
+      nth_rw 1 [← b_S.linearCombination_repr x]
+      rw [Finsupp.linearCombination_apply]
+      rw [← h_P_span_apply N x]
+      dsimp only [P_span]
+      rw [b_S.constr_apply, Finsupp.sum_congr]
+      intro i hi
+      rw [if_pos]
+      calc i
+        _ ≤ (b_S.repr x).support.sup id   := Finset.le_sup hi (f := id)
+        _ < (b_S.repr x).support.sup id + 1 := Nat.lt_succ_self _
+        _ ≤ N                    := le_max_right _ _
+    rw [← norm_coe, ← norm_coe, hx, h_P_span_apply]
+    simp_rw [Submodule.coe_sum, Submodule.coe_smul, hbS]
+    exact hK_bound N k (b_S.repr x) hk_le_N
+  let P (k : ℕ) : S →L[𝕜] S := LinearMap.mkContinuous (P_span k) K (h_P_span_bound k)
+  have h0 : P 0 = 0 := by
+    have : P_span 0 = 0 := by
+      ext; simp_rw [h_P_span_apply, Finset.range_zero, Finset.sum_empty]; rfl
+    ext _
+    dsimp only [P]
+    simp only [LinearMap.mkContinuous_apply, ContinuousLinearMap.zero_apply, ZeroMemClass.coe_zero,
+      ZeroMemClass.coe_eq_zero]
+    rw [h_P_span_apply]
+    simp only [Finset.range_zero, Finset.sum_empty]
+  have hdim (n : ℕ) : Module.finrank 𝕜 (LinearMap.range (P n).toLinearMap) = n := by
+    let W := Submodule.span 𝕜 (Set.range (fun i : Fin n ↦ b_S i))
+    have h_range : LinearMap.range (P n).toLinearMap = W := by
+      apply le_antisymm
+      · rintro _ ⟨x, rfl⟩
+        simp only [ContinuousLinearMap.coe_coe, P, LinearMap.mkContinuous_apply]
+        rw [h_P_span_apply]
+        refine Submodule.sum_mem _ (fun i hi ↦ ?_)
+        apply Submodule.smul_mem
+        apply Submodule.subset_span
+        exact ⟨⟨i, Finset.mem_range.mp hi⟩, rfl⟩
+      · rw [Submodule.span_le]
+        rintro _ ⟨i, rfl⟩
+        use b_S i
+        simp only [ContinuousLinearMap.coe_coe]
+        dsimp only [P]
+        simp only [LinearMap.mkContinuous_apply]
+        dsimp only [P_span]
+        rw [b_S.constr_basis]
+        rw [if_pos i.isLt]
+    rw [h_range, finrank_span_eq_card]
+    · exact Fintype.card_fin n
+    · exact b_S.linearIndependent.comp (fun i : Fin n => i.val) Fin.val_injective
+  have hcomp (n m : ℕ) (y : S) : P n (P m y) = P (min n m) y := by
+    simp only [P, LinearMap.mkContinuous_apply]
+    conv_lhs => rw [h_P_span_apply m y, h_P_span_apply]
+    rw [h_P_span_apply]
+    simp only [map_sum, map_smul, Module.Basis.repr_self]
+    simp_rw [Finsupp.finset_sum_apply, Finsupp.smul_apply, Finsupp.single_apply,
+             smul_eq_mul, mul_ite, mul_one, mul_zero, Finset.sum_ite_eq', Finset.mem_range]
+    simp_rw [ite_smul, zero_smul]
+    rw [← Finset.sum_filter]
+    congr 1
+    ext j
+    simp only [Finset.mem_filter, Finset.mem_range, lt_min_iff]
+  have h_bound_P : ∀ n, ‖P n‖ ≤ K := fun n ↦ by
+    refine ContinuousLinearMap.opNorm_le_bound _ (zero_le_one.trans hK_ge) (fun x ↦ ?_)
+    exact h_P_span_bound n x
+  have hlim (x : S) : Filter.Tendsto (fun n ↦ P n x) Filter.atTop (nhds x) := by
+    let N := (b_S.repr x).support.sup id + 1
+    rw [Metric.tendsto_atTop]
+    intro ε hε
+    use N
+    intro n hn
+    dsimp only [P]
+    simp only [LinearMap.mkContinuous_apply]
+    rw [dist_eq_norm]
+    have h_eq : P_span n x = x := by
+      rw [h_P_span_apply]
+      conv_rhs => rw [← b_S.linearCombination_repr x, Finsupp.linearCombination_apply]
+      symm
+      apply Finset.sum_subset
+      · intro i hi
+        apply Finset.mem_range.mpr
+        calc i ≤ (b_S.repr x).support.sup id := Finset.le_sup hi (f := id)
+          _ < N := Nat.lt_succ_self _
+          _ ≤ n := hn
+      · intro i _ hi
+        simp [Finsupp.notMem_support_iff.mp hi]
+    rw [h_eq, sub_self, norm_zero]
+    exact hε
+  have hbS_eq : ∀ n, b_S n = ⟨e n, subset_span (mem_range_self n)⟩ := fun n ↦
+    Subtype.ext (hbS n)
+  have he_in_range : ∀ n, ⟨e n, subset_span (mem_range_self n)⟩ ∈
+      LinearMap.range (SchauderBasis.Q P n).toLinearMap := fun n ↦ by
+    rw [← hbS_eq, LinearMap.mem_range]
+    use b_S n
+    simp only [SchauderBasis.Q, ContinuousLinearMap.coe_sub, P,
+               LinearMap.mkContinuous_coe, LinearMap.sub_apply]
+    rw [h_P_span_apply, h_P_span_apply, Finset.sum_range_succ, add_sub_cancel_left]
+    simp only [Module.Basis.repr_self, Finsupp.single_eq_same, one_smul]
+  have he_ne : ∀ n, (⟨e n, subset_span (mem_range_self n)⟩ : S) ≠ 0 := fun n h ↦
+    h_nz n (by simpa using congrArg Subtype.val h)
+  let D : SchauderBasis.CanonicalProjectionProperties 𝕜 S := {
+    P := P
+    e := e_Y
+    h0 := h0
+    hdim := hdim
+    hcomp := hcomp
+    hlim := hlim
+    he_in_range := fun n ↦ by dsimp only [e_Y]; rw [hbS_eq]; exact he_in_range n
+    he_ne := fun n ↦ by dsimp only [e_Y]; rw [hbS_eq]; exact he_ne n
+  }
+  let b_basis := D.basis
+  let seq : BasicSequence 𝕜 X := {
+    toFun := e
+    basis := b_basis
+    eq_basis := by
+      ext n
+      rw [SchauderBasis.CanonicalProjectionProperties.basis_coe D]
+      dsimp only [val_codRestrict_apply]
+      exact hbS n
+    basisConstant_lt_top := by
+      apply SchauderBasis.basisConstant_lt_top_uniform_bound
+      intro n
+      rw [SchauderBasis.CanonicalProjectionProperties.basis_proj D]
+      exact h_bound_P n
+  }
+  refine ⟨seq, rfl, ?_⟩
+  -- Show basicSequenceConstant seq ≤ K
+  -- basisConstant = iSup_n (‖proj n‖₊)
+  -- Since ‖proj n‖ ≤ K for all n, basisConstant ≤ K
+  dsimp only [basicSequenceConstant]
+  have h_lt_top : b_basis.basisConstant ≠ ⊤ := seq.basisConstant_lt_top.ne
+  have h_K_nonneg : 0 ≤ K := by linarith
+  -- basisConstant ≤ K.toNNReal (as ENNReal)
+  have h_bound_ennreal : b_basis.basisConstant ≤ ENNReal.ofReal K := by
+    rw [SchauderBasis.basisConstant, iSup_le_iff]
+    intro n
+    rw [← ENNReal.ofReal_coe_nnreal, ENNReal.ofReal_le_ofReal_iff h_K_nonneg]
+    simp only [coe_nnnorm]
+    rw [SchauderBasis.CanonicalProjectionProperties.basis_proj D]
+    exact h_bound_P n
+  calc b_basis.basisConstant.toReal
+    _ ≤ (ENNReal.ofReal K).toReal := ENNReal.toReal_mono ENNReal.ofReal_ne_top h_bound_ennreal
+    _ = K := ENNReal.toReal_ofReal h_K_nonneg
+
+lemma perturbation_finite_dimensional {S : Set (StrongDual 𝕜 X)}
+    (h_weak_star : (0 : WeakDual 𝕜 X) ∈ closure (StrongDual.toWeakDual '' S))
+    (h_norm : (0 : StrongDual 𝕜 X) ∉ closure S)
+    (E : Subspace 𝕜 (StrongDual 𝕜 X))
+    (hefind : FiniteDimensional 𝕜 E)
+    {ε : ℝ} (hε : 0 < ε) :
+    ∃ x ∈ S, ∀ (e : E) (c : 𝕜), ‖(e : StrongDual 𝕜 X) + c • x‖ ≥ (1 - ε) * ‖e‖ := by
+  -- 0. Handle trivial ε case
+  rcases le_or_gt 1 ε with hε1 | hε1
+  · -- If ε ≥ 1, any x ∈ S works
+    obtain ⟨-, -, x, hxS, -⟩ := mem_closure_iff.mp h_weak_star _ isOpen_univ trivial
+    use x, hxS
+    intro e c
+    -- Since ε ≥ 1, (1-ε) ≤ 0. The inequality holds trivially as LHS ≥ 0 and RHS ≤ 0.
+    refine le_trans ?_ (norm_nonneg _)
+    apply mul_nonpos_of_nonpos_of_nonneg
+    · linarith [hε1]
+    · exact norm_nonneg _
+
+  -- 1. Setup constants based on distance to S
+  obtain ⟨δ, hδ, hδS⟩ := Metric.exists_real_pos_lt_infEDist_of_notMem_closure h_norm
+  let M := 2 / δ
+  let γ := ε * δ / 4
+
+  have h_norm_S : ∀ x ∈ S, δ ≤ ‖x‖ := by
+    intro x hx
+    have : ENNReal.ofReal δ < edist (0 : StrongDual 𝕜 X) x :=
+      lt_of_lt_of_le hδS (Metric.infEDist_le_edist_of_mem hx)
+    rw [edist_dist, dist_zero_left] at this
+    exact (ENNReal.ofReal_le_ofReal_iff (norm_nonneg x)).mp this.le
+  -- 2. Use compactness of the sphere in E to find a finite "test set" F ⊂ X
+  let sphere := Metric.sphere (0 : E) 1
+  -- Define the open sets covering the sphere, indexed by the unit ball of vectors X.
+  let U (v : {v : X // ‖v‖ ≤ 1}) : Set E := {e | 1 - ε / 2 < ‖(e : StrongDual 𝕜 X) v‖}
+
+  have h_cover : sphere ⊆ ⋃ v, U v := by
+    intro e he
+    rw [mem_sphere_zero_iff_norm] at he
+    -- We have ‖e‖ = 1 and ε > 0, so 1 - ε/2 < ‖e‖
+    have h_lt : 1 - ε / 2 < ‖(e : StrongDual 𝕜 X)‖ := by
+      rw [norm_coe, he]
+      linarith
+    -- Find a vector v with ||v|| ≤ 1 that "witnesses" the norm of e
+    obtain ⟨v, hv, hv_val⟩ := ContinuousLinearMap.exists_lt_apply_of_lt_opNorm (e : StrongDual 𝕜 X) h_lt
+    exact Set.mem_iUnion.mpr ⟨⟨v, hv.le⟩, hv_val⟩
+
+  have h_open (v : {v : X // ‖v‖ ≤ 1}) : IsOpen (U v) := by
+    have : Continuous fun (e : E) => (e : StrongDual 𝕜 X) v.val :=
+      (ContinuousLinearMap.apply 𝕜 𝕜 v.val).continuous.comp continuous_subtype_val
+    exact isOpen_Ioi.preimage (Continuous.norm this)
+
+  -- Extract finite subcover
+  obtain ⟨F, hF_cover⟩ := (isCompact_sphere (0 : E) 1).elim_finite_subcover U h_open h_cover
+
+  -- 3. Find perturbation x ∈ S small on F (using weak* closure)
+  let W := {w : WeakDual 𝕜 X | ∀ v ∈ F, ‖w v‖ < γ}
+  have hW_open : IsOpen W := by
+    rw [show W = ⋂ v ∈ F, {w | ‖w v‖ < γ} by ext; simp [W]]
+    apply isOpen_biInter_finset
+    intro v _
+    refine isOpen_lt (continuous_norm.comp (WeakDual.eval_continuous (v : X))) continuous_const
+  have hγ : 0 < γ := by
+    dsimp [γ]
+    nlinarith [hε, hδ]
+
+  have hW0 : (0 : WeakDual 𝕜 X) ∈ W := by
+    simp only [W, Set.mem_setOf_eq]
+    intro v _
+    rw [ContinuousLinearMap.zero_apply, norm_zero]
+    exact hγ
+
+  -- Use weak-star density to find x ∈ S that is small on F
+  obtain ⟨_, hwW, ⟨x, hxS, rfl⟩⟩ : ∃ w ∈ W, ∃ x ∈ S, StrongDual.toWeakDual x = w :=
+      (_root_.mem_closure_iff).mp h_weak_star W hW_open hW0
+
+  -- 4. Verify the inequality
+  refine ⟨x, hxS, fun e c ↦ ?_⟩
+  rcases eq_or_ne e 0 with rfl | he_ne; · simp [norm_nonneg]
+  -- Scale e to the sphere
+  let e_norm := ‖e‖
+  let e' : E := (e_norm⁻¹ : 𝕜) • e
+  have he'_norm : ‖e'‖ = 1 := norm_smul_inv_norm he_ne
+
+  -- Main estimate logic
+  have estimate : ‖e'  + (e_norm⁻¹ * c) • x‖ ≥ 1 - ε := by
+    let c' := e_norm⁻¹ * c
+    rcases le_or_gt M ‖c'‖ with h_large | h_small
+    ·  -- Case 1: c' is large, c' • x dominates
+      calc ‖e' + c' • x‖
+        _ = ‖c' • x + e'‖                       := by rw [add_comm]
+        _ ≥ ‖c' • x‖ - ‖(e' : StrongDual 𝕜 X)‖  := norm_sub_le_norm_add _ _
+        _ = ‖c'‖ * ‖x‖ - 1                      := by rw [norm_smul, norm_coe, he'_norm]
+        _ ≥ M * δ - 1                           := by gcongr; exact h_norm_S x hxS
+        _ = (2 / δ) * δ - 1                     := rfl
+        _ = 1                                   := by field_simp [hδ]; ring
+        _ ≥ 1 - ε                               := by linarith
+    · -- Case 2: c' is small, e dominates
+      obtain this := hF_cover (mem_sphere_zero_iff_norm.mpr he'_norm)
+      rw [Set.mem_iUnion₂] at this
+      obtain ⟨v, hvF, hv_lower⟩ := this
+
+      calc ‖e' + c' • x‖
+        _ ≥ ‖(e' + c' • x) v‖               := ContinuousLinearMap.unit_le_opNorm _ _ v.property
+        _ = ‖(e' : StrongDual 𝕜 X) v + (c' • x) v‖          := by simp only
+          [ContinuousLinearMap.add_apply, ContinuousLinearMap.coe_smul', Pi.smul_apply, smul_eq_mul]
+        _ ≥ ‖(e' : StrongDual 𝕜 X) v‖ - ‖c' • x v‖          := norm_sub_le_norm_add _ _
+        _ ≥ ‖(e' : StrongDual 𝕜 X) v‖ - ‖c'‖ * ‖x v‖        := by rw [norm_smul]
+        _ ≥ (1 - ε / 2) - M * γ          := by
+            have : ‖x v‖ < γ := hwW v (Finset.mem_coe.mp hvF)
+            gcongr
+            exact hv_lower.le
+        _ = 1 - ε                        := by dsimp [M, γ]; field_simp [hδ.ne']; ring
+
+  -- Reconstruct for original e and c
+  have h_norm_ne : (e_norm : 𝕜) ≠ 0 := RCLike.ofReal_ne_zero.mpr (norm_ne_zero_iff.mpr he_ne)
+  -- Key: e = e_norm • e' and c = e_norm * (e_norm⁻¹ * c)
+  have he_eq : (e : StrongDual 𝕜 X) = (e_norm : 𝕜) • (e' : StrongDual 𝕜 X) := by
+    simp only [e', Submodule.coe_smul, smul_smul, mul_inv_cancel₀ h_norm_ne, one_smul]
+  have hc_eq : c = (e_norm : 𝕜) * ((e_norm⁻¹ : 𝕜) * c) := by
+    rw [← mul_assoc, mul_inv_cancel₀ h_norm_ne, one_mul]
+  calc ‖(e : StrongDual 𝕜 X) + c • x‖
+    _ = ‖(e_norm : 𝕜) • (e' : StrongDual 𝕜 X) + ((e_norm : 𝕜) * ((e_norm⁻¹ : 𝕜) * c)) • x‖ := by
+      conv_lhs => rw [he_eq, hc_eq]
+    _ = ‖(e_norm : 𝕜) • ((e' : StrongDual 𝕜 X) + ((e_norm⁻¹ : 𝕜) * c) • x)‖ := by
+      rw [smul_add, smul_smul]
+    _ = ‖(e_norm : 𝕜)‖ * ‖(e' : StrongDual 𝕜 X) + ((e_norm⁻¹ : 𝕜) * c) • x‖ := by
+      rw [norm_smul]
+    _ = ‖e‖ * ‖(e' : StrongDual 𝕜 X) + ((e_norm⁻¹ : 𝕜) * c) • x‖ := by
+      simp only [e_norm, RCLike.norm_ofReal, abs_norm]
+    _ ≥ ‖e‖ * (1 - ε) := by
+      gcongr
+      -- estimate uses (↑(e_norm⁻¹) * c), but here we have ((↑e_norm)⁻¹ * c)
+      -- These are equal by RCLike.ofReal_inv
+      rw [← RCLike.ofReal_inv]
+      exact estimate
+    _ = (1 - ε) * ‖e‖ := mul_comm _ _
+
+theorem basic_sequence_selection_dual {S : Set (StrongDual 𝕜 X)}
+    (h_weak_star : (0 : WeakDual 𝕜 X) ∈ closure (StrongDual.toWeakDual '' S))
+    (h_norm : (0 : StrongDual 𝕜 X) ∉ closure S)
+    {ε : ℝ} (hε : ε > 0) :
+    -- We assert existence of the STRUCTURE 'b', which bundles the function and the constant
+    ∃ (b : BasicSequence 𝕜 (StrongDual 𝕜 X)),
+      (∀ n, b n ∈ S) ∧
+      basicSequenceConstant b < 1 + ε := by
+  -- Use ε/2 in the construction so that the Grünblum constant is 1 + ε/2 < 1 + ε
+  let ε' := ε / 2
+  have hε' : ε' > 0 := by simp only [ε']; linarith
+  have hε'_lt : 1 + ε' < 1 + ε := by simp only [ε']; linarith
+  -- 1. Setup control sequence `δ` using a telescoping product `u`.
+  let u (n : ℕ) := 1 + ε' * (1 - (1/2) ^ n)
+  let δ (n : ℕ) := 1 - u n / u (n + 1)
+  have hu : ∀ n, 1 ≤ u n ∧ u n < 1 + ε' := fun n ↦ by
+    have hp : (1 / 2 : ℝ) ^ n ≤ 1 := pow_le_one₀ (by norm_num) (by norm_num)
+    have hp' : 0 < (1 / 2 : ℝ) ^ n := pow_pos (by norm_num) n
+    constructor <;> { dsimp [u, ε']; nlinarith }
+  have hδ_pos : ∀ n, 0 < δ n := fun n ↦ by
+    have hp_n1 : (1 / 2 : ℝ) ^ (n + 1) ≤ 1 := pow_le_one₀ (by norm_num) (by norm_num)
+    have hpos_un1 : 0 < u (n + 1) := by nlinarith [(hu (n + 1)).1]
+    dsimp [δ, u, ε']
+    rw [sub_pos, div_lt_one hpos_un1]
+    have hp' : 0 < (1 / 2 : ℝ) ^ n := pow_pos (by norm_num) n
+    have : (1 / 2 : ℝ) ^ (n + 1) = (1 / 2) * (1 / 2 : ℝ) ^ n := by ring
+    have hpow_lt : (1 / 2 : ℝ) ^ (n + 1) < (1 / 2 : ℝ) ^ n := by
+      rw [this]
+      have : (1/2 : ℝ) * (1/2)^n < 1 * (1/2)^n := by nlinarith
+      linarith
+    simp only [u, ε']
+    nlinarith [hε, hpow_lt]
+
+  -- 2. Construct the sequence `f` via strong recursion.
+  let f : ℕ → StrongDual 𝕜 X := fun n => Nat.strongRecOn n (fun k prev ↦
+    let E := Submodule.span 𝕜 (Set.range (fun i : Fin k ↦ prev i i.isLt))
+    Classical.choose (perturbation_finite_dimensional h_weak_star h_norm E
+      (FiniteDimensional.span_of_finite 𝕜 (Set.finite_range _)) (hδ_pos k)))
+
+  -- 3. Extract properties of `f`.
+  have hf_spec (n : ℕ) :
+      f n ∈ S ∧ ∀ (e : Submodule.span 𝕜 (Set.range (fun i : Fin n ↦ f i))) (c : 𝕜),
+        (1 - δ n) * ‖e‖ ≤ ‖(e : StrongDual 𝕜 X) + c • f n‖ := by
+    -- Rewriting `f n` definition to match the `prev` in recursion
+    have hfn : f n = Classical.choose (perturbation_finite_dimensional h_weak_star h_norm
+        (Submodule.span 𝕜 (Set.range (fun i : Fin n ↦ f i)))
+        (FiniteDimensional.span_of_finite 𝕜 (Set.finite_range _)) (hδ_pos n)) := by
+      unfold f; rw [Nat.strongRecOn_eq]
+    rw [hfn]
+    exact Classical.choose_spec (perturbation_finite_dimensional h_weak_star h_norm
+        (Submodule.span 𝕜 (Set.range (fun i : Fin n ↦ f i)))
+        (FiniteDimensional.span_of_finite 𝕜 (Set.finite_range _)) (hδ_pos n))
+
+  -- 4. Prove the Grünblum condition via telescoping product.
+  -- Keep the explicit bound with K = 1 + ε' for later use
+  have h_grunblum_bound : ∀ n m (a : ℕ → 𝕜), m ≤ n →
+      ‖∑ i ∈ Finset.range m, a i • f i‖ ≤ (1 + ε') * ‖∑ i ∈ Finset.range n, a i • f i‖ := by
+    intro n m a hnm
+    let S (k : ℕ) := ∑ i ∈ Finset.range k, a i • f i
+    have h_step (k) (hk : k < n) : ‖S k‖ ≤ (1 - δ k)⁻¹ * ‖S (k + 1)‖ := by
+      have hSk_mem : S k ∈ Submodule.span 𝕜 (Set.range (fun i : Fin k ↦ f i)) :=
+        Submodule.sum_mem _ (fun i hi ↦ Submodule.smul_mem _ _ <|
+          Submodule.subset_span ⟨⟨i, Finset.mem_range.mp hi⟩, rfl⟩)
+      let e : Submodule.span 𝕜 (Set.range (fun i : Fin k ↦ f i)) := ⟨S k, hSk_mem⟩
+      have h := (hf_spec k).2 e (a k)
+      simp only [e, S] at h
+      have h1δ : 0 < 1 - δ k := by
+        simp only [δ, sub_sub_cancel]
+        exact div_pos (lt_of_lt_of_le (by linarith) (hu k).1)
+          (lt_of_lt_of_le (by linarith) (hu (k+1)).1)
+      rw [le_inv_mul_iff₀ h1δ]
+      calc (1 - δ k) * ‖S k‖ ≤ ‖S k + a k • f k‖ := h
+        _ = ‖S (k + 1)‖ := by simp only [S, Finset.sum_range_succ]
+
+    -- The key bound: ‖S m‖ ≤ (1 + ε) * ‖S n‖ via telescoping product
+    -- Each step gives ‖S k‖ ≤ (1 - δ k)⁻¹ * ‖S (k+1)‖
+    -- Product of (1 - δ k)⁻¹ from m to n-1 equals u n / u m ≤ (1 + ε)
+    have hu_pos : ∀ k, 0 < u k := fun k => lt_of_lt_of_le (by linarith) (hu k).1
+    -- Key identity: (1 - δ k)⁻¹ = u (k+1) / u k
+    have h_inv : ∀ k, (1 - δ k)⁻¹ = u (k + 1) / u k := fun k => by
+      simp only [δ, sub_sub_cancel]; rw [inv_div]
+    -- Chain the inequalities via induction
+    have h_chain : ‖S m‖ ≤ (u n / u m) * ‖S n‖ := by
+      obtain ⟨d, rfl⟩ := Nat.exists_eq_add_of_le hnm
+      induction d with
+      | zero => simp [(hu_pos m).ne']
+      | succ d ih =>
+        have h_step' : ∀ k < m + d, ‖S k‖ ≤ (1 - δ k)⁻¹ * ‖S (k + 1)‖ :=
+          fun k hk => h_step k (Nat.lt_add_right 1 hk)
+        calc ‖S m‖ ≤ (u (m + d) / u m) * ‖S (m + d)‖ := ih (Nat.le_add_right m d) h_step'
+          _ ≤ (u (m + d) / u m) * ((1 - δ (m + d))⁻¹ * ‖S (m + d + 1)‖) := by
+              gcongr
+              · exact div_nonneg (le_of_lt (hu_pos _)) (le_of_lt (hu_pos _))
+              · exact h_step (m + d) (by omega)
+          _ = (u (m + d) / u m) * (u (m + d + 1) / u (m + d)) * ‖S (m + d + 1)‖ := by
+              rw [h_inv]; ring
+          _ = (u (m + (d + 1)) / u m) * ‖S (m + (d + 1))‖ := by
+              rw [show m + d + 1 = m + (d + 1) by ring]
+              field_simp [(hu_pos _).ne']
+    -- Finally bound u n / u m ≤ (1 + ε')
+    calc ‖S m‖ ≤ (u n / u m) * ‖S n‖ := h_chain
+      _ ≤ (1 + ε') * ‖S n‖ := by
+          gcongr
+          calc u n / u m
+            _ ≤ u n := div_le_self (le_of_lt (hu_pos n)) (hu m).1
+            _ ≤ 1 + ε' := le_of_lt (hu n).2
+  -- Package into SatisfiesGrunblumCondition for isBasicSequence_of_grunblum
+  have h_grunblum : SatisfiesGrunblumCondition 𝕜 f :=
+    ⟨1 + ε', by linarith [hε'], h_grunblum_bound⟩
+
+  -- 5. Final assembly.
+  have h_nz n : f n ≠ 0 := by
+    intro hfn
+    apply h_norm
+    rw [← hfn]
+    exact subset_closure (hf_spec n).1
+
+  obtain ⟨b, hb⟩ := isBasicSequence_of_grunblum h_grunblum h_nz
+  refine ⟨b, ?_, ?_⟩
+  · -- Show ∀ n, b n ∈ S
+    intro n
+    rw [show b n = f n from congrFun hb n]
+    exact (hf_spec n).1
+  · -- Show basicSequenceConstant b < 1 + ε
+    -- The basisConstant is bounded by the Grünblum constant 1 + ε'
+    -- This follows from the SchauderBasis projection bound
+    have hK_pos : (0 : ℝ) ≤ 1 + ε' := by linarith
+    -- Key: b.basis vectors equal f (via eq_basis)
+    have heq : ∀ i, (b.basis i : StrongDual 𝕜 X) = f i := fun i => by
+      have h1 := congrFun b.eq_basis i
+      rw [← hb]; exact congrArg Subtype.val h1
+    -- The projection bound follows from Grünblum applied to basis expansions
+    have h_proj_bound : ∀ m, ‖b.basis.proj m‖ ≤ 1 + ε' := fun m => by
+      apply ContinuousLinearMap.opNorm_le_bound _ hK_pos
+      intro x
+      rw [SchauderBasis.proj_apply]
+      -- The sum in the subspace has the same norm as its coercion
+      have hsum_coe : ∀ N, ‖∑ i ∈ Finset.range N, (b.basis.coord i) x • b.basis i‖ =
+                          ‖∑ i ∈ Finset.range N, (b.basis.coord i) x • f i‖ := fun N => by
+        rw [← norm_coe, Submodule.coe_sum]
+        congr 1
+        apply Finset.sum_congr rfl; intro i _
+        rw [Submodule.coe_smul, heq]
+      rw [hsum_coe]
+      -- The partial sums converge to x (in the subspace)
+      have hexp := b.basis.expansion x
+      rw [HasSum, SummationFilter.conditional_filter_eq_map_range] at hexp
+      -- Convert to convergence of the coerced sums to x (in the ambient space)
+      have hconv_x : Filter.Tendsto (fun N => ∑ i ∈ Finset.range N, (b.basis.coord i) x • f i)
+                     Filter.atTop (nhds (x : StrongDual 𝕜 X)) := by
+        -- Show functions are equal
+        have hfun_eq :
+            (fun N => ∑ i ∈ Finset.range N, (b.basis.coord i) x • f i) =
+            ((Subtype.val ∘ (fun s => ∑ i ∈ s, (b.basis.coord i) x • b.basis i)) ∘
+              Finset.range) := by
+          funext N
+          simp only [Function.comp_apply, Submodule.coe_sum]
+          apply Finset.sum_congr rfl; intro i _
+          rw [Submodule.coe_smul, heq]
+        rw [hfun_eq]
+        simp only [Filter.Tendsto]
+        exact continuous_subtype_val.continuousAt.tendsto.comp hexp
+      have hconv : Filter.Tendsto
+          (fun N => (1 + ε') * ‖∑ i ∈ Finset.range N, (b.basis.coord i) x • f i‖)
+          Filter.atTop (nhds ((1 + ε') * ‖(x : StrongDual 𝕜 X)‖)) :=
+        hconv_x.norm.const_mul (1 + ε')
+      apply ge_of_tendsto hconv
+      filter_upwards [Filter.eventually_ge_atTop m] with N hN
+      exact h_grunblum_bound N m (fun i => b.basis.coord i x) hN
+    -- Bound basisConstant
+    calc basicSequenceConstant b
+      _ = b.basis.basisConstant.toReal := rfl
+      _ ≤ 1 + ε' := by
+          apply ENNReal.toReal_le_of_le_ofReal hK_pos
+          rw [SchauderBasis.basisConstant]
+          apply iSup_le; intro n
+          rw [← ENNReal.ofReal_coe_nnreal]
+          exact ENNReal.ofReal_le_ofReal (h_proj_bound n)
+      _ < 1 + ε := hε'_lt
+
+lemma weak_closure_sphere_contains_zero (hinf : ¬ FiniteDimensional 𝕜 X) :
+    (0 : WeakDual 𝕜 (StrongDual 𝕜 X)) ∈
+    closure (StrongDual.toWeakDual '' (NormedSpace.inclusionInDoubleDual 𝕜 X '' Metric.sphere 0 1)) := by
+  -- Let J be the canonical embedding X → X**
+  let J := NormedSpace.inclusionInDoubleDual 𝕜 X
+  let S := StrongDual.toWeakDual '' (J '' Metric.sphere 0 1)
+  -- Use: 0 ∈ closure S iff every neighborhood intersects S
+  rw [_root_.mem_closure_iff]
+  intro U hU_open hU_zero
+  -- The weak* topology is the induced topology from F → 𝕜 (pointwise convergence)
+  -- So there exists V open in (StrongDual 𝕜 X → 𝕜) with U = preimage of V
+  rw [isOpen_induced_iff] at hU_open
+  obtain ⟨V, hV_open, hV_eq⟩ := hU_open
+  -- 0 ∈ U means the zero functional is in the preimage
+  have h0V : (fun f => (0 : WeakDual 𝕜 (StrongDual 𝕜 X)) f) ∈ V := by
+    rw [← hV_eq] at hU_zero
+    exact hU_zero
+  -- V is open in the product topology, so it contains a basic open neighborhood of 0
+  -- Basic open sets in the product topology are determined by finitely many coordinates
+  rw [isOpen_pi_iff] at hV_open
+  obtain ⟨F, t, ht_cond, hFt_sub⟩ := hV_open _ h0V
+  -- F is a finite set of functionals in X*, and t gives open neighborhoods in 𝕜 for each
+  -- Consider the intersection of kernels K = ⋂_{f ∈ F} ker f
+  let K := ⨅ f ∈ F, LinearMap.ker (f : X →ₗ[𝕜] 𝕜)
+  -- K has finite codimension, so since X is infinite-dimensional, K ≠ {0}
+  have hK_nontrivial : K ≠ ⊥ := by
+    -- The quotient X/K embeds into 𝕜^F via the map x ↦ (f(x))_{f ∈ F}
+    -- Since X is infinite-dimensional and 𝕜^F is finite-dimensional, K must be nontrivial
+    by_contra h_bot
+    -- If K = ⊥, then the map x ↦ (f(x))_{f ∈ F} is injective
+    -- This gives an embedding X ↪ 𝕜^F, contradicting infinite-dimensionality
+    have : FiniteDimensional 𝕜 X := by
+      have hfin : FiniteDimensional 𝕜 (F → 𝕜) := inferInstance
+      -- Define a linear map from X to F → 𝕜
+      let φ : X →ₗ[𝕜] (F → 𝕜) := {
+        toFun := fun x f => (f : StrongDual 𝕜 X) x
+        map_add' := fun x y => by ext f; simp [map_add]
+        map_smul' := fun c x => by ext f; simp [map_smul]
+      }
+      apply Module.Finite.of_injective φ
+      intro x y hxy
+      simp only [LinearMap.coe_mk, AddHom.coe_mk, funext_iff] at hxy
+      have hmem : x - y ∈ K := by
+        rw [Submodule.mem_iInf]
+        intro f
+        rw [Submodule.mem_iInf]
+        intro hf
+        rw [LinearMap.mem_ker, map_sub, sub_eq_zero]
+        exact hxy ⟨f, hf⟩
+      rw [h_bot, Submodule.mem_bot] at hmem
+      exact sub_eq_zero.mp hmem
+    exact hinf this
+  -- Pick nonzero v ∈ K and normalize to unit sphere
+  obtain ⟨v, hvK, hv_ne⟩ := Submodule.exists_mem_ne_zero_of_ne_bot hK_nontrivial
+  let x := (‖v‖⁻¹ : 𝕜) • v
+  have hx_norm : ‖x‖ = 1 := by
+    rw [norm_smul]
+    have : ‖(‖v‖ : 𝕜)⁻¹‖ = ‖v‖⁻¹ := by
+      rw [norm_inv, RCLike.norm_ofReal, abs_norm]
+    rw [this, inv_mul_cancel₀ (norm_ne_zero_iff.mpr hv_ne)]
+  have hx_K : x ∈ K := K.smul_mem _ hvK
+  -- x satisfies f(x) = 0 for all f ∈ F
+  have h_vanish : ∀ f ∈ F, (f : StrongDual 𝕜 X) x = 0 := fun f hf => by
+    have hmem : x ∈ K := hx_K
+    rw [Submodule.mem_iInf] at hmem
+    have := hmem f
+    rw [Submodule.mem_iInf] at this
+    exact LinearMap.mem_ker.mp (this hf)
+  -- J(x) is in the set S (image of the sphere)
+  have hJx_S : StrongDual.toWeakDual (J x) ∈ S :=
+    ⟨J x, ⟨x, mem_sphere_zero_iff_norm.mpr hx_norm, rfl⟩, rfl⟩
+  -- J(x) is in U because it evaluates to 0 on all f ∈ F, which puts it in V
+  have hJx_U : StrongDual.toWeakDual (J x) ∈ U := by
+    rw [← hV_eq]
+    apply hFt_sub
+    intro f hf
+    -- topDualPairing evaluates the double dual at a functional
+    change topDualPairing 𝕜 (StrongDual 𝕜 X) (StrongDual.toWeakDual (J x)) f ∈ t f
+    simp only [topDualPairing_apply, StrongDual.coe_toWeakDual]
+    -- J x evaluates to f x by definition (dual_def)
+    simp only [J, NormedSpace.dual_def]
+    rw [h_vanish f hf]
+    -- 0 ∈ t f because the zero functional evaluates to 0 there
+    exact (ht_cond f hf).2
+  exact ⟨StrongDual.toWeakDual (J x), hJx_U, hJx_S⟩
+
+/-- Corollary 1.5.3: Every infinite-dimensional Banach space contains a basic sequence
+    with basis constant arbitrarily close to 1. -/
+theorem exists_basic_sequence [CompleteSpace X] (hinf : ¬ FiniteDimensional 𝕜 X) {ε : ℝ}
+    (hε : 0 < ε) : ∃ (b : BasicSequence 𝕜 X), basicSequenceConstant b < 1 + ε := by
+  -- 1. Setup the Embedding J : X → X**
+  let J := NormedSpace.inclusionInDoubleDual 𝕜 X
+  let S_bidual := J '' (Metric.sphere 0 1)
+  -- 2. Verify hypotheses for the selection theorem (applied to X* as the base space)
+  -- Hypothesis 1: 0 is in the weak* closure of S_bidual
+  have h_weak : (0 : WeakDual 𝕜 (StrongDual 𝕜 X)) ∈
+      closure (StrongDual.toWeakDual '' S_bidual) :=
+    weak_closure_sphere_contains_zero hinf
+  -- Hypothesis 2: 0 is not in the norm closure of S_bidual
+  have h_norm : (0 : StrongDual 𝕜 (StrongDual 𝕜 X)) ∉ closure S_bidual := by
+    rw [Metric.mem_closure_iff]
+    push_neg
+    use 1, zero_lt_one
+    rintro _ ⟨x, hx, rfl⟩
+    -- J is an isometry, so ||J x|| = ||x|| = 1
+    have hJ_iso : ‖J x‖ = ‖x‖ := (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).norm_map x
+    rw [dist_zero_left, hJ_iso, mem_sphere_zero_iff_norm.mp hx]
+  -- 3. Apply the Dual Selection Principle to get a basic sequence in the bidual X**
+  obtain ⟨b_bidual, hb_mem, hb_const⟩ := basic_sequence_selection_dual h_weak h_norm hε
+  -- 4. Pull back the sequence to X using the isometry J
+  -- Each b_bidual n ∈ J '' sphere, so find the preimage
+  have h_preimage (n : ℕ) : ∃ x ∈ Metric.sphere (0 : X) 1, J x = b_bidual n := hb_mem n
+  let seq (n : ℕ) : X := (h_preimage n).choose
+  have h_seq_sphere (n : ℕ) : seq n ∈ Metric.sphere (0 : X) 1 := (h_preimage n).choose_spec.1
+  have h_seq_eq (n : ℕ) : J (seq n) = b_bidual n := (h_preimage n).choose_spec.2
+  -- 5. The sequence (seq n) satisfies the Grünblum condition with the same constant
+  -- Because J is an isometry: ‖∑ aᵢ • seq i‖ = ‖J(∑ aᵢ • seq i)‖ = ‖∑ aᵢ • J(seq i)‖
+  --                                           = ‖∑ aᵢ • b_bidual i‖
+  have h_nz : ∀ n, seq n ≠ 0 := fun n h => by
+    have := h_seq_sphere n
+    rw [mem_sphere_zero_iff_norm, h, norm_zero] at this
+    exact one_ne_zero this.symm
+  -- Use grunblumConstant which is definitionally max(1, basicSequenceConstant)
+  let K := grunblumConstant b_bidual
+  have hK_ge : 1 ≤ K := grunblumConstant_ge_one b_bidual
+  have hK_lt : K < 1 + ε := by
+    simp only [K, grunblumConstant, max_lt_iff]
+    exact ⟨by linarith, hb_const⟩
+  -- The Grünblum condition for seq with constant K
+  have hK_bound_seq : ∀ (n m : ℕ) (a : ℕ → 𝕜), m ≤ n →
+      ‖∑ i ∈ Finset.range m, a i • seq i‖ ≤ K * ‖∑ i ∈ Finset.range n, a i • seq i‖ := by
+    intro n m a hmn
+    -- Use that J is an isometry to transfer the inequality
+    have h_J_sum (k : ℕ) : J (∑ i ∈ Finset.range k, a i • seq i) =
+        ∑ i ∈ Finset.range k, a i • b_bidual i := by
+      simp only [map_sum, map_smul, h_seq_eq]
+    have hJ_norm : ∀ y : X, ‖J y‖ = ‖y‖ :=
+      (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).norm_map
+    calc ‖∑ i ∈ Finset.range m, a i • seq i‖
+      _ = ‖J (∑ i ∈ Finset.range m, a i • seq i)‖ := (hJ_norm _).symm
+      _ = ‖∑ i ∈ Finset.range m, a i • b_bidual i‖ := by rw [h_J_sum]
+      _ ≤ K * ‖∑ i ∈ Finset.range n, a i • b_bidual i‖ := grunblum_bound_of_basic b_bidual n m a hmn
+      _ = K * ‖J (∑ i ∈ Finset.range n, a i • seq i)‖ := by rw [h_J_sum]
+      _ = K * ‖∑ i ∈ Finset.range n, a i • seq i‖ := by rw [hJ_norm]
+  -- 6. Apply the Grünblum criterion with bound to get a basic sequence
+  obtain ⟨b, hb_eq, hb_bound⟩ := isBasicSequence_of_grunblum_with_bound hK_ge hK_bound_seq h_nz
+  use b
+  -- 7. Bound the basis constant: basicSequenceConstant b ≤ K < 1 + ε
+  calc basicSequenceConstant b
+    _ ≤ K := hb_bound
+    _ < 1 + ε := hK_lt
+
+lemma perturb_basic_sequence [CompleteSpace X] (b : BasicSequence 𝕜 X) (u : X)
+    (f : StrongDual 𝕜 X) (hf : ∀ n, f (b n) = 1) (hu0 : f u = 0) :
+    IsBasicSequence 𝕜 (fun n ↦ b n + u) := by
+  let y := fun n ↦ b n + u
+  -- 1. Elements are non-zero because f(y n) = 1
+  have h_nz : ∀ n, y n ≠ 0 := fun n h_zero ↦ by
+    have h_val : f (y n) = 1 := by simp [y, f.map_add, hf, hu0]
+    rw [h_zero, f.map_zero] at h_val
+    exact zero_ne_one h_val
+    -- fun h => by simpa [y, hf, hu0, h] using f.map_zero
+
+  -- 2. Grünblum Condition
+  obtain ⟨K, hK⟩ := grunblum_of_basic b
+  -- Define the distortion constant C
+  let C := 1 + ‖f‖ * ‖u‖
+  have hC : 0 ≤ C := add_nonneg zero_le_one (mul_nonneg (norm_nonneg f) (norm_nonneg u))
+  have hC_ge_one : 1 ≤ C := le_add_of_nonneg_right (mul_nonneg (norm_nonneg f) (norm_nonneg u))
+
+  refine isBasicSequence_of_grunblum ⟨K * C ^ 2, ?_⟩ h_nz
+  · refine ⟨one_le_mul_of_one_le_of_one_le hK.1 (one_le_pow₀ hC_ge_one), fun n m a hnm ↦ ?_⟩
+    let Y k := ∑ i ∈ Finset.range k, a i • y i
+    let E k := ∑ i ∈ Finset.range k, a i • b i
+
+    -- Key geometric relations
+    have h_rel (k) : Y k = E k + f (Y k) • u := by
+      simp only [Y, E, y, smul_add, Finset.sum_add_distrib, ← Finset.sum_smul]
+      congr 1
+      simp only [map_add, map_sum, map_smul, hf, hu0, smul_eq_mul, mul_one, mul_zero, add_zero]
+
+    -- We bound E by Y (projection onto span(e)) and Y by E (injecting back)
+    have h_E_Y (k) : ‖E k‖ ≤ C * ‖Y k‖ := by
+      have hE_eq : E k = Y k - f (Y k) • u := (sub_eq_of_eq_add (h_rel k)).symm
+      calc ‖E k‖
+        _ = ‖Y k - f (Y k) • u‖ := by rw [hE_eq]
+        _ ≤ ‖Y k‖ + ‖f (Y k) • u‖ := norm_sub_le _ _
+        _ = ‖Y k‖ + ‖f (Y k)‖ * ‖u‖ := by rw [norm_smul]
+        _ ≤ ‖Y k‖ + ‖f‖ * ‖Y k‖ * ‖u‖ := by gcongr; exact f.le_opNorm _
+        _ = C * ‖Y k‖ := by ring
+
+    have h_Y_E (k) : ‖Y k‖ ≤ C * ‖E k‖ := by
+      have hfY_eq : f (Y k) = f (E k) := by
+        rw [h_rel k, map_add, map_smul, hu0, smul_zero, add_zero]
+      rw [h_rel k, hfY_eq]
+      calc ‖E k + f (E k) • u‖
+        _ ≤ ‖E k‖ + ‖f (E k) • u‖ := norm_add_le _ _
+        _ = ‖E k‖ + ‖f (E k)‖ * ‖u‖ := by rw [norm_smul]
+        _ ≤ ‖E k‖ + ‖f‖ * ‖E k‖ * ‖u‖ := by gcongr; exact f.le_opNorm _
+        _ = C * ‖E k‖ := by ring
+
+    -- Combine bounds
+    calc ‖Y m‖
+      _ ≤ C * ‖E m‖ := h_Y_E m
+      _ ≤ C * (K * ‖E n‖) := by gcongr; exact hK.2 n m a hnm
+      _ = C * K * ‖E n‖ := by ring
+      _ ≤ C * K * (C * ‖Y n‖) := by
+          apply mul_le_mul_of_nonneg_left (h_E_Y n)
+          exact mul_nonneg hC (le_of_lt (lt_of_lt_of_le zero_lt_one hK.1))
+      _ = (K * C ^ 2) * ‖Y n‖ := by ring
+
+/-- If a bounded set S in a Banach space X does not contain a basic sequence,
+    then 0 is not in the weak closure of S.
+
+    This is a consequence of the basic sequence selection principle: if 0 is in the
+    weak* closure of J(S) but not in its norm closure, then J(S) contains a basic sequence,
+    which can be pulled back to a basic sequence in S. -/
+theorem no_basic_sequence_implies_zero_not_in_weak_closure [CompleteSpace X]
+    {S : Set X} (_hS_ne : S.Nonempty) (h_norm : (0 : X) ∉ closure S)
+    (h_no_basic : ∀ (e : ℕ → X), (∀ n, e n ∈ S) → ¬ IsBasicSequence 𝕜 e) :
+    (0 : X) ∉ closure (toWeakSpace 𝕜 X '' S) := by
+  -- We prove the contrapositive: if 0 is in the weak closure, we can find a basic sequence.
+  contrapose! h_no_basic
+
+  -- 1. Setup the Bidual embedding J : X → X**
+  let J := NormedSpace.inclusionInDoubleDual 𝕜 X
+  let S' := J '' S
+
+  -- 2. Translate the weak closure hypothesis to the bidual's weak* topology.
+  -- The weak topology on X and the weak* topology on X** are both induced by X*.
+  -- A basic weak* neighborhood of 0 in X** is determined by finitely many f ∈ X*.
+  -- The preimage under J of such a neighborhood equals the corresponding weak neighborhood
+  -- of 0 in X.
+  have h_weak_star : (0 : WeakDual 𝕜 (StrongDual 𝕜 X)) ∈ closure (StrongDual.toWeakDual '' S') := by
+    rw [_root_.mem_closure_iff]
+    intro U hU_open hU_zero
+    -- U is open in weak* topology, which is induced from StrongDual 𝕜 X → 𝕜
+    rw [isOpen_induced_iff] at hU_open
+    obtain ⟨V, hV_open, hV_eq⟩ := hU_open
+    have h0V : (fun f => (0 : WeakDual 𝕜 (StrongDual 𝕜 X)) f) ∈ V := by
+      rw [← hV_eq] at hU_zero; exact hU_zero
+    -- V is open in product topology, so contains a basic open set
+    rw [isOpen_pi_iff] at hV_open
+    obtain ⟨F, t, ht_cond, hFt_sub⟩ := hV_open _ h0V
+    -- F is finite set of functionals in X*, t gives open neighborhoods in 𝕜
+    -- Construct corresponding weak neighborhood W of 0 in X
+    -- In WeakSpace 𝕜 X, evaluation at f ∈ X* is continuous (WeakBilin.eval_continuous)
+    let W : Set (WeakSpace 𝕜 X) := ⋂ f ∈ F, {w : WeakSpace 𝕜 X | f ((toWeakSpace 𝕜 X).symm w) ∈ t f}
+    have hW_open : IsOpen W := by
+      apply isOpen_biInter_finset
+      intro f _
+      -- The evaluation map w ↦ f(w) is continuous in the weak topology
+      have hf_cont : Continuous (fun w : WeakSpace 𝕜 X => f ((toWeakSpace 𝕜 X).symm w)) :=
+        WeakBilin.eval_continuous (topDualPairing 𝕜 X).flip f
+      exact (ht_cond f ‹f ∈ F›).1.preimage hf_cont
+    have hW_zero : toWeakSpace 𝕜 X 0 ∈ W := by
+      simp only [W, mem_iInter, mem_setOf, map_zero]
+      intro f hf
+      exact (ht_cond f hf).2
+    -- Since 0 ∈ weak closure of S, W ∩ (toWeakSpace '' S) is nonempty
+    have h_inter : (W ∩ (toWeakSpace 𝕜 X '' S)).Nonempty := by
+      have h_cl := @_root_.mem_closure_iff (WeakSpace 𝕜 X) _
+        (toWeakSpace 𝕜 X 0) (toWeakSpace 𝕜 X '' S)
+      exact h_cl.mp h_no_basic W hW_open hW_zero
+    obtain ⟨w, hwW, x, hxS, hwx⟩ := h_inter
+    -- x ∈ S satisfies: f(x) ∈ t f for all f ∈ F
+    have hx_in_t : ∀ f ∈ F, f x ∈ t f := fun f hf => by
+      have := hwW
+      simp only [W, mem_iInter] at this
+      specialize this f hf
+      simp only [mem_setOf, hwx.symm, LinearEquiv.symm_apply_apply] at this
+      exact this
+    -- Therefore J(x) ∈ U
+    have hJx_U : StrongDual.toWeakDual (J x) ∈ U := by
+      rw [← hV_eq]
+      apply hFt_sub
+      intro f hf
+      change topDualPairing 𝕜 (StrongDual 𝕜 X) (StrongDual.toWeakDual (J x)) f ∈ t f
+      simp only [topDualPairing_apply, StrongDual.coe_toWeakDual, J, NormedSpace.dual_def]
+      exact hx_in_t f hf
+    -- And J(x) ∈ toWeakDual '' S'
+    have hJx_S' : StrongDual.toWeakDual (J x) ∈ StrongDual.toWeakDual '' S' :=
+      ⟨J x, ⟨x, hxS, rfl⟩, rfl⟩
+    exact ⟨StrongDual.toWeakDual (J x), hJx_U, hJx_S'⟩
+
+  -- 3. Show 0 is not in the norm closure of S' in the bidual.
+  -- Since J is an isometry, it preserves distances to the origin.
+  have h_norm_S' : (0 : StrongDual 𝕜 (StrongDual 𝕜 X)) ∉ closure S' := by
+    rw [Metric.mem_closure_iff]
+    push_neg
+    -- 0 ∉ closure S means there exists δ > 0 such that S ∩ ball(0, δ) = ∅
+    rw [Metric.mem_closure_iff] at h_norm
+    push_neg at h_norm
+    obtain ⟨δ, hδ_pos, hδ_S⟩ := h_norm
+    use δ, hδ_pos
+    rintro _ ⟨x, hxS, rfl⟩
+    -- J is an isometry: dist(J x, 0) = dist(x, 0)
+    have hJ_iso : ‖J x‖ = ‖x‖ := (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).norm_map x
+    rw [dist_zero_left, hJ_iso, ← dist_zero_left]
+    exact hδ_S x hxS
+
+  -- 4. Apply the Selection Principle for Dual Spaces with ε = 1.
+  obtain ⟨b_bidual, hb_mem, -⟩ := basic_sequence_selection_dual h_weak_star h_norm_S' zero_lt_one
+
+  -- 5. Pull the sequence back to X.
+  -- Since b_bidual n ∈ S' = J '' S, there exists x_n ∈ S such that J x_n = b_bidual n.
+  choose e he_S he_eq using hb_mem
+
+  -- 6. Show e is a basic sequence in S using the Grünblum condition.
+  use e, he_S
+
+  -- e has nonzero elements (since b_bidual is basic and J is injective)
+  have h_nz : ∀ n, e n ≠ 0 := fun n h_zero => by
+    -- b_bidual.basis is linearly independent, so its elements are nonzero
+    have hb_indep := b_bidual.basis.linearIndependent
+    have hb_nz := hb_indep.ne_zero n
+    -- b_bidual.eq_basis says: b_bidual.basis n = codRestrict b_bidual.toFun ... n
+    -- So (b_bidual.basis n : X**) = b_bidual n
+    have h_eq : (b_bidual.basis n : StrongDual 𝕜 (StrongDual 𝕜 X)) = b_bidual n := by
+      have := congrFun b_bidual.eq_basis n
+      exact congrArg Subtype.val this
+    -- If e n = 0, then J(e n) = 0 = b_bidual n, but b_bidual n ≠ 0
+    rw [← he_eq n, h_zero, map_zero] at h_eq
+    -- h_eq : (b_bidual.basis n : X**) = 0, so b_bidual.basis n = 0 as subtype element
+    exact hb_nz (Subtype.ext h_eq)
+
+  -- The Grünblum constant for b_bidual
+  let K := grunblumConstant b_bidual
+  have hK_ge : 1 ≤ K := grunblumConstant_ge_one b_bidual
+
+  -- Transfer Grünblum condition from b_bidual to e using J being an isometry
+  have hK_bound_e : ∀ (n m : ℕ) (a : ℕ → 𝕜), m ≤ n →
+      ‖∑ i ∈ Finset.range m, a i • e i‖ ≤ K * ‖∑ i ∈ Finset.range n, a i • e i‖ := by
+    intro n m a hmn
+    have h_J_sum (k : ℕ) : J (∑ i ∈ Finset.range k, a i • e i) =
+        ∑ i ∈ Finset.range k, a i • b_bidual i := by
+      simp only [map_sum, map_smul, he_eq]
+    have hJ_norm : ∀ y : X, ‖J y‖ = ‖y‖ :=
+      (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).norm_map
+    calc ‖∑ i ∈ Finset.range m, a i • e i‖
+      _ = ‖J (∑ i ∈ Finset.range m, a i • e i)‖ := (hJ_norm _).symm
+      _ = ‖∑ i ∈ Finset.range m, a i • b_bidual i‖ := by rw [h_J_sum]
+      _ ≤ K * ‖∑ i ∈ Finset.range n, a i • b_bidual i‖ := grunblum_bound_of_basic b_bidual n m a hmn
+      _ = K * ‖J (∑ i ∈ Finset.range n, a i • e i)‖ := by rw [h_J_sum]
+      _ = K * ‖∑ i ∈ Finset.range n, a i • e i‖ := by rw [hJ_norm]
+
+  -- Apply Grünblum criterion
+  exact isBasicSequence_of_grunblum ⟨K, hK_ge, hK_bound_e⟩ h_nz
+
+theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
+    {S : Set X} (hS_ne : S.Nonempty) (h_norm : (0 : X) ∉ closure S)
+    (h_bounded : Bornology.IsBounded S)
+    (h_no_basic : ∀ (e : ℕ → X), (∀ n, e n ∈ S) → ¬ IsBasicSequence 𝕜 e) :
+    IsCompact (closure (toWeakSpace 𝕜 X '' S)) :=
+
+    let Xbidual := StrongDual 𝕜 (StrongDual 𝕜 X)
+    let J := NormedSpace.inclusionInDoubleDual 𝕜 X
+    let S_bidual := J '' S
+
+    have h_S_bidual_bounded : Bornology.IsBounded S_bidual := by
+      rw [Metric.isBounded_iff_subset_closedBall 0] at h_bounded ⊢
+      obtain ⟨R, hR⟩ := h_bounded
+      use R
+      intro y hy
+      obtain ⟨x, hxS, rfl⟩ := hy
+      have hxS_norm : x ∈ closedBall 0 R := hR hxS
+      rw [Metric.mem_closedBall, dist_zero_right] at *
+      have hJ_iso : ‖J x‖ = ‖x‖ := (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).norm_map x
+      exact hJ_iso.le.trans hxS_norm
+
+    let K := closure (StrongDual.toWeakDual '' S_bidual)
+
+    have hK_subset :  K ⊆ StrongDual.toWeakDual '' (J '' (Set.univ)) := by
+      by_contra h_not_subset
+      rw [Set.subset_def] at h_not_subset
+      push_neg at h_not_subset
+      obtain ⟨w, hwK, hw_not_JX⟩ := h_not_subset
+
+      -- Define S' in StrongDual (Xbidual) space as translation of S_bidual by -w'
+      let w' : Xbidual := WeakDual.toStrongDual w
+      let S' := (fun y => y - w') '' S_bidual
+
+      have h_weak_starS' : (0 : WeakDual 𝕜 (StrongDual 𝕜 X)) ∈ closure (StrongDual.toWeakDual '' S') := by
+        let A := StrongDual.toWeakDual '' S_bidual
+        let T : WeakDual 𝕜 (StrongDual 𝕜 X) ≃ₜ WeakDual 𝕜 (StrongDual 𝕜 X) :=
+          Homeomorph.addRight (-w)
+        have h_image : StrongDual.toWeakDual '' S' = T '' A := by
+          simp only [S', A, S_bidual, image_image]
+          apply image_congr
+          intro x _
+          simp only [T, Homeomorph.coe_addRight, sub_eq_add_neg, w']
+          rfl
+        rw [h_image, ← Homeomorph.image_closure]
+        have h_zero : (0 : WeakDual 𝕜 (StrongDual 𝕜 X)) = T w := by
+          simp only [T, Homeomorph.coe_addRight, add_neg_cancel]
+        rw [h_zero]
+        apply mem_image_of_mem
+        exact hwK
+
+      have h_normS' : (0 : Xbidual) ∉ closure S' := by
+        -- We proceed by contradiction. Assume 0 ∈ closure S'.
+        intro h0
+
+        -- S' is the translation of S_bidual by -w'.
+        -- Since translation is a homeomorphism, w' must be in the closure of S_bidual.
+        have hw_cl : w' ∈ closure S_bidual := by
+          -- Define the homeomorphism T(z) = z - w' on Xbidual
+          let T := Homeomorph.addRight (-w' : Xbidual)
+          -- S' = T '' S_bidual (by definition of S')
+          have h_image : S' = T '' S_bidual := by
+            simp only [S', S_bidual, T, Homeomorph.coe_addRight, sub_eq_add_neg, image_image]
+          rw [h_image, ← Homeomorph.image_closure] at h0
+          -- 0 ∈ T '' (closure S_bidual) means T.symm 0 ∈ closure S_bidual
+          obtain ⟨y, hy_mem, hy_eq⟩ := h0
+          have h_y_eq_w' : y = w' := by
+            have : T.symm (T y) = T.symm 0 := by rw [hy_eq]
+            rw [Homeomorph.symm_apply_apply] at this
+            simp only [T, Homeomorph.coe_addRight] at this
+            linarith [this]
+          rw [← h_y_eq_w']
+          exact hy_mem
+
+        -- The range of J is closed in X** because X is complete and J is an isometry.
+        have h_JX_closed : IsClosed (range J) :=
+          (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).isometry.isClosedEmbedding.isClosed_range
+
+        -- S_bidual is contained in range J, so its closure is also contained in range J.
+        have h_subset : closure S_bidual ⊆ range J :=
+          closure_minimal (image_subset_range J S) h_JX_closed
+
+        -- Therefore w' ∈ range J.
+        have hw_in_JX : w' ∈ range J := h_subset hw_cl
+
+        -- This contradicts the choice of w (hw_not_JX).
+        apply hw_not_JX
+        -- Reformulate w' ∈ range J to match hw_not_JX
+        rw [image_univ]
+        obtain ⟨x, hx⟩ := hw_in_JX
+        use J x
+        constructor
+        · exact mem_range_self x
+        · -- Show toWeakDual (J x) = w.
+          simp only [w'] at hx
+          rw [hx]
+          rfl
+
+      have h_basicS' : ∃ e : ℕ → Xbidual, (∀ n, e n ∈ S') ∧ IsBasicSequence 𝕜 e := by
+        obtain ⟨b, hb_mem, -⟩ := basic_sequence_selection_dual h_weak_starS' h_normS' zero_lt_one
+        use b
+        constructor
+        · exact hb_mem
+        · exact ⟨b, rfl⟩
+
+      obtain ⟨e, he_S', he_basic⟩ := h_basicS'
+
+      have h_w_span : ∃ N : ℕ, w' ∉ closure (Submodule.span 𝕜 (Set.range (fun n => e (n+N)))) := by
+        -- 1. w is non-zero (since w ∉ J(X) and 0 ∈ J(X))
+        have hw_ne : (w : Xbidual) ≠ 0 := by
+          intro h
+          apply hw_not_JX
+          rw [h, image_univ, ]
+          simp only [StrongDual.coe_toWeakDual, image_id', mem_range]
+          use 0
+          simp only [map_zero]
+          rfl
+
+        rcases he_basic with ⟨b, rfl⟩
+        let S := Submodule.span 𝕜 (Set.range b)
+        let K := closure (S : Set Xbidual)
+
+        -- 2. Case split: Is w in the closure of the span of the whole sequence?
+        by_cases h_mem_closure : (w : Xbidual) ∈ K
+        · -- Case: w is in the closure.
+          -- We proceed by showing w has a non-zero coordinate functional value,
+          -- which implies it cannot be in the tail closure where that coordinate is 0.
+
+          -- Lift w to the closed subspace K
+          let w_K : K := ⟨w, h_mem_closure⟩
+          have hw_K_ne : w_K ≠ 0 := Subtype.ne_of_val_ne hw_ne
+
+          -- The projection operators P_n are uniformly bounded on S and converge strongly to Id.
+          -- Therefore, they extend to K and converge strongly to Id on K.
+          have h_Pn_to_w : Filter.Tendsto (fun n ↦ (b.basis.proj n).extend (Submodule.subtypeL S) w_K)
+              Filter.atTop (nhds w_K) := by
+            -- This is a standard result for Schauder bases: if basis constant is finite,
+            -- projections extend to the closure and converge pointwise.
+            -- We apply the "Banach-Steinhaus" density principle.
+            apply ContinuousLinearMap.tendsto_of_bound_of_dense (Submodule.subtypeL S)
+            · -- Dense range
+              rw [ContinuousLinearMap.range_subtypeL]
+              exact Submodule.dense_iff_closure_eq.mpr rfl
+            · -- Uniform bound on projections (from BasicSequence property)
+              obtain ⟨C, hC⟩ := b.basis.uniform_bound_of_basisConstant_lt_top b.basisConstant_lt_top
+              use C
+              intro n
+              exact hC n
+            · -- Convergence on the dense subset S
+              intro x
+              simp only [ContinuousLinearMap.coe_comp', ContinuousLinearMap.coe_subtypeL',
+                         Function.comp_apply, Submodule.coeSubtype]
+              -- On S, extending returns the original operator application
+              rw [ContinuousLinearMap.extend_on (b.basis.proj n).continuous]
+              -- The basis projections converge to x on S
+              exact b.basis.tendsto_proj x
+
+          -- Since P_n w -> w and w ≠ 0, there must be some n where P_n w ≠ P_{n+1} w.
+          -- Equivalently, there is some coordinate k such that coord_k(w) ≠ 0.
+          -- Let's construct the extended coordinate functional explicitly.
+          let coord_ext (k : ℕ) : K →L[𝕜] 𝕜 :=
+            (b.basis.coord k).extend (Submodule.subtypeL S)
+
+          -- Use contradiction to find the non-zero coordinate
+          have h_exists_coord : ∃ k, coord_ext k w_K ≠ 0 := by
+            by_contra! h_all_zero
+            -- If all coords are zero, then P_n w = 0 for all n
+            have h_Pn_zero : ∀ n, (b.basis.proj n).extend (Submodule.subtypeL S) w_K = 0 := by
+              intro n
+              -- P_n = sum_{i<n} coord_i • b_i
+              -- Since extended maps are continuous and linear,
+              -- P_n_ext w = sum_{i<n} (coord_ext i w) • b_i
+              -- This requires a small lemma or argument about commutativity of extension and sums,
+              -- but essentially P_n w is built from coords which are all 0.
+              -- Simpler approach: P_n on S is `sum coord • basis`.
+              -- The extension is unique. The map `y ↦ 0` is a valid continuous extension
+              -- if it agrees on S.
+              -- On S, P_n x = sum (coord i x) b_i = sum 0 b_i = 0.
+              apply ContinuousLinearMap.extend_unique
+                (b.basis.proj n).continuous
+                (ContinuousLinearMap.zero.comp (Submodule.subtypeL S)).continuous
+                (Submodule.subtypeL S)
+                (by rw [ContinuousLinearMap.range_subtypeL]; exact Submodule.dense_iff_closure_eq.mpr rfl)
+              intro x
+              simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.zero_apply,
+                         ContinuousLinearMap.coe_subtypeL', Submodule.coeSubtype]
+              rw [SchauderBasis.proj_apply, Finset.sum_eq_zero]
+              intro i hi
+              -- coord_ext i matches coord i on S
+              have h_eq : coord_ext i ⟨x, Submodule.mem_closure x⟩ = b.basis.coord i x :=
+                ContinuousLinearMap.extend_on (b.basis.coord i).continuous x
+              rw [← h_eq, h_all_zero]
+              simp
+
+            -- Limit of 0 is 0
+            have h_lim_0 : Filter.Tendsto (fun _ : ℕ ↦ (0 : K)) Filter.atTop (nhds 0) := tendsto_const_nhds
+            -- Uniqueness of limit: w_K must be 0
+            have h_eq_0 := tendsto_nhds_unique h_Pn_to_w (by simpa [h_Pn_zero] using h_lim_0)
+            exact hw_K_ne h_eq_0
+
+          obtain ⟨k, hk_ne⟩ := h_exists_coord
+
+          -- 3. Choose N large enough to exclude k
+          use k + 1
+
+          -- Assume w is in the closure of the tail span
+          let tail_span := Submodule.span 𝕜 (Set.range (fun n ↦ b (n + (k + 1))))
+          intro h_w_in_tail
+
+          -- The functional `coord_ext k` vanishes on the tail span.
+          -- For any b_j in tail, j = n + k + 1 > k, so coord_k(b_j) = 0.
+          have h_vanish_on_tail : ∀ x ∈ tail_span, coord_ext k ⟨x, subset_closure (Submodule.span_mono (by simp) x)⟩ = 0 := by
+            intro x hx
+            -- Lift x to S to use basis properties
+            have hx_S : x ∈ S := Submodule.span_mono (by
+              rintro _ ⟨n, rfl⟩
+              exact Submodule.subset_span (mem_range_self (n + k + 1))) hx
+
+            -- Value of extended coord matches original coord
+            rw [ContinuousLinearMap.extend_on (b.basis.coord k).continuous ⟨x, hx_S⟩]
+
+            -- Use linearity to check on basis vectors
+            apply Submodule.span_induction hx
+            · -- Basis vectors
+              rintro _ ⟨n, rfl⟩
+              simp only [SchauderBasis.coord_apply, map_smul]
+              rw [b.basis.repr_self_apply]
+              -- Index is n + k + 1, which is never k
+              rw [if_neg]
+              omega
+            · -- Zero
+              simp
+            · -- Add
+              intro x y hx hy hx0 hy0
+              simp [map_add, hx0, hy0]
+            · -- Smul
+              intro c x hx hx0
+              simp [map_smul, hx0]
+
+          -- By continuity, `coord_ext k` must vanish on the closure of the tail span
+          -- w is in closure(tail_span), so `coord_ext k w` should be 0.
+          have h_w_zero : coord_ext k w_K = 0 := by
+             -- w is a limit of sequence in tail_span
+             rw [mem_closure_iff_seq_limit] at h_w_in_tail
+             obtain ⟨u, hu_tail, hu_lim⟩ := h_w_in_tail
+
+             -- Map limit through continuous functional
+             have h_lim_val := (coord_ext k).continuous.seqContinuous.tendsto w_K hu_lim
+
+             -- Sequence of values is constantly 0
+             have h_seq_0 : ∀ n, coord_ext k ⟨u n, h_mem_closure⟩ = 0 := by
+               intro n
+               -- We need to carefully treat the subtypes.
+               -- coord_ext is defined on closure S. u n is in Xbidual.
+               -- We need to ensure the argument to coord_ext corresponds to u n.
+               -- Since tail_span ⊆ S ⊆ closure S, u n is in closure S.
+               convert h_vanish_on_tail (u n) (hu_tail n)
+
+             -- Limit of 0 is 0
+             simpa [h_seq_0] using h_lim_val
+
+          -- Contradiction
+          exact hk_ne h_w_zero
+
+        · -- Case: w is not in the closure of the span of b
+          -- Then it's definitely not in the closure of any subset
+          use 0
+          intro h_con
+          apply h_mem_closure
+          -- closure (span (range (fun n => e (n + 0)))) = closure (span (range e)) = K
+          simpa using h_con
+
+      obtain ⟨N, h_w_notin_span⟩ := h_w_span
+      let e := fun n => e (n + N)
+
+      have h_sep : ∃ f : StrongDual 𝕜 Xbidual, f w = -1 ∧ (∀ n, f (e n) = 0) := by
+        -- use Hahn-Banach separation theorem
+        sorry
+
+      obtain ⟨f, hf_w, hf_e⟩ := h_sep
+      have hf_one: ∀ n, f ((e n) - w) = 1 := by
+        rw [hf_w, sub_eq_add_neg, add_comm, add_neg_self, add_zero]
+
+      have hf_zero : ∀ n, f ((e n) - w) = 0 := by
+        intro n
+        rw [hf_e n, sub_eq_add_neg, add_comm, add_neg_self, add_zero]
+
+      have h_basicS: IsBasicSequence 𝕜 (fun n => (e n) - w) := by
+        -- use perturb_basic_sequence e w f hf_e hf_w
+        sorry
+
+      have h_in_S : ∀ n, (e n) - w ∈ S_bidual := by sorry
+
+      --transfer back the basic sequence to S and get a contradiction with h_no_basic
+      sorry
+
+    -- transfer compactness back to X via weak-weak* correspondence
+    sorry
+
+
+def SchauderBasis_of_closure [CompleteSpace X] {Y : Submodule 𝕜 X} (b : SchauderBasis 𝕜 Y)
+    (h_bound : b.basisConstant < ⊤) : SchauderBasis 𝕜 Y.topologicalClosure := by
+  -- Let Z be the closure of Y. It is a Banach space.
+  let Z := Y.topologicalClosure
+  haveI : CompleteSpace Z := Submodule.topologicalClosure.completeSpace Y
+  let inc : Y →L[𝕜] Z := (Submodule.inclusion Y.le_topologicalClosure).mkContinuous 1 (fun y => by
+    simp only [one_mul, Submodule.coe_norm, Submodule.coe_inclusion, le_refl])
+
+
+  have h_isometry : Isometry inc := fun y₁ y₂ => by
+    simp only [inc, edist_dist, dist_eq_norm]
+    congr 1
+
+  -- inc has dense range (Y is dense in its topological closure)
+  have h_dense : DenseRange inc := by
+    rw [DenseRange, dense_iff_closure_eq]
+    apply Set.eq_univ_of_forall
+    intro z
+    rw [mem_closure_iff_nhds]
+    intro U hU
+    -- U is a neighborhood of z in Z, find y : Y with inc y ∈ U
+    rw [_root_.mem_nhds_iff] at hU
+    obtain ⟨V, hVU, hVopen, hzV⟩ := hU
+    -- V is open in Z, so V = W ∩ Z for some open W in X
+    rw [isOpen_induced_iff] at hVopen
+    obtain ⟨W, hWopen, rfl⟩ := hVopen
+    -- z ∈ W and z ∈ closure Y (since z ∈ Z)
+    have hz_closure : (z : X) ∈ closure (Y : Set X) := z.2
+    rw [mem_closure_iff_nhds] at hz_closure
+    have hW_nhd : W ∈ 𝓝  (z : X) := hWopen.mem_nhds hzV
+    obtain ⟨x, hxW, hxY⟩ := hz_closure W hW_nhd
+    exact ⟨inc ⟨x, hxY⟩, hVU hxW, ⟨x, hxY⟩, rfl⟩
+
+  have h_unif : IsUniformInducing inc := h_isometry.isUniformInducing
+
+  let P' : ℕ → Z →L[𝕜] Z := fun n ↦ (inc ∘L b.proj n).extend inc
+
+  -- 2. Define the basis vectors in Z.
+  let b' : ℕ → Z := fun n ↦ ⟨b n, Y.le_topologicalClosure (b n).2⟩
+
+  -- Helper: P' agrees with b.proj on Y
+  have h_agree (n : ℕ) (y : Y) : P' n (inc y) = inc (b.proj n y) := by
+    simp only [P']
+    rw [ContinuousLinearMap.extend_eq (e := inc) (inc ∘L b.proj n) h_dense h_unif y]
+    rfl
+
+  let C := b.basisConstant.toReal
+  have hC : 0 ≤ C := sorry
+
+  have h_uniform : ∀ n, ‖P' n‖ ≤ C := by
+    intro n
+    simp only [P']
+    have h_norm : ∀ x, ‖x‖ = ‖inc x‖ := fun x ↦ h_isometry.norm_map_of_map_zero (map_zero _) x
+    refine (ContinuousLinearMap.opNorm_extend_le (inc.comp (b.proj n)) (N := 1) h_dense ?_).trans ?_
+    · intro x; simp only [h_norm]
+      simp only [AddSubgroupClass.coe_norm, NNReal.coe_one, one_mul]
+      exact le_refl _
+    rw [NNReal.coe_one, one_mul]
+
+    calc
+      ‖inc.comp (b.proj n)‖ ≤ ‖inc‖ * ‖b.proj n‖ := ContinuousLinearMap.opNorm_comp_le _ _
+      _ ≤ 1 * ‖b.proj n‖ := by
+        apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
+        refine inc.opNorm_le_bound zero_le_one (fun x ↦ ?_)
+        simp only [h_isometry.norm_map_of_map_zero (map_zero _), one_mul, le_refl]
+      _ = ‖b.proj n‖ := by rw [one_mul]
+      _ ≤ C := by
+        dsimp only [C]
+        apply (ENNReal.ofReal_le_iff_le_toReal h_bound.ne).mp
+        simp only [ofReal_norm]
+        exact b.norm_proj_le_basisConstant n
+  have h0 : P' 0 = 0 := by
+        simp only [P']
+        -- b.proj 0 = 0, so inc ∘L b.proj 0 = 0, and extend of 0 is 0
+        have h_proj0 : b.proj 0 = 0 := by ext x; simp [proj_apply, Finset.range_zero]
+        simp only [h_proj0, ContinuousLinearMap.comp_zero,
+          ContinuousLinearMap.extend_zero h_dense h_unif]
+  have hdim : ∀ n, Module.finrank 𝕜 (LinearMap.range (P' n).toLinearMap) = n := by
+        intro n
+        -- The range of P' n equals the span of {e' 0, ..., e' (n-1)}
+        have h_range_eq : LinearMap.range (P' n).toLinearMap =
+            Submodule.span 𝕜 (Set.range (fun i : Fin n => banach_steinhaus' i)) := by
+          apply le_antisymm
+          · -- Range P' n ⊆ span {e' i | i < n}
+            intro z hz
+            obtain ⟨w, rfl⟩ := hz
+            -- The span is finite-dimensional, hence closed
+            let S := Submodule.span 𝕜 (Set.range (fun i : Fin n => b' i))
+            haveI : FiniteDimensional 𝕜 S := FiniteDimensional.span_of_finite 𝕜 (Set.finite_range _)
+            have hS_closed : IsClosed (S : Set Z) := Submodule.closed_of_finiteDimensional S
+            -- Use density: if property holds on inc(Y) and is closed, it holds on Z
+            have h_P'_in_S : ∀ z : Z, (P' n) z ∈ S := fun z =>
+              h_dense.induction_on (p := fun z => (P' n) z ∈ S) z
+                (hS_closed.preimage (P' n).continuous)
+                (fun y => by
+                  simp only [SetLike.mem_coe, S]
+                  rw [h_agree, b.proj_apply]
+                  simp_rw [map_sum, map_smul]
+                  apply Submodule.sum_mem
+                  intro i hi
+                  have hi' : i < n := Finset.mem_range.mp hi
+                  have h_b'_mem : b' i ∈ Set.range (fun j : Fin n => b' j) :=
+                    ⟨⟨i, hi'⟩, rfl⟩
+                  exact Submodule.smul_mem _ _ (Submodule.subset_span h_b'_mem))
+            exact h_P'_in_S w
+          · -- span {e' i | i < n} ⊆ range(P' n)
+            rw [Submodule.span_le]
+            rintro _ ⟨i, rfl⟩
+            refine ⟨b' i, ?_⟩
+            -- P' n (e' i) = e' i for i < n, using h_agree and proj_basis_element
+            -- Key: e' k = inc (e k) by definition
+            show (P' n) (b' i) = b' i
+            calc (P' n) (b' i) = (P' n) (inc (b i)) := rfl
+              _ = inc (b.proj n (b i)) := h_agree n (b i)
+              _ = inc (b i) := by rw [b.proj_basis_element, if_pos i.is_lt]
+              _ = b' i := rfl
+        rw [h_range_eq, finrank_span_eq_card]
+        · exact Fintype.card_fin n
+        · -- Linear independence of e' restricted to Fin n
+          -- e' is injective image of e under the injective map inc
+          have h_inc_inj : Function.Injective inc := h_isometry.injective
+          have h_ind : LinearIndependent 𝕜 b' :=
+            b.linearIndependent.map' (Submodule.inclusion Y.le_topologicalClosure) (by
+              simp only [Submodule.ker_inclusion])
+          exact h_ind.comp (fun (i : Fin n) => (i : ℕ)) Fin.val_injective
+  have hcomp : ∀ n m, ∀ x : Z, P' n (P' m x) = P' (min n m) x := by
+        intro n m z
+        -- Use density: prove for inc y, then extend by continuity
+        apply h_dense.induction_on (p := fun z => (P' n) ((P' m) z) = (P' (min n m)) z) z
+        · -- The set {z | P' n (P' m z) = P' (min n m) z} is closed
+          exact isClosed_eq ((P' n).continuous.comp (P' m).continuous) (P' (min n m)).continuous
+        · -- For y : Y, P' n (P' m (inc y)) = P' (min n m) (inc y)
+          intro y
+          calc (P' n) ((P' m) (inc y))
+              = (P' n) (inc (b.proj m y)) := by rw [h_agree]
+            _ = inc (b.proj n (b.proj m y)) := by rw [h_agree]
+            _ = inc (b.proj (min n m) y) := by rw [b.proj_comp]
+            _ = (P' (min n m)) (inc y) := by rw [← h_agree]
+  have hlim : ∀ x, Tendsto (fun n ↦ P' n x) atTop (𝓝 x) := by
+        intro z
+        -- First, show convergence on inc(Y): P' n (inc y) → inc y
+        have h_tendsto_on_Y : ∀ y : Y, Tendsto (fun n => (P' n) (inc y)) atTop (𝓝 (inc y)) := by
+          intro y
+          have h1 : ∀ n, (P' n) (inc y) = inc (b.proj n y) := fun n => h_agree n y
+          simp_rw [h1]
+          exact inc.continuous.continuousAt.tendsto.comp (b.proj_tendsto_id y)
+        -- Use uniform bounds and density to extend to Z
+        rw [Metric.tendsto_atTop]
+        intro ε hε
+        obtain ⟨C, hC⟩ := h_uniform
+        -- We need C' + 1 > 0 for the division. C could be negative, so use max.
+        set C' := max C 0 with hC'_def
+        have hC'_nonneg : C' ≥ 0 := le_max_right C 0
+        have hC'1_pos : C' + 1 > 0 := by linarith
+        have hC'2_pos : C' + 2 > 0 := by linarith
+        have hC'_bound : ∀ n, ‖P' n‖ ≤ C' := fun n => (hC n).trans (le_max_left C 0)
+        -- Choose δ = ε / (2 * (C' + 2)) so that (C' + 1) * δ < ε/2
+        set δ := ε / (2 * (C' + 2)) with hδ_def
+        have hδ_pos : δ > 0 := div_pos hε (by linarith)
+        -- Find y : Y with z close to inc y
+        have hz_closure : z ∈ closure (Set.range inc) := by
+          rw [h_dense.closure_eq]; exact Set.mem_univ z
+        rw [Metric.mem_closure_iff] at hz_closure
+        obtain ⟨_, ⟨y, rfl⟩, hw⟩ := hz_closure δ hδ_pos
+        -- Find N such that P' n (inc y) is close to inc y for n ≥ N
+        have h_tendsto_y := h_tendsto_on_Y y
+        rw [Metric.tendsto_atTop] at h_tendsto_y
+        obtain ⟨N, hN⟩ := h_tendsto_y (ε / 2) (half_pos hε)
+        use N
+        intro n hn
+        have h_dist_z_y : dist z (inc y) < δ := hw
+        have h_dist_Pn : dist ((P' n) (inc y)) (inc y) < ε / 2 := hN n hn
+        have h_norm_Pn : ‖(P' n) (z - inc y)‖ ≤ C' * dist z (inc y) := by
+          calc ‖(P' n) (z - inc y)‖ ≤ ‖P' n‖ * ‖z - inc y‖ := (P' n).le_opNorm _
+            _ ≤ C' * ‖z - inc y‖ := mul_le_mul_of_nonneg_right (hC'_bound n) (norm_nonneg _)
+            _ = C' * dist z (inc y) := by rw [dist_eq_norm]
+        -- Key: (C' + 1) * δ < ε/2 since δ = ε / (2 * (C' + 2)) and C' + 1 < C' + 2
+        have h_key : (C' + 1) * δ < ε / 2 := by
+          rw [hδ_def]
+          have h1 : (C' + 1) / (C' + 2) < 1 := by rw [div_lt_one hC'2_pos]; linarith
+          have h2 : (C' + 1) * (ε / (2 * (C' + 2))) = ε / 2 * ((C' + 1) / (C' + 2)) := by
+            rw [mul_div_assoc, mul_comm (C' + 1), ← mul_div_assoc, mul_comm 2, mul_assoc]
+            congr 1
+            rw [div_mul_eq_mul_div, mul_comm (C' + 1)]
+          rw [h2]
+          calc ε / 2 * ((C' + 1) / (C' + 2))
+              < ε / 2 * 1 := mul_lt_mul_of_pos_left h1 (half_pos hε)
+            _ = ε / 2 := mul_one _
+        -- Need: (C' + 1) * dist z (inc y) < (C' + 1) * δ
+        have h_dist_lt : (C' + 1) * dist z (inc y) < (C' + 1) * δ := by
+          exact mul_lt_mul_of_pos_left h_dist_z_y hC'1_pos
+        calc dist ((P' n) z) z
+            ≤ dist ((P' n) z) ((P' n) (inc y)) + dist ((P' n) (inc y)) (inc y) +
+                dist (inc y) z := dist_triangle4 _ _ _ _
+          _ = ‖(P' n) (z - inc y)‖ + dist ((P' n) (inc y)) (inc y) + dist z (inc y) := by
+              simp only [dist_eq_norm, map_sub, norm_sub_rev]
+          _ ≤ C' * dist z (inc y) + dist ((P' n) (inc y)) (inc y) + dist z (inc y) := by
+              linarith [h_norm_Pn]
+          _ = (C' + 1) * dist z (inc y) + dist ((P' n) (inc y)) (inc y) := by ring
+          _ < (C' + 1) * δ + ε / 2 := by linarith [h_dist_lt]
+          _ < ε / 2 + ε / 2 := by linarith
+          _ = ε := add_halves ε
+  have h_in_range : ∀ n, b' n ∈ LinearMap.range (SchauderBasis.Q P' n).toLinearMap :=
+    sorry
+  have h_ne : ∀ n, b' n ≠ 0 := by
+        intro n
+        simp only [b', ne_eq, Submodule.mk_eq_zero]
+        exact Subtype.coe_ne_coe.mpr (b.linearIndependent.ne_zero n)
+
+  let props : SchauderBasis.CanonicalProjectionProperties 𝕜 Z := ⟨P', b', h0, hdim, hcomp, hlim, h_in_range, h_ne⟩
+  exact props.basis
+
+/-- The basis vectors of the closure basis are simply the inclusion of the original basis vectors. -/
+@[simp]
+theorem SchauderBasis_of_closure_apply [CompleteSpace X] {Y : Submodule 𝕜 X}
+    (b : SchauderBasis 𝕜 Y) (h_bound : b.basisConstant < ⊤) (n : ℕ) :
+    (SchauderBasis_of_closure b h_bound) n = ⟨b n, Y.le_topologicalClosure (b n).2⟩ := sorry
+
+/-- Functional equality version (as requested). -/
+theorem SchauderBasis_of_closure_coe [CompleteSpace X] {Y : Submodule 𝕜 X}
+    (b : SchauderBasis 𝕜 Y) (h_bound : b.basisConstant < ⊤) :
+    ⇑(SchauderBasis_of_closure b h_bound) = fun n ↦ ⟨b n, Y.le_topologicalClosure (b n).2⟩ := sorry
+
+theorem SchauderBasis_of_closure' [CompleteSpace X] {Y : Submodule 𝕜 X} (b : SchauderBasis 𝕜 Y)
+    (h_bound : b.basisConstant < ⊤) : SchauderBasis.IsSchauderBasis 𝕜 Y.topologicalClosure
+    (fun n ↦ ⟨b n, Y.le_topologicalClosure (b n).2⟩) := sorry
+
+
+end BasicSequences
