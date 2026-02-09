@@ -409,7 +409,45 @@ def IsUnconditionalBasicSequence (β : Type*) (𝕜 : Type*) {X : Type*}
     generalized Grünblum condition. -/
 theorem unconditional_satisfiesNikolskii :
     SatisfiesNikolskiiCondition 𝕜 ubs ubs.unconditionalBasicSequenceConstant := by
-  sorry
+  have hK_lt_top : ubs.basis.enormProjBound ≠ ⊤ := ubs.basisConstant_lt_top.ne
+  refine fun A B a hAB => ?_
+  let Y := Submodule.span 𝕜 (Set.range ubs.toFun)
+  have hsum_mem (S : Finset β) : ∑ i ∈ S, a i • ubs i ∈ Y :=
+    Submodule.sum_mem _ (fun i _ => Submodule.smul_mem _ _ (Submodule.subset_span ⟨i, rfl⟩))
+  -- The projection bound: ‖P_A‖ ≤ unconditionalBasicSequenceConstant
+  have h_proj_bound : ‖ubs.basis.proj A‖ ≤ ubs.unconditionalBasicSequenceConstant := by
+    have h := ubs.basis.norm_proj_le_enormProjBound A
+    rw [enorm_eq_nnnorm] at h
+    rw [← ENNReal.toReal_le_toReal ENNReal.coe_ne_top hK_lt_top] at h
+    simp only [ENNReal.coe_toReal, coe_nnnorm] at h
+    exact h
+  let sum_B : Y := ⟨∑ i ∈ B, a i • ubs i, hsum_mem B⟩
+  let sum_A : Y := ⟨∑ i ∈ A, a i • ubs i, hsum_mem A⟩
+  have h_basis_eq : ∀ i, (ubs.basis i : X) = ubs i := fun i ↦ by
+    have h := congrFun ubs.basis_eq i
+    simp only at h
+    rw [h]
+    rfl
+  have h_sum_B_basis : sum_B = ∑ j ∈ B, a j • ubs.basis j := by
+    apply Subtype.ext
+    simp only [sum_B, Submodule.coe_sum, Submodule.coe_smul, h_basis_eq]
+  have h_proj_eq : ubs.basis.proj A sum_B = sum_A := by
+    rw [h_sum_B_basis]
+    simp_rw [map_sum, map_smul, GeneralSchauderBasis.proj_apply_basis]
+    classical
+    have : B.filter (· ∈ A) = A := by
+      ext i; simp only [Finset.mem_filter]; exact ⟨And.right, fun h => ⟨hAB h, h⟩⟩
+    simp_rw [smul_ite, smul_zero, Finset.sum_ite, Finset.sum_const_zero, add_zero, this]
+    apply Subtype.ext; simp only [sum_A, Submodule.coe_sum, Submodule.coe_smul, h_basis_eq]
+  calc ‖∑ i ∈ A, a i • ubs i‖
+    _ = ‖(sum_A : X)‖ := rfl
+    _ = ‖sum_A‖ := (norm_coe sum_A).symm
+    _ = ‖ubs.basis.proj A sum_B‖ := by rw [h_proj_eq]
+    _ ≤ ‖ubs.basis.proj A‖ * ‖sum_B‖ := ContinuousLinearMap.le_opNorm _ _
+    _ ≤ ubs.unconditionalBasicSequenceConstant * ‖sum_B‖ :=
+       mul_le_mul_of_nonneg_right h_proj_bound (norm_nonneg _)
+    _ = ubs.unconditionalBasicSequenceConstant * ‖(sum_B : X)‖ := by rw [norm_coe]
+    _ = ubs.unconditionalBasicSequenceConstant * ‖∑ i ∈ B, a i • ubs i‖ := rfl
 
 variable {e : β → X} {K : ℝ}
 
