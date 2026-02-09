@@ -5,7 +5,7 @@ Authors: Michał Świętek
 -/
 module
 
-public import Mathlib.Analysis.Normed.Module.SchauderBasis.Grunblum
+public import Mathlib.Analysis.Normed.Module.SchauderBasis.BasicSequence
 public import Mathlib.Topology.MetricSpace.HausdorffDistance
 public import Mathlib.Topology.MetricSpace.ProperSpace
 public import Mathlib.Topology.Neighborhoods

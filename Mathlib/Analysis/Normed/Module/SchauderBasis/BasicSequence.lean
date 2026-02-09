@@ -95,16 +95,9 @@ theorem basicSequence_satisfiesGrunblum :
   have h_sum_n_basis : sum_n = ∑ j ∈ Finset.range n, a j • bs.basis j := by
     apply Subtype.ext
     simp only [sum_n, Submodule.coe_sum, Submodule.coe_smul, h_basis_eq]
-  have h_sum_m_basis : sum_m = ∑ j ∈ Finset.range m, a j • bs.basis j := by
-    apply Subtype.ext
-    simp only [sum_m, Submodule.coe_sum, Submodule.coe_smul, h_basis_eq]
   have h_proj_eq : bs.basis.proj m sum_n = sum_m := by
-    have : (range n).filter (fun j => j < m) = range m := by
-      ext i
-      simp only [Finset.mem_filter, Finset.mem_range]
-      rw [← lt_min_iff, min_eq_right hmn]
-    simp_rw [h_sum_n_basis, map_sum, map_smul, SchauderBasis.proj_basis_element, smul_ite,
-      Finset.sum_ite, smul_zero, Finset.sum_const_zero, add_zero, this, h_sum_m_basis]
+    rw [h_sum_n_basis, SchauderBasis.proj_sum_range bs.basis m n a hmn]
+    apply Subtype.ext; simp only [sum_m, Submodule.coe_sum, Submodule.coe_smul, h_basis_eq]
   calc ‖∑ i ∈ Finset.range m, a i • bs i‖
     _ = ‖(sum_m : X)‖ := rfl
     _ = ‖sum_m‖ := (norm_coe sum_m).symm
@@ -279,6 +272,10 @@ theorem isBasicSequence_of_grunblum_with_bound [CompleteSpace X] {e : ℕ → X}
     heNe := fun n ↦ by dsimp only [e_Y]; rw [hbS_eq]; exact he_ne n
   }
   let b_basis := D.basis
+  have h_lt_top : b_basis.enormProjBound < ⊤ :=
+    b_basis.enormProjBound_lt_top_of_bound (fun n ↦ by
+      change ‖D.basis.proj n‖ ≤ K
+      rw [SchauderBasis.ProjectionData.basis_proj D]; exact h_bound_P n)
   let seq : BasicSequence 𝕜 X := {
     toFun := e
     basis := b_basis
@@ -287,11 +284,8 @@ theorem isBasicSequence_of_grunblum_with_bound [CompleteSpace X] {e : ℕ → X}
       rw [SchauderBasis.ProjectionData.basis_coe D]
       dsimp only [val_codRestrict_apply]
       exact hbS n
+    basisConstant_lt_top := h_lt_top
   }
-  have h_lt_top : b_basis.enormProjBound < ⊤ :=
-    b_basis.enormProjBound_lt_top_of_bound (fun n ↦ by
-      change ‖D.basis.proj n‖ ≤ K
-      rw [SchauderBasis.ProjectionData.basis_proj D]; exact h_bound_P n)
   refine ⟨seq, rfl, ?_⟩
   dsimp only [basicSequenceConstant]
   have h_K_nonneg : 0 ≤ K := by linarith
@@ -312,6 +306,57 @@ theorem isBasicSequence_of_grunblum [CompleteSpace X] {e : ℕ → X} {K : ℝ} 
     (h : SatisfiesGrunblumCondition 𝕜 e K) : IsBasicSequence 𝕜 e := by
   obtain ⟨b, hb_eq, _⟩ := isBasicSequence_of_grunblum_with_bound h h_nz
   exact ⟨b, hb_eq⟩
+
+
+/-- The tail of a basic sequence (starting from index N) is also a basic sequence. -/
+theorem tail_basic_sequence [CompleteSpace X] (bs : BasicSequence 𝕜 X)
+    (h_bound : bs.basis.enormProjBound < ⊤) (N : ℕ) :
+    IsBasicSequence 𝕜 (fun n => bs (n + N)) := by
+  have hK_bound := satisfiesGrunblum bs h_bound
+  have hK_ge := grunblumConstant_ge_one bs
+  have h_nz : ∀ n, bs (n + N) ≠ 0 := by
+    intro n h_zero
+    have hb_indep := bs.basis.linearIndependent
+    have hb_nz := hb_indep.ne_zero (n + N)
+    have h_eq : (bs.basis (n + N) : X) = bs (n + N) := by
+      have := congrFun bs.basis_eq (n + N)
+      exact congrArg Subtype.val this
+    rw [h_zero] at h_eq
+    exact hb_nz (Subtype.val_injective h_eq)
+  refine isBasicSequence_of_grunblum hK_ge ?_ h_nz
+  intro n m a hnm
+  let a' : ℕ → 𝕜 := fun i => if N ≤ i then a (i - N) else 0
+  have h_sum_eq (k : ℕ) : ∑ i ∈ Finset.range k, a i • bs (i + N) =
+      ∑ i ∈ Finset.range (k + N), a' i • bs i := by
+    have h_split : ∑ i ∈ Finset.range (k + N), a' i • bs i =
+        ∑ i ∈ Finset.range N, a' i • bs i +
+        ∑ i ∈ Finset.Ico N (k + N), a' i • bs i := by
+      rw [Finset.sum_range_add_sum_Ico _ (Nat.le_add_left N k)]
+    have h_zero : ∑ i ∈ Finset.range N, a' i • bs i = 0 := by
+      apply Finset.sum_eq_zero
+      intro i hi
+      have hi_lt : i < N := Finset.mem_range.mp hi
+      simp only [a', if_neg (not_le.mpr hi_lt), zero_smul]
+    have h_Ico : ∑ i ∈ Finset.Ico N (k + N), a' i • bs i =
+        ∑ i ∈ Finset.range k, a i • bs (i + N) := by
+      conv_lhs =>
+        rw [show Finset.Ico N (k + N) = (Finset.range k).map
+            ⟨(· + N), fun _ _ h => Nat.add_right_cancel h⟩ from by
+          ext j
+          simp only [Finset.mem_map, Finset.mem_range, Finset.mem_Ico,
+            Function.Embedding.coeFn_mk]
+          constructor
+          · intro ⟨hN, hk⟩; exact ⟨j - N, by omega, by omega⟩
+          · rintro ⟨i, hi, rfl⟩; omega]
+        rw [Finset.sum_map]
+      apply Finset.sum_congr rfl
+      intro i _
+      simp only [Function.Embedding.coeFn_mk, a', if_pos (Nat.le_add_left N i)]
+      simp only [Nat.add_sub_cancel_right]
+    rw [h_split, h_zero, zero_add, h_Ico]
+  rw [h_sum_eq m, h_sum_eq n]
+  exact hK_bound (n + N) (m + N) a' (by omega)
+
 
 end BasicSequence
 

@@ -239,6 +239,16 @@ theorem proj_apply (n : ℕ) (x : X) : b.proj n x = ∑ i ∈ Finset.range n, b.
 theorem proj_basis_element (n i : ℕ) : b.proj n (b i) = if i < n then b i else 0 := by
   simp only [proj, GeneralSchauderBasis.proj_apply_basis, Finset.mem_range]
 
+/-- The projection `P_m` applied to a finite basis sum `∑_{i<n} a_i • e_i` with `m ≤ n`
+    equals the truncated sum `∑_{i<m} a_i • e_i`. -/
+theorem proj_sum_range (m n : ℕ) (a : ℕ → 𝕜) (hmn : m ≤ n) :
+    b.proj m (∑ i ∈ Finset.range n, a i • b i) =
+    ∑ i ∈ Finset.range m, a i • b i := by
+  have : (Finset.range n).filter (fun j => j < m) = Finset.range m := by
+    ext i; simp only [Finset.mem_filter, Finset.mem_range]; omega
+  simp_rw [map_sum, map_smul, proj_basis_element, smul_ite,
+    Finset.sum_ite, smul_zero, Finset.sum_const_zero, add_zero, this]
+
 /-- The range of the canonical projection is the span of the first n basis elements. -/
 theorem range_proj (n : ℕ) :
     LinearMap.range (b.proj n).toLinearMap = Submodule.span 𝕜 (b '' ↑(Finset.range n)) := by
