@@ -309,11 +309,9 @@ theorem isBasicSequence_of_grunblum [CompleteSpace X] {e : ℕ → X} {K : ℝ} 
 
 
 /-- The tail of a basic sequence (starting from index N) is also a basic sequence. -/
-theorem tail_basic_sequence [CompleteSpace X] (bs : BasicSequence 𝕜 X)
-    (h_bound : bs.basis.enormProjBound < ⊤) (N : ℕ) :
+theorem tail_basic_sequence [CompleteSpace X] (bs : BasicSequence 𝕜 X) (N : ℕ) :
     IsBasicSequence 𝕜 (fun n => bs (n + N)) := by
-  have hK_bound := satisfiesGrunblum bs h_bound
-  have hK_ge := grunblumConstant_ge_one bs
+  have hK_bound := basicSequence_satisfiesGrunblum bs
   have h_nz : ∀ n, bs (n + N) ≠ 0 := by
     intro n h_zero
     have hb_indep := bs.basis.linearIndependent
@@ -323,7 +321,7 @@ theorem tail_basic_sequence [CompleteSpace X] (bs : BasicSequence 𝕜 X)
       exact congrArg Subtype.val this
     rw [h_zero] at h_eq
     exact hb_nz (Subtype.val_injective h_eq)
-  refine isBasicSequence_of_grunblum hK_ge ?_ h_nz
+  refine isBasicSequence_of_grunblum (K := bs.basicSequenceConstant) h_nz ?_
   intro n m a hnm
   let a' : ℕ → 𝕜 := fun i => if N ≤ i then a (i - N) else 0
   have h_sum_eq (k : ℕ) : ∑ i ∈ Finset.range k, a i • bs (i + N) =
