@@ -108,6 +108,27 @@ theorem basicSequence_satisfiesGrunblum :
     _ = bs.basicSequenceConstant * ‖(sum_n : X)‖ := by rw [norm_coe]
     _ = bs.basicSequenceConstant * ‖∑ i ∈ Finset.range n, a i • bs i‖ := rfl
 
+/-- The Grünblum bound transfers through a norm-preserving map: if `b` is a basic sequence
+    in `Y` and `J : X →L[𝕜] Y` satisfies `‖J y‖ = ‖y‖` with `J (x n) = b n`, then `x`
+    satisfies the same Grünblum bound as `b`. -/
+theorem grunblum_bound_transfer {Y : Type*}
+    [NormedAddCommGroup Y] [NormedSpace 𝕜 Y]
+    (b : BasicSequence 𝕜 Y) (x : ℕ → X) (J : X →L[𝕜] Y)
+    (hJ_iso : ∀ y, ‖J y‖ = ‖y‖) (hx_J : ∀ n, J (x n) = b n)
+    (n m : ℕ) (a : ℕ → 𝕜) (hmn : m ≤ n) :
+    ‖∑ i ∈ Finset.range m, a i • x i‖ ≤
+      b.basicSequenceConstant * ‖∑ i ∈ Finset.range n, a i • x i‖ := by
+  have h_sum_eq : ∀ k, J (∑ i ∈ Finset.range k, a i • x i) =
+      ∑ i ∈ Finset.range k, a i • b i := by
+    intro k; simp only [map_sum, ContinuousLinearMap.map_smul, hx_J]
+  calc ‖∑ i ∈ Finset.range m, a i • x i‖
+      = ‖J (∑ i ∈ Finset.range m, a i • x i)‖ := (hJ_iso _).symm
+    _ = ‖∑ i ∈ Finset.range m, a i • b i‖ := by rw [h_sum_eq]
+    _ ≤ b.basicSequenceConstant * ‖∑ i ∈ Finset.range n, a i • b i‖ :=
+        basicSequence_satisfiesGrunblum b n m a hmn
+    _ = b.basicSequenceConstant * ‖J (∑ i ∈ Finset.range n, a i • x i)‖ := by rw [h_sum_eq]
+    _ = b.basicSequenceConstant * ‖∑ i ∈ Finset.range n, a i • x i‖ := by rw [hJ_iso]
+
 theorem grunblum_const_ge_1 {e : ℕ → X} {K : ℝ}
     (h : SatisfiesGrunblumCondition 𝕜 e K) (h_nz : ∀ n, e n ≠ 0) : 1 ≤ K := by
   have h0 := h 1 1 (fun _ => 1) le_rfl
