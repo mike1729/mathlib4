@@ -103,9 +103,9 @@ private lemma nonzero_not_in_all_tail_closures {E : Type*} [NormedAddCommGroup E
   have hw_Z_ne : w_Z ≠ 0 := fun h => hw_ne (congrArg Subtype.val h)
   -- Build Schauder basis for Z from b
   let basis_Z : SchauderBasis 𝕜 Z :=
-    BasicSequences.SchauderBasis_of_closure (Y := Y) b.basis h_bound
+    BasicSequences.schauderBasisOfClosure (Y := Y) b.basis h_bound
   have h_basis_coe : ∀ n, (basis_Z n : E) = b.toFun n := fun n => by
-    rw [BasicSequences.SchauderBasis_of_closure_apply]
+    rw [BasicSequences.schauderBasisOfClosure_apply]
     exact congrArg Subtype.val (congr_fun b.basis_eq n)
   -- w_Z ≠ 0 implies some coordinate is nonzero
   have h_exists_coord : ∃ k, basis_Z.coord k w_Z ≠ 0 :=
@@ -139,6 +139,37 @@ private lemma nonzero_not_in_all_tail_closures {E : Type*} [NormedAddCommGroup E
     exact (tendsto_const_nhds_iff.mp h_tendsto).symm
   -- Contradiction
   exact hk_ne h_coord_w_zero
+
+/-- If x ∈ (· - w) '' T, then x + w ∈ T. Extracted to avoid `convert` on complex types. -/
+private lemma mem_of_mem_translated_image {E : Type*} [AddGroup E]
+    {T : Set E} {w x : E} (hx : x ∈ (fun y => y - w) '' T) :
+    x + w ∈ T := by
+  obtain ⟨t, ht_mem, ht_eq⟩ := hx
+  simp only at ht_eq
+  rwa [← ht_eq, sub_add_cancel]
+
+/-- If w ∈ closure (toWeakDual '' T), then 0 ∈ closure (toWeakDual '' ((· - toStrongDual w) '' T)).
+    Extracted to reduce elaboration overhead (Homeomorph + simp on WeakDual types). -/
+private lemma zero_mem_closure_translated_weakDual_image
+    {F : Type*} [NormedAddCommGroup F] [NormedSpace 𝕜 F]
+    (T : Set (StrongDual 𝕜 F)) (w : WeakDual 𝕜 F)
+    (hw : w ∈ closure (StrongDual.toWeakDual '' T)) :
+    (0 : WeakDual 𝕜 F) ∈
+      closure (StrongDual.toWeakDual '' ((fun y => y - WeakDual.toStrongDual w) '' T)) := by
+  let A : Set (WeakDual 𝕜 F) := StrongDual.toWeakDual '' T
+  let Tw : WeakDual 𝕜 F ≃ₜ WeakDual 𝕜 F := Homeomorph.addRight (-w)
+  have h_image : StrongDual.toWeakDual '' ((fun y => y - WeakDual.toStrongDual w) '' T) =
+      Tw '' A := by
+    simp only [A, image_image]
+    apply image_congr
+    intro x _
+    simp only [Tw, Homeomorph.coe_addRight, sub_eq_add_neg]
+    rfl
+  rw [h_image, ← Homeomorph.image_closure]
+  have h_zero : (0 : WeakDual 𝕜 F) = Tw w := by
+    simp only [Tw, Homeomorph.coe_addRight, add_neg_cancel]
+  rw [h_zero]
+  exact mem_image_of_mem _ hw
 
 /-- If 0 ∈ closure of a translated set S - w, then w ∈ closure S.
     Extracted to reduce elaboration overhead in the main theorem. -/
@@ -210,26 +241,6 @@ private lemma basic_sequence_element_nonzero {E : Type*} [NormedAddCommGroup E] 
     congrArg Subtype.val (congr_fun b.basis_eq n)
   exact h_ne (Subtype.ext (h_basis_val.trans hb0))
 
-/-- The Grünblum bound transfers through an isometry: if `b` is a basic sequence in `Y` and
-    `J : X →L[𝕜] Y` is an isometry with `J (x n) = b n`, then the Grünblum bound for `b`
-    implies the same bound for `x`. Extracted to reduce elaboration overhead. -/
-private lemma grunblum_bound_transfer_via_isometry {X Y : Type*}
-    [NormedAddCommGroup X] [NormedSpace 𝕜 X]
-    [NormedAddCommGroup Y] [NormedSpace 𝕜 Y]
-    (b : BasicSequence 𝕜 Y) (h_bound : b.basis.enormProjBound < ⊤) (x : ℕ → X) (J : X →L[𝕜] Y)
-    (hJ_iso : ∀ y, ‖J y‖ = ‖y‖) (hx_J : ∀ n, J (x n) = b n)
-    (n m : ℕ) (a : ℕ → 𝕜) (hmn : m ≤ n) :
-    ‖∑ i ∈ Finset.range m, a i • x i‖ ≤ b.basicSequenceConstant * ‖∑ i ∈ Finset.range n, a i • x i‖ := by
-  have h_sum_eq : ∀ k, J (∑ i ∈ Finset.range k, a i • x i) = ∑ i ∈ Finset.range k, a i • b i := by
-    intro k; simp only [map_sum, ContinuousLinearMap.map_smul, hx_J]
-  calc ‖∑ i ∈ Finset.range m, a i • x i‖
-      = ‖J (∑ i ∈ Finset.range m, a i • x i)‖ := (hJ_iso _).symm
-    _ = ‖∑ i ∈ Finset.range m, a i • b i‖ := by rw [h_sum_eq]
-    _ ≤ b.basicSequenceConstant * ‖∑ i ∈ Finset.range n, a i • b i‖ :=
-        basicSequence_satisfiesGrunblum b n m a hmn
-    _ = b.basicSequenceConstant * ‖J (∑ i ∈ Finset.range n, a i • x i)‖ := by rw [h_sum_eq]
-    _ = b.basicSequenceConstant * ‖∑ i ∈ Finset.range n, a i • x i‖ := by rw [hJ_iso]
-
 /-- Construct a functional that separates a basic sequence tail from w'.
     Given J : X →L[𝕜] E with closed range, w' ∉ range J, and a sequence e where
     each e n = J x - w' for some x, there exists f with f(e n) = 1 and f(w') = -1.
@@ -266,7 +277,7 @@ private lemma translated_tail_is_basic {E : Type*} [NormedAddCommGroup E] [Norme
     IsBasicSequence 𝕜 (fun n => b (n + N) + w') := by
   have he_basic : IsBasicSequence 𝕜 (fun n => b (n + N)) := tail_basic_sequence b N
   obtain ⟨b_tail, hb_tail_eq, hb_tail_bound⟩ := he_basic
-  convert perturb_basic_sequence b_tail hb_tail_bound w' f ?_ hf_w ?_ using 1
+  convert perturbBasicSequence b_tail hb_tail_bound w' f ?_ hf_w ?_ using 1
   · funext n; exact congrArg (· + w') (congrFun hb_tail_eq n).symm
   · intro n; rw [congrFun hb_tail_eq n]; exact hf_e n
   · rw [congrArg Set.range hb_tail_eq]; exact h_w_notin_span
@@ -326,7 +337,6 @@ private lemma compactness_transfer_from_bidual
   have h_homeo : homeo (toWeakSpace 𝕜 X x) = ⟨ι x, x, rfl⟩ := Subtype.ext rfl
   exact ⟨⟨ι x, x, rfl⟩, h_in_K, by rw [← h_homeo, Homeomorph.symm_apply_apply]⟩
 
-set_option maxHeartbeats 210000 in
 /-- Main theorem: in a Banach space, a set S that is bounded
     and does not contain any basic sequence, has relatively weakly compact closure in the weak
     topology. -/
@@ -370,22 +380,9 @@ theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
       let w' : Xbidual := WeakDual.toStrongDual w
       let S' : Set Xbidual := (fun y => y - w') '' S_bidual
 
-      have h_weak_starS' : (0 : WeakDual 𝕜 (StrongDual 𝕜 X)) ∈ closure (StrongDual.toWeakDual '' S') := by
-        let A : Set (WeakDual 𝕜 (StrongDual 𝕜 X)) := StrongDual.toWeakDual '' S_bidual
-        let T : WeakDual 𝕜 (StrongDual 𝕜 X) ≃ₜ WeakDual 𝕜 (StrongDual 𝕜 X) :=
-          Homeomorph.addRight (-w)
-        have h_image : StrongDual.toWeakDual '' S' = T '' A := by
-          simp only [S', A, S_bidual, image_image]
-          apply image_congr
-          intro x _
-          simp only [T, Homeomorph.coe_addRight, sub_eq_add_neg, w']
-          rfl
-        rw [h_image, ← Homeomorph.image_closure]
-        have h_zero : (0 : WeakDual 𝕜 (StrongDual 𝕜 X)) = T w := by
-          simp only [T, Homeomorph.coe_addRight, add_neg_cancel]
-        rw [h_zero]
-        apply mem_image_of_mem
-        exact hwK
+      have h_weak_starS' : (0 : WeakDual 𝕜 (StrongDual 𝕜 X)) ∈
+          closure (StrongDual.toWeakDual '' S') :=
+        zero_mem_closure_translated_weakDual_image S_bidual w hwK
 
       have h_normS' : (0 : Xbidual) ∉ closure S' := by
         intro h0
@@ -448,21 +445,8 @@ theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
 
       -- Let's define the correct sequence that's in S_bidual
       let s : ℕ → Xbidual := fun n => e n + w'
-      have hs_in_S_bidual : ∀ n, s n ∈ S_bidual := fun n => by
-        -- e n = b.toFun (n + N), so we need he_S' (n + N)
-        -- he_S' (n+N) : b.toFun (n+N) ∈ S' where S' = (fun y => y - w') '' S_bidual
-        -- So there exists t ∈ S_bidual such that b.toFun (n+N) = t - w'
-        -- Thus t = b.toFun (n+N) + w' = e n + w' = s n ∈ S_bidual
-        have h_mem : b.toFun (n + N) ∈ S' := he_S' (n + N)
-        rw [Set.mem_image] at h_mem
-        obtain ⟨t, ht_mem, ht_eq⟩ := h_mem
-        -- ht_eq : t - w' = b.toFun (n+N), so t = b.toFun (n+N) + w' = e n + w' = s n
-        simp only [s, e]
-        convert ht_mem using 1
-        -- Goal: b.toFun (n + N) + w' = t
-        -- From ht_eq: t - w' = b.toFun (n + N), so t = b.toFun (n + N) + w'
-        rw [sub_eq_iff_eq_add] at ht_eq
-        exact ht_eq.symm
+      have hs_in_S_bidual : ∀ n, s n ∈ S_bidual := fun n =>
+        mem_of_mem_translated_image (he_S' (n + N))
 
       -- s = e + w' is basic by the extracted helper lemma
       have h_basicS : IsBasicSequence 𝕜 s :=
@@ -492,7 +476,7 @@ theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
         have h_grunblum : ∀ n m (a : ℕ → 𝕜), m ≤ n →
             ‖∑ i ∈ Finset.range m, a i • x i‖ ≤
             b_s.basicSequenceConstant * ‖∑ i ∈ Finset.range n, a i • x i‖ := fun n m a hmn =>
-          grunblum_bound_transfer_via_isometry (X := X) (Y := Xbidual) b_s h_bs_bound x J hJ_iso hx_J' n m a hmn
+          b_s.grunblum_bound_transfer x J hJ_iso hx_J' n m a hmn
         exact isBasicSequence_of_grunblum hx_nz h_grunblum
 
       exact h_no_basic x hx_S hx_basic

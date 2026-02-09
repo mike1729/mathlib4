@@ -19,11 +19,11 @@ from basic sequences via closure.
 
 ## Main Results
 
-* `perturb_basic_sequence`: A perturbation of a basic sequence by a fixed vector
+* `perturbBasicSequence`: A perturbation of a basic sequence by a fixed vector
   (under suitable functional conditions) is still a basic sequence.
-* `no_basic_sequence_implies_zero_not_in_weak_closure`: If a bounded set contains no basic
+* `not_mem_weakClosure_of_no_basicSequence`: If a bounded set contains no basic
   sequence, then 0 is not in its weak closure.
-* `SchauderBasis_of_closure`: Constructs a Schauder basis for the topological closure
+* `schauderBasisOfClosure`: Constructs a Schauder basis for the topological closure
   from a Schauder basis on a subspace.
 -/
 
@@ -38,7 +38,7 @@ variable {X : Type*} [NormedAddCommGroup X] [NormedSpace 𝕜 X]
 
 namespace BasicSequence
 
-lemma perturb_basic_sequence [CompleteSpace X] (b : BasicSequence 𝕜 X)
+lemma perturbBasicSequence [CompleteSpace X] (b : BasicSequence 𝕜 X)
     (h_bound : b.basis.enormProjBound < ⊤)
     (u : X) (g : StrongDual 𝕜 X)
     (hf : ∀ n, g (b n) = 1) (hu : g u = -1)
@@ -117,7 +117,7 @@ lemma perturb_basic_sequence [CompleteSpace X] (b : BasicSequence 𝕜 X)
     This is a consequence of the basic sequence selection principle: if 0 is in the
     weak* closure of J(S) but not in its norm closure, then J(S) contains a basic sequence,
     which can be pulled back to a basic sequence in S. -/
-theorem no_basic_sequence_implies_zero_not_in_weak_closure [CompleteSpace X]
+theorem not_mem_weakClosure_of_no_basicSequence [CompleteSpace X]
     {S : Set X} (_hS_ne : S.Nonempty) (h_norm : (0 : X) ∉ closure S)
     (h_no_basic : ∀ (e : ℕ → X), (∀ n, e n ∈ S) → ¬ IsBasicSequence 𝕜 e) :
     (0 : X) ∉ closure (toWeakSpace 𝕜 X '' S) := by
@@ -232,26 +232,15 @@ theorem no_basic_sequence_implies_zero_not_in_weak_closure [CompleteSpace X]
 
   -- Transfer Grünblum condition from b_bidual to e using J being an isometry
   have hK_bound_e : ∀ (n m : ℕ) (a : ℕ → 𝕜), m ≤ n →
-      ‖∑ i ∈ Finset.range m, a i • e i‖ ≤ K * ‖∑ i ∈ Finset.range n, a i • e i‖ := by
-    intro n m a hmn
-    have h_J_sum (k : ℕ) : J (∑ i ∈ Finset.range k, a i • e i) =
-        ∑ i ∈ Finset.range k, a i • b_bidual i := by
-      simp only [map_sum, map_smul, he_eq]
-    have hJ_norm : ∀ y : X, ‖J y‖ = ‖y‖ :=
-      (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).norm_map
-    calc ‖∑ i ∈ Finset.range m, a i • e i‖
-      _ = ‖J (∑ i ∈ Finset.range m, a i • e i)‖ := (hJ_norm _).symm
-      _ = ‖∑ i ∈ Finset.range m, a i • b_bidual i‖ := by rw [h_J_sum]
-      _ ≤ K * ‖∑ i ∈ Finset.range n, a i • b_bidual i‖ :=
-          basicSequence_satisfiesGrunblum b_bidual n m a hmn
-      _ = K * ‖J (∑ i ∈ Finset.range n, a i • e i)‖ := by rw [h_J_sum]
-      _ = K * ‖∑ i ∈ Finset.range n, a i • e i‖ := by rw [hJ_norm]
+      ‖∑ i ∈ Finset.range m, a i • e i‖ ≤ K * ‖∑ i ∈ Finset.range n, a i • e i‖ :=
+    fun n m a hmn => b_bidual.grunblum_bound_transfer e J
+      (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).norm_map he_eq n m a hmn
 
   -- Apply Grünblum criterion
   exact isBasicSequence_of_grunblum h_nz hK_bound_e
 
 
-def SchauderBasis_of_closure [CompleteSpace X] {Y : Submodule 𝕜 X}
+def schauderBasisOfClosure [CompleteSpace X] {Y : Submodule 𝕜 X}
     (b : SchauderBasis 𝕜 Y) (h_bound : b.enormProjBound < ⊤) :
     SchauderBasis 𝕜 Y.topologicalClosure := by
   -- 1. Identify the closure Z and the inclusion map ι
@@ -432,15 +421,15 @@ def SchauderBasis_of_closure [CompleteSpace X] {Y : Submodule 𝕜 X}
 
 /-- The closure basis vectors are the inclusion of the original basis vectors. -/
 @[simp]
-theorem SchauderBasis_of_closure_apply [CompleteSpace X] {Y : Submodule 𝕜 X}
+theorem schauderBasisOfClosure_apply [CompleteSpace X] {Y : Submodule 𝕜 X}
     (b : SchauderBasis 𝕜 Y) (h_bound : b.enormProjBound < ⊤) (n : ℕ) :
-    (SchauderBasis_of_closure b h_bound) n = ⟨b n, Y.le_topologicalClosure (b n).2⟩ :=
+    (schauderBasisOfClosure b h_bound) n = ⟨b n, Y.le_topologicalClosure (b n).2⟩ :=
   rfl
 
 /-- Functional equality version (as requested). -/
-theorem SchauderBasis_of_closure_coe [CompleteSpace X] {Y : Submodule 𝕜 X}
+theorem schauderBasisOfClosure_coe [CompleteSpace X] {Y : Submodule 𝕜 X}
     (b : SchauderBasis 𝕜 Y) (h_bound : b.enormProjBound < ⊤) :
-    ⇑(SchauderBasis_of_closure b h_bound) = fun n ↦ ⟨b n, Y.le_topologicalClosure (b n).2⟩ :=
-  funext fun n => SchauderBasis_of_closure_apply b h_bound n
+    ⇑(schauderBasisOfClosure b h_bound) = fun n ↦ ⟨b n, Y.le_topologicalClosure (b n).2⟩ :=
+  funext fun n => schauderBasisOfClosure_apply b h_bound n
 
 end BasicSequence
