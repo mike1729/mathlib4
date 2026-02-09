@@ -108,6 +108,14 @@ theorem basicSequence_satisfiesGrunblum :
     _ = bs.basicSequenceConstant * ‖(sum_n : X)‖ := by rw [norm_coe]
     _ = bs.basicSequenceConstant * ‖∑ i ∈ Finset.range n, a i • bs i‖ := rfl
 
+theorem grunblum_const_ge_1 {e : ℕ → X} {K : ℝ}
+    (h : SatisfiesGrunblumCondition 𝕜 e K) (h_nz : ∀ n, e n ≠ 0) : 1 ≤ K := by
+  have h0 := h 1 1 (fun _ => 1) le_rfl
+  simp only [Finset.range_one, one_smul, sum_singleton] at h0
+  refine le_of_mul_le_mul_right ?_ (norm_pos_iff.mpr (h_nz 0))
+  rw [one_mul]
+  exact h0
+
 lemma linearIndependent_of_grunblum {e : ℕ → X} {K : ℝ}
     (h_grunblum : SatisfiesGrunblumCondition 𝕜 e K)
     (h_nz : ∀ n, e n ≠ 0) : LinearIndependent 𝕜 e := by
@@ -141,12 +149,7 @@ theorem isBasicSequence_of_grunblum_with_bound [CompleteSpace X] {e : ℕ → X}
     (h_grunblum : SatisfiesGrunblumCondition 𝕜 e K) (h_nz : ∀ n, e n ≠ 0) :
     ∃ (b : BasicSequence 𝕜 X), ⇑b = e ∧ b.basicSequenceConstant ≤ K := by
   have h_indep := linearIndependent_of_grunblum h_grunblum h_nz
-  have hK : K ≥ 0 := by
-    have h := h_grunblum 1 0 (fun _ => 1) (Nat.zero_le _)
-    simp only [Finset.range_zero, Finset.sum_empty, norm_zero] at h
-    apply nonneg_of_mul_nonneg_left h
-    apply norm_pos_iff.mpr
-    simpa using h_nz 0
+  have hK : 0 ≤ K := zero_le_one.trans (grunblum_const_ge_1 h_grunblum h_nz)
   let S := Submodule.span 𝕜 (Set.range e)
   let b_S := Module.Basis.span h_indep
   let e_Y : ℕ → S := b_S

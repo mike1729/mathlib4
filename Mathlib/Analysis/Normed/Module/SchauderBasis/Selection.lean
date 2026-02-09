@@ -38,7 +38,7 @@ open Submodule Set WeakDual Metric Filter Topology
 variable {𝕜 : Type*} [RCLike 𝕜]
 variable {X : Type*} [NormedAddCommGroup X] [NormedSpace 𝕜 X]
 
-namespace BasicSequences
+namespace BasicSequence
 
 lemma perturbation_finite_dimensional {S : Set (StrongDual 𝕜 X)}
     (h_weak_star : (0 : WeakDual 𝕜 X) ∈ closure (StrongDual.toWeakDual '' S))
@@ -183,8 +183,7 @@ theorem basic_sequence_selection_dual {S : Set (StrongDual 𝕜 X)}
     {ε : ℝ} (hε : ε > 0) :
     ∃ (b : BasicSequence 𝕜 (StrongDual 𝕜 X)),
       (∀ n, b n ∈ S) ∧
-      basicSequenceConstant b < 1 + ε ∧
-      b.basis.enormProjBound < ⊤ := by
+      b.basicSequenceConstant < 1 + ε := by
   -- Use ε/2 in the construction so that the Grünblum constant is 1 + ε/2 < 1 + ε
   let ε' := ε / 2
   have hε' : ε' > 0 := by simp only [ε']; linarith
@@ -284,8 +283,7 @@ theorem basic_sequence_selection_dual {S : Set (StrongDual 𝕜 X)}
             _ ≤ u n := div_le_self (le_of_lt (hu_pos n)) (hu m).1
             _ ≤ 1 + ε' := le_of_lt (hu n).2
   -- Package into SatisfiesGrunblumCondition for isBasicSequence_of_grunblum
-  have h_grunblum : SatisfiesGrunblumCondition 𝕜 f (1 + ε') :=
-    ⟨by linarith [hε'], h_grunblum_bound⟩
+  have h_grunblum : SatisfiesGrunblumCondition 𝕜 f (1 + ε') := h_grunblum_bound
 
   -- 5. Final assembly.
   have h_nz n : f n ≠ 0 := by
@@ -294,8 +292,8 @@ theorem basic_sequence_selection_dual {S : Set (StrongDual 𝕜 X)}
     rw [← hfn]
     exact subset_closure (hf_spec n).1
 
-  obtain ⟨b, hb, hb_bound⟩ := isBasicSequence_of_grunblum h_grunblum h_nz
-  refine ⟨b, ?_, ?_, hb_bound⟩
+  obtain ⟨b, hb⟩ := isBasicSequence_of_grunblum h_nz h_grunblum
+  refine ⟨b, ?_, ?_⟩
   · -- Show ∀ n, b n ∈ S
     intro n
     rw [show b n = f n from congrFun hb n]
@@ -446,7 +444,7 @@ lemma weak_closure_sphere_contains_zero (hinf : ¬ FiniteDimensional 𝕜 X) :
 /-- Corollary 1.5.3: Every infinite-dimensional Banach space contains a basic sequence
     with basis constant arbitrarily close to 1. -/
 theorem exists_basic_sequence [CompleteSpace X] (hinf : ¬ FiniteDimensional 𝕜 X) {ε : ℝ}
-    (hε : 0 < ε) : ∃ (b : BasicSequence 𝕜 X), basicSequenceConstant b < 1 + ε := by
+    (hε : 0 < ε) : ∃ (b : BasicSequence 𝕜 X), b.basicSequenceConstant < 1 + ε := by
   -- 1. Setup the Embedding J : X → X**
   let J := NormedSpace.inclusionInDoubleDual 𝕜 X
   let S_bidual := J '' (Metric.sphere 0 1)
@@ -465,7 +463,7 @@ theorem exists_basic_sequence [CompleteSpace X] (hinf : ¬ FiniteDimensional �
     have hJ_iso : ‖J x‖ = ‖x‖ := (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).norm_map x
     rw [dist_zero_left, hJ_iso, mem_sphere_zero_iff_norm.mp hx]
   -- 3. Apply the Dual Selection Principle to get a basic sequence in the bidual X**
-  obtain ⟨b_bidual, hb_mem, hb_const, hb_bound⟩ := basic_sequence_selection_dual h_weak h_norm hε
+  obtain ⟨b_bidual, hb_mem, hb_const⟩ := basic_sequence_selection_dual h_weak h_norm hε
   -- 4. Pull back the sequence to X using the isometry J
   -- Each b_bidual n ∈ J '' sphere, so find the preimage
   have h_preimage (n : ℕ) : ∃ x ∈ Metric.sphere (0 : X) 1, J x = b_bidual n := hb_mem n
@@ -480,11 +478,8 @@ theorem exists_basic_sequence [CompleteSpace X] (hinf : ¬ FiniteDimensional �
     rw [mem_sphere_zero_iff_norm, h, norm_zero] at this
     exact one_ne_zero this.symm
   -- Use grunblumConstant which is definitionally max(1, basicSequenceConstant)
-  let K := grunblumConstant b_bidual
-  have hK_ge : 1 ≤ K := grunblumConstant_ge_one b_bidual
-  have hK_lt : K < 1 + ε := by
-    simp only [K, grunblumConstant, max_lt_iff]
-    exact ⟨by linarith, hb_const⟩
+  let K := b_bidual.basicSequenceConstant
+  have hK_lt : K < 1 + ε := hb_const
   -- The Grünblum condition for seq with constant K
   have hK_bound_seq : ∀ (n m : ℕ) (a : ℕ → 𝕜), m ≤ n →
       ‖∑ i ∈ Finset.range m, a i • seq i‖ ≤ K * ‖∑ i ∈ Finset.range n, a i • seq i‖ := by
@@ -499,15 +494,15 @@ theorem exists_basic_sequence [CompleteSpace X] (hinf : ¬ FiniteDimensional �
       _ = ‖J (∑ i ∈ Finset.range m, a i • seq i)‖ := (hJ_norm _).symm
       _ = ‖∑ i ∈ Finset.range m, a i • b_bidual i‖ := by rw [h_J_sum]
       _ ≤ K * ‖∑ i ∈ Finset.range n, a i • b_bidual i‖ :=
-          grunblum_bound_of_basic b_bidual hb_bound n m a hmn
+          basicSequence_satisfiesGrunblum b_bidual n m a hmn
       _ = K * ‖J (∑ i ∈ Finset.range n, a i • seq i)‖ := by rw [h_J_sum]
       _ = K * ‖∑ i ∈ Finset.range n, a i • seq i‖ := by rw [hJ_norm]
   -- 6. Apply the Grünblum criterion with bound to get a basic sequence
-  obtain ⟨b, hb_eq, _, hb_bound2⟩ := isBasicSequence_of_grunblum_with_bound hK_ge hK_bound_seq h_nz
+  obtain ⟨b, hb_eq, hb_bound2⟩ := isBasicSequence_of_grunblum_with_bound hK_bound_seq h_nz
   use b
   -- 7. Bound the basis constant: basicSequenceConstant b ≤ K < 1 + ε
   calc basicSequenceConstant b
     _ ≤ K := hb_bound2
     _ < 1 + ε := hK_lt
 
-end BasicSequences
+end BasicSequence

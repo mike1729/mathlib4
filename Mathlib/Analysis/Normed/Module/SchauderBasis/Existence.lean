@@ -22,6 +22,8 @@ open Submodule Set WeakDual Metric Filter Topology BasicSequences
 variable {𝕜 : Type*} [RCLike 𝕜]
 variable {X : Type*} [NormedAddCommGroup X] [NormedSpace 𝕜 X]
 
+namespace BasicSequence
+
 /-- Helper lemma: a coordinate functional vanishes on the span of basis elements with larger index.
     This is extracted to reduce elaboration overhead in the main theorem. -/
 private lemma coord_vanish_on_tail_span {E : Type*} [NormedAddCommGroup E] [NormedSpace 𝕜 E]
@@ -217,16 +219,16 @@ private lemma grunblum_bound_transfer_via_isometry {X Y : Type*}
     (b : BasicSequence 𝕜 Y) (h_bound : b.basis.enormProjBound < ⊤) (x : ℕ → X) (J : X →L[𝕜] Y)
     (hJ_iso : ∀ y, ‖J y‖ = ‖y‖) (hx_J : ∀ n, J (x n) = b n)
     (n m : ℕ) (a : ℕ → 𝕜) (hmn : m ≤ n) :
-    ‖∑ i ∈ Finset.range m, a i • x i‖ ≤ grunblumConstant b * ‖∑ i ∈ Finset.range n, a i • x i‖ := by
+    ‖∑ i ∈ Finset.range m, a i • x i‖ ≤ b.basicSequenceConstant * ‖∑ i ∈ Finset.range n, a i • x i‖ := by
   have h_sum_eq : ∀ k, J (∑ i ∈ Finset.range k, a i • x i) = ∑ i ∈ Finset.range k, a i • b i := by
     intro k; simp only [map_sum, ContinuousLinearMap.map_smul, hx_J]
   calc ‖∑ i ∈ Finset.range m, a i • x i‖
       = ‖J (∑ i ∈ Finset.range m, a i • x i)‖ := (hJ_iso _).symm
     _ = ‖∑ i ∈ Finset.range m, a i • b i‖ := by rw [h_sum_eq]
-    _ ≤ grunblumConstant b * ‖∑ i ∈ Finset.range n, a i • b i‖ :=
-        grunblum_bound_of_basic b h_bound n m a hmn
-    _ = grunblumConstant b * ‖J (∑ i ∈ Finset.range n, a i • x i)‖ := by rw [h_sum_eq]
-    _ = grunblumConstant b * ‖∑ i ∈ Finset.range n, a i • x i‖ := by rw [hJ_iso]
+    _ ≤ b.basicSequenceConstant * ‖∑ i ∈ Finset.range n, a i • b i‖ :=
+        basicSequence_satisfiesGrunblum b n m a hmn
+    _ = b.basicSequenceConstant * ‖J (∑ i ∈ Finset.range n, a i • x i)‖ := by rw [h_sum_eq]
+    _ = b.basicSequenceConstant * ‖∑ i ∈ Finset.range n, a i • x i‖ := by rw [hJ_iso]
 
 /-- Construct a functional that separates a basic sequence tail from w'.
     Given J : X →L[𝕜] E with closed range, w' ∉ range J, and a sequence e where
@@ -262,7 +264,7 @@ private lemma translated_tail_is_basic {E : Type*} [NormedAddCommGroup E] [Norme
     (f : StrongDual 𝕜 E) (hf_e : ∀ n, f (b (n + N)) = 1) (hf_w : f w' = -1)
     (h_w_notin_span : w' ∉ closure (Submodule.span 𝕜 (Set.range (fun n => b (n + N))))) :
     IsBasicSequence 𝕜 (fun n => b (n + N) + w') := by
-  have he_basic : IsBasicSequence 𝕜 (fun n => b (n + N)) := tail_basic_sequence b h_bound N
+  have he_basic : IsBasicSequence 𝕜 (fun n => b (n + N)) := tail_basic_sequence b N
   obtain ⟨b_tail, hb_tail_eq, hb_tail_bound⟩ := he_basic
   convert perturb_basic_sequence b_tail hb_tail_bound w' f ?_ hf_w ?_ using 1
   · funext n; exact congrArg (· + w') (congrFun hb_tail_eq n).symm
@@ -489,10 +491,9 @@ theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
         have hx_J' : ∀ n, J (x n) = b_s n := fun n => (hx_J n).trans (congrFun hb_s_eq n).symm
         have h_grunblum : ∀ n m (a : ℕ → 𝕜), m ≤ n →
             ‖∑ i ∈ Finset.range m, a i • x i‖ ≤
-            grunblumConstant b_s * ‖∑ i ∈ Finset.range n, a i • x i‖ := fun n m a hmn =>
+            b_s.basicSequenceConstant * ‖∑ i ∈ Finset.range n, a i • x i‖ := fun n m a hmn =>
           grunblum_bound_transfer_via_isometry (X := X) (Y := Xbidual) b_s h_bs_bound x J hJ_iso hx_J' n m a hmn
-        exact isBasicSequence_of_grunblum
-          ⟨grunblumConstant_ge_one b_s, h_grunblum⟩ hx_nz
+        exact isBasicSequence_of_grunblum hx_nz h_grunblum
 
       exact h_no_basic x hx_S hx_basic
 
@@ -500,3 +501,5 @@ theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
     compactness_transfer_from_bidual S S_bidual rfl K rfl h_S_bidual_bounded hK_subset
 
 --
+
+end BasicSequence

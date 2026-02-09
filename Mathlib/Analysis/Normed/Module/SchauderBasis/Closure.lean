@@ -36,7 +36,7 @@ open Submodule Set WeakDual Metric Filter Topology
 variable {𝕜 : Type*} [RCLike 𝕜]
 variable {X : Type*} [NormedAddCommGroup X] [NormedSpace 𝕜 X]
 
-namespace BasicSequences
+namespace BasicSequence
 
 lemma perturb_basic_sequence [CompleteSpace X] (b : BasicSequence 𝕜 X)
     (h_bound : b.basis.enormProjBound < ⊤)
@@ -69,16 +69,15 @@ lemma perturb_basic_sequence [CompleteSpace X] (b : BasicSequence 𝕜 X)
     -- fun h => by simpa [y, hf, hu0, h] using f.map_zero
 
   -- 2. Grünblum Condition
-  obtain ⟨hK_ge, hK⟩ := satisfiesGrunblum b h_bound
-  let K := grunblumConstant b
+  have hK := basicSequence_satisfiesGrunblum b
+  let K := b.basicSequenceConstant
   -- Define the distortion constant C
   let C := 1 + ‖f‖ * ‖u‖
   have hC : 0 ≤ C := add_nonneg zero_le_one (mul_nonneg (norm_nonneg f) (norm_nonneg u))
   have hC_ge_one : 1 ≤ C := le_add_of_nonneg_right (mul_nonneg (norm_nonneg f) (norm_nonneg u))
 
-  refine isBasicSequence_of_grunblum (K := K * C ^ 2)
-    ⟨one_le_mul_of_one_le_of_one_le hK_ge (one_le_pow₀ hC_ge_one),
-    fun n m a hnm ↦ ?_⟩ h_nz
+  refine isBasicSequence_of_grunblum (K := K * C ^ 2) h_nz
+    fun n m a hnm ↦ ?_
   let Y k := ∑ i ∈ Finset.range k, a i • y i
   let E k := ∑ i ∈ Finset.range k, a i • b i
   have h_rel (k) : Y k = E k + f (Y k) • u := by
@@ -108,7 +107,8 @@ lemma perturb_basic_sequence [CompleteSpace X] (b : BasicSequence 𝕜 X)
     _ = C * K * ‖E n‖ := by ring
     _ ≤ C * K * (C * ‖Y n‖) := by
         apply mul_le_mul_of_nonneg_left (h_E_Y n)
-        exact mul_nonneg hC (le_of_lt (lt_of_lt_of_le zero_lt_one hK_ge))
+        exact mul_nonneg hC (zero_le_one.trans (grunblum_const_ge_1 hK h_nz 0))
+
     _ = (K * C ^ 2) * ‖Y n‖ := by ring
 
 /-- If a bounded set S in a Banach space X does not contain a basic sequence,
@@ -228,8 +228,7 @@ theorem no_basic_sequence_implies_zero_not_in_weak_closure [CompleteSpace X]
     exact hb_nz (Subtype.ext h_eq)
 
   -- The Grünblum constant for b_bidual
-  let K := grunblumConstant b_bidual
-  have hK_ge : 1 ≤ K := grunblumConstant_ge_one b_bidual
+  let K := b_bidual.basicSequenceConstant
 
   -- Transfer Grünblum condition from b_bidual to e using J being an isometry
   have hK_bound_e : ∀ (n m : ℕ) (a : ℕ → 𝕜), m ≤ n →
@@ -244,12 +243,12 @@ theorem no_basic_sequence_implies_zero_not_in_weak_closure [CompleteSpace X]
       _ = ‖J (∑ i ∈ Finset.range m, a i • e i)‖ := (hJ_norm _).symm
       _ = ‖∑ i ∈ Finset.range m, a i • b_bidual i‖ := by rw [h_J_sum]
       _ ≤ K * ‖∑ i ∈ Finset.range n, a i • b_bidual i‖ :=
-          grunblum_bound_of_basic b_bidual hb_bound n m a hmn
+          basicSequence_satisfiesGrunblum b_bidual n m a hmn
       _ = K * ‖J (∑ i ∈ Finset.range n, a i • e i)‖ := by rw [h_J_sum]
       _ = K * ‖∑ i ∈ Finset.range n, a i • e i‖ := by rw [hJ_norm]
 
   -- Apply Grünblum criterion
-  exact isBasicSequence_of_grunblum ⟨hK_ge, hK_bound_e⟩ h_nz
+  exact isBasicSequence_of_grunblum h_nz hK_bound_e
 
 
 def SchauderBasis_of_closure [CompleteSpace X] {Y : Submodule 𝕜 X}
@@ -444,4 +443,4 @@ theorem SchauderBasis_of_closure_coe [CompleteSpace X] {Y : Submodule 𝕜 X}
     ⇑(SchauderBasis_of_closure b h_bound) = fun n ↦ ⟨b n, Y.le_topologicalClosure (b n).2⟩ :=
   funext fun n => SchauderBasis_of_closure_apply b h_bound n
 
-end BasicSequences
+end BasicSequence
