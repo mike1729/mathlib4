@@ -189,34 +189,6 @@ private lemma mem_closure_of_zero_in_translated_closure {E : Type*} [NormedAddCo
   rw [← h_y_eq_w]
   exact hy_mem
 
-/-- The inclusion of a normed space into its double dual is an embedding
-    from the weak topology to the weak-star topology. -/
-theorem NormedSpace.inclusionInDoubleDual_isEmbedding_weak
-    (𝕜 : Type*) [RCLike 𝕜] (X : Type*) [NormedAddCommGroup X] [NormedSpace 𝕜 X] :
-    IsEmbedding (fun x : WeakSpace 𝕜 X =>
-      StrongDual.toWeakDual (NormedSpace.inclusionInDoubleDual 𝕜 X x)) := by
-  let J := NormedSpace.inclusionInDoubleDual 𝕜 X
-  let ι := fun x : WeakSpace 𝕜 X => StrongDual.toWeakDual (J x)
-  -- Both topologies are induced by the same family of maps: x ↦ (fun f => f x)
-  -- WeakSpace 𝕜 X: induced by topDualPairing.flip; WeakDual 𝕜 X**: induced by eval
-  -- Composition: (ι x)(f) = (J x)(f) = f(x), so evalWeakDual ∘ ι = evalWeakSpace
-  let evalWeakSpace : WeakSpace 𝕜 X → (StrongDual 𝕜 X → 𝕜) := fun x f => f x
-  let evalWeakDual : WeakDual 𝕜 (StrongDual 𝕜 X) → (StrongDual 𝕜 X → 𝕜) := fun φ f => φ f
-  have h_commute : evalWeakDual ∘ ι = evalWeakSpace := by ext x f; rfl
-  -- Injectivity: J is injective (isometry) and toWeakDual is injective
-  have h_inj : Function.Injective ι := by
-    intro x y hxy
-    simp only [ι] at hxy
-    have h1 : J x = J y := StrongDual.toWeakDual.injective hxy
-    exact (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).injective h1
-  -- Inducing: both topologies are induced from Pi, and evalWeakDual ∘ ι = evalWeakSpace
-  have h_ind : IsInducing ι := by
-    constructor; symm
-    calc TopologicalSpace.induced ι (TopologicalSpace.induced evalWeakDual Pi.topologicalSpace)
-        = TopologicalSpace.induced (evalWeakDual ∘ ι) Pi.topologicalSpace := induced_compose
-      _ = TopologicalSpace.induced evalWeakSpace Pi.topologicalSpace := by rw [h_commute]
-  exact ⟨h_ind, h_inj⟩
-
 /-- The inclusion of a normed space into its double dual is a homeomorphism
     from the weak topology to the weak-star topology on the range. -/
 noncomputable def NormedSpace.inclusionInDoubleDual_homeomorph_weak

@@ -36,6 +36,34 @@ open Submodule Set WeakDual Metric Filter Topology
 variable {𝕜 : Type*} [RCLike 𝕜]
 variable {X : Type*} [NormedAddCommGroup X] [NormedSpace 𝕜 X]
 
+/-- The inclusion of a normed space into its double dual is an embedding
+    from the weak topology to the weak-star topology. -/
+theorem NormedSpace.inclusionInDoubleDual_isEmbedding_weak
+    (𝕜 : Type*) [RCLike 𝕜] (X : Type*) [NormedAddCommGroup X] [NormedSpace 𝕜 X] :
+    IsEmbedding (fun x : WeakSpace 𝕜 X =>
+      StrongDual.toWeakDual (NormedSpace.inclusionInDoubleDual 𝕜 X x)) := by
+  let J := NormedSpace.inclusionInDoubleDual 𝕜 X
+  let ι := fun x : WeakSpace 𝕜 X => StrongDual.toWeakDual (J x)
+  -- Both topologies are induced by the same family of maps: x ↦ (fun f => f x)
+  -- WeakSpace 𝕜 X: induced by topDualPairing.flip; WeakDual 𝕜 X**: induced by eval
+  -- Composition: (ι x)(f) = (J x)(f) = f(x), so evalWeakDual ∘ ι = evalWeakSpace
+  let evalWeakSpace : WeakSpace 𝕜 X → (StrongDual 𝕜 X → 𝕜) := fun x f => f x
+  let evalWeakDual : WeakDual 𝕜 (StrongDual 𝕜 X) → (StrongDual 𝕜 X → 𝕜) := fun φ f => φ f
+  have h_commute : evalWeakDual ∘ ι = evalWeakSpace := by ext x f; rfl
+  -- Injectivity: J is injective (isometry) and toWeakDual is injective
+  have h_inj : Function.Injective ι := by
+    intro x y hxy
+    simp only [ι] at hxy
+    have h1 : J x = J y := StrongDual.toWeakDual.injective hxy
+    exact (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).injective h1
+  -- Inducing: both topologies are induced from Pi, and evalWeakDual ∘ ι = evalWeakSpace
+  have h_ind : IsInducing ι := by
+    constructor; symm
+    calc TopologicalSpace.induced ι (TopologicalSpace.induced evalWeakDual Pi.topologicalSpace)
+        = TopologicalSpace.induced (evalWeakDual ∘ ι) Pi.topologicalSpace := induced_compose
+      _ = TopologicalSpace.induced evalWeakSpace Pi.topologicalSpace := by rw [h_commute]
+  exact ⟨h_ind, h_inj⟩
+
 namespace BasicSequence
 
 lemma perturbBasicSequence [CompleteSpace X] (b : BasicSequence 𝕜 X)
@@ -129,80 +157,26 @@ theorem not_mem_weakClosure_of_no_basicSequence [CompleteSpace X]
   let S' := J '' S
 
   -- 2. Translate the weak closure hypothesis to the bidual's weak* topology.
-  -- The weak topology on X and the weak* topology on X** are both induced by X*.
-  -- A basic weak* neighborhood of 0 in X** is determined by finitely many f ∈ X*.
-  -- The preimage under J of such a neighborhood equals the corresponding weak neighborhood
-  -- of 0 in X.
+  -- The embedding φ : WeakSpace X → WeakDual X** satisfies closure s = φ⁻¹' closure (φ '' s).
   have h_weak_star : (0 : WeakDual 𝕜 (StrongDual 𝕜 X)) ∈ closure (StrongDual.toWeakDual '' S') := by
-    rw [_root_.mem_closure_iff]
-    intro U hU_open hU_zero
-    -- U is open in weak* topology, which is induced from StrongDual 𝕜 X → 𝕜
-    rw [isOpen_induced_iff] at hU_open
-    obtain ⟨V, hV_open, hV_eq⟩ := hU_open
-    have h0V : (fun f => (0 : WeakDual 𝕜 (StrongDual 𝕜 X)) f) ∈ V := by
-      rw [← hV_eq] at hU_zero; exact hU_zero
-    -- V is open in product topology, so contains a basic open set
-    rw [isOpen_pi_iff] at hV_open
-    obtain ⟨F, t, ht_cond, hFt_sub⟩ := hV_open _ h0V
-    -- F is finite set of functionals in X*, t gives open neighborhoods in 𝕜
-    -- Construct corresponding weak neighborhood W of 0 in X
-    -- In WeakSpace 𝕜 X, evaluation at f ∈ X* is continuous (WeakBilin.eval_continuous)
-    let W : Set (WeakSpace 𝕜 X) := ⋂ f ∈ F, {w : WeakSpace 𝕜 X | f ((toWeakSpace 𝕜 X).symm w) ∈ t f}
-    have hW_open : IsOpen W := by
-      apply isOpen_biInter_finset
-      intro f _
-      -- The evaluation map w ↦ f(w) is continuous in the weak topology
-      have hf_cont : Continuous (fun w : WeakSpace 𝕜 X => f ((toWeakSpace 𝕜 X).symm w)) :=
-        WeakBilin.eval_continuous (topDualPairing 𝕜 X).flip f
-      exact (ht_cond f ‹f ∈ F›).1.preimage hf_cont
-    have hW_zero : toWeakSpace 𝕜 X 0 ∈ W := by
-      simp only [W, mem_iInter, mem_setOf, map_zero]
-      intro f hf
-      exact (ht_cond f hf).2
-    -- Since 0 ∈ weak closure of S, W ∩ (toWeakSpace '' S) is nonempty
-    have h_inter : (W ∩ (toWeakSpace 𝕜 X '' S)).Nonempty := by
-      have h_cl := @_root_.mem_closure_iff (WeakSpace 𝕜 X) _
-        (toWeakSpace 𝕜 X 0) (toWeakSpace 𝕜 X '' S)
-      exact h_cl.mp h_no_basic W hW_open hW_zero
-    obtain ⟨w, hwW, x, hxS, hwx⟩ := h_inter
-    -- x ∈ S satisfies: f(x) ∈ t f for all f ∈ F
-    have hx_in_t : ∀ f ∈ F, f x ∈ t f := fun f hf => by
-      have := hwW
-      simp only [W, mem_iInter] at this
-      specialize this f hf
-      simp only [mem_setOf, hwx.symm, LinearEquiv.symm_apply_apply] at this
-      exact this
-    -- Therefore J(x) ∈ U
-    have hJx_U : StrongDual.toWeakDual (J x) ∈ U := by
-      rw [← hV_eq]
-      apply hFt_sub
-      intro f hf
-      change topDualPairing 𝕜 (StrongDual 𝕜 X) (StrongDual.toWeakDual (J x)) f ∈ t f
-      simp only [topDualPairing_apply, StrongDual.coe_toWeakDual, J, NormedSpace.dual_def]
-      exact hx_in_t f hf
-    -- And J(x) ∈ toWeakDual '' S'
-    have hJx_S' : StrongDual.toWeakDual (J x) ∈ StrongDual.toWeakDual '' S' :=
-      ⟨J x, ⟨x, hxS, rfl⟩, rfl⟩
-    exact ⟨StrongDual.toWeakDual (J x), hJx_U, hJx_S'⟩
+    let φ := fun x : WeakSpace 𝕜 X => StrongDual.toWeakDual (J x)
+    have hemb := NormedSpace.inclusionInDoubleDual_isEmbedding_weak 𝕜 X
+    have h_eq : StrongDual.toWeakDual '' S' = φ '' (toWeakSpace 𝕜 X '' S) := by
+      simp only [S', Set.image_image]; rfl
+    rw [h_eq]; rw [hemb.closure_eq_preimage_closure_image] at h_no_basic
+    have h0 : φ (toWeakSpace 𝕜 X 0) = 0 := by simp [φ, map_zero]
+    exact h0 ▸ (Set.mem_preimage.mp h_no_basic)
 
   -- 3. Show 0 is not in the norm closure of S' in the bidual.
-  -- Since J is an isometry, it preserves distances to the origin.
+  -- Since J is an isometry from a complete space, it is a closed embedding.
   have h_norm_S' : (0 : StrongDual 𝕜 (StrongDual 𝕜 X)) ∉ closure S' := by
-    rw [Metric.mem_closure_iff]
-    push_neg
-    -- 0 ∉ closure S means there exists δ > 0 such that S ∩ ball(0, δ) = ∅
-    rw [Metric.mem_closure_iff] at h_norm
-    push_neg at h_norm
-    obtain ⟨δ, hδ_pos, hδ_S⟩ := h_norm
-    use δ, hδ_pos
-    rintro _ ⟨x, hxS, rfl⟩
-    -- J is an isometry: dist(J x, 0) = dist(x, 0)
-    have hJ_iso : ‖J x‖ = ‖x‖ := (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).norm_map x
-    rw [dist_zero_left, hJ_iso, ← dist_zero_left]
-    exact hδ_S x hxS
+    have hce := (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).isometry.isClosedEmbedding
+    rw [show S' = (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)) '' S from rfl,
+      hce.closure_image_eq]
+    exact fun ⟨x, hx, hJx⟩ => h_norm (hce.injective (hJx.trans (map_zero _).symm) ▸ hx)
 
   -- 4. Apply the Selection Principle for Dual Spaces with ε = 1.
-  obtain ⟨b_bidual, hb_mem, -, hb_bound⟩ :=
+  obtain ⟨b_bidual, hb_mem, -⟩ :=
     basic_sequence_selection_dual h_weak_star h_norm_S' zero_lt_one
 
   -- 5. Pull the sequence back to X.
@@ -213,19 +187,11 @@ theorem not_mem_weakClosure_of_no_basicSequence [CompleteSpace X]
   use e, he_S
 
   -- e has nonzero elements (since b_bidual is basic and J is injective)
-  have h_nz : ∀ n, e n ≠ 0 := fun n h_zero => by
-    -- b_bidual.basis is linearly independent, so its elements are nonzero
-    have hb_indep := b_bidual.basis.linearIndependent
-    have hb_nz := hb_indep.ne_zero n
-    -- b_bidual.basis_eq says: b_bidual.basis n = codRestrict b_bidual.toFun ... n
-    -- So (b_bidual.basis n : X**) = b_bidual n
-    have h_eq : (b_bidual.basis n : StrongDual 𝕜 (StrongDual 𝕜 X)) = b_bidual n := by
-      have := congrFun b_bidual.basis_eq n
-      exact congrArg Subtype.val this
-    -- If e n = 0, then J(e n) = 0 = b_bidual n, but b_bidual n ≠ 0
-    rw [← he_eq n, h_zero, map_zero] at h_eq
-    -- h_eq : (b_bidual.basis n : X**) = 0, so b_bidual.basis n = 0 as subtype element
-    exact hb_nz (Subtype.ext h_eq)
+  have hb_nz : ∀ n, b_bidual n ≠ 0 := fun n h =>
+    b_bidual.basis.linearIndependent.ne_zero n
+      (Subtype.ext ((congrArg Subtype.val (congrFun b_bidual.basis_eq n)).trans h))
+  have h_nz : ∀ n, e n ≠ 0 := fun n h =>
+    hb_nz n (by rw [← he_eq n, h, map_zero])
 
   -- The Grünblum constant for b_bidual
   let K := b_bidual.basicSequenceConstant
