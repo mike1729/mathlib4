@@ -47,34 +47,26 @@ lemma perturbation_finite_dimensional {S : Set (StrongDual 𝕜 X)}
     (hefind : FiniteDimensional 𝕜 E)
     {ε : ℝ} (hε : 0 < ε) :
     ∃ x ∈ S, ∀ (e : E) (c : 𝕜), ‖(e : StrongDual 𝕜 X) + c • x‖ ≥ (1 - ε) * ‖e‖ := by
-  -- 0. Handle trivial ε case
+  -- 0. S is nonempty (0 is in the closure of its image)
+  have hS_nonempty : S.Nonempty := by
+    by_contra h; rw [Set.not_nonempty_iff_eq_empty] at h; simp [h] at h_weak_star
+  -- Handle trivial ε case: if ε ≥ 1, any x ∈ S works since (1-ε) ≤ 0
   rcases le_or_gt 1 ε with hε1 | hε1
-  · -- If ε ≥ 1, any x ∈ S works
-    obtain ⟨-, -, x, hxS, -⟩ := mem_closure_iff.mp h_weak_star _ isOpen_univ trivial
-    use x, hxS
-    intro e c
-    -- Since ε ≥ 1, (1-ε) ≤ 0. The inequality holds trivially as LHS ≥ 0 and RHS ≤ 0.
-    refine le_trans ?_ (norm_nonneg _)
-    apply mul_nonpos_of_nonpos_of_nonneg
-    · linarith [hε1]
-    · exact norm_nonneg _
-
+  · obtain ⟨x, hxS⟩ := hS_nonempty
+    exact ⟨x, hxS, fun e c => le_trans
+      (mul_nonpos_of_nonpos_of_nonneg (by linarith) (norm_nonneg _)) (norm_nonneg _)⟩
   -- 1. Setup constants based on distance to S
-  obtain ⟨δ, hδ, hδS⟩ := Metric.exists_real_pos_lt_infEDist_of_notMem_closure h_norm
+  let δ := Metric.infDist (0 : StrongDual 𝕜 X) S
+  have hδ : 0 < δ := (Metric.infDist_pos_iff_notMem_closure hS_nonempty).mp h_norm
   let M := 2 / δ
   let γ := ε * δ / 4
-
-  have h_norm_S : ∀ x ∈ S, δ ≤ ‖x‖ := by
-    intro x hx
-    have : ENNReal.ofReal δ < edist (0 : StrongDual 𝕜 X) x :=
-      lt_of_lt_of_le hδS (Metric.infEDist_le_edist_of_mem hx)
-    rw [edist_dist, dist_zero_left] at this
-    exact (ENNReal.ofReal_le_ofReal_iff (norm_nonneg x)).mp this.le
+  have h_norm_S : ∀ x ∈ S, δ ≤ ‖x‖ := fun x hx =>
+    (Metric.infDist_le_dist_of_mem hx).trans_eq (dist_zero_left x)
   -- 2. Use compactness of the sphere in E to find a finite "test set" F ⊂ X
   let sphere := Metric.sphere (0 : E) 1
   -- Define the open sets covering the sphere, indexed by the unit ball of vectors X.
-  let U (v : {v : X // ‖v‖ ≤ 1}) : Set E := {e | 1 - ε / 2 < ‖(e : StrongDual 𝕜 X) v‖}
-
+  let U (v : {v : X // ‖v‖ ≤ 1}) : Set E :=
+    {e | 1 - ε / 2 < ‖(e : StrongDual 𝕜 X) v‖}
   have h_cover : sphere ⊆ ⋃ v, U v := by
     intro e he
     rw [mem_sphere_zero_iff_norm] at he
@@ -83,17 +75,15 @@ lemma perturbation_finite_dimensional {S : Set (StrongDual 𝕜 X)}
       rw [norm_coe, he]
       linarith
     -- Find a vector v with ||v|| ≤ 1 that "witnesses" the norm of e
-    obtain ⟨v, hv, hv_val⟩ := ContinuousLinearMap.exists_lt_apply_of_lt_opNorm (e : StrongDual 𝕜 X) h_lt
+    obtain ⟨v, hv, hv_val⟩ :=
+      ContinuousLinearMap.exists_lt_apply_of_lt_opNorm (e : StrongDual 𝕜 X) h_lt
     exact Set.mem_iUnion.mpr ⟨⟨v, hv.le⟩, hv_val⟩
-
   have h_open (v : {v : X // ‖v‖ ≤ 1}) : IsOpen (U v) := by
     have : Continuous fun (e : E) => (e : StrongDual 𝕜 X) v.val :=
       (ContinuousLinearMap.apply 𝕜 𝕜 v.val).continuous.comp continuous_subtype_val
     exact isOpen_Ioi.preimage (Continuous.norm this)
-
   -- Extract finite subcover
   obtain ⟨F, hF_cover⟩ := (isCompact_sphere (0 : E) 1).elim_finite_subcover U h_open h_cover
-
   -- 3. Find perturbation x ∈ S small on F (using weak* closure)
   let W := {w : WeakDual 𝕜 X | ∀ v ∈ F, ‖w v‖ < γ}
   have hW_open : IsOpen W := by
@@ -104,17 +94,11 @@ lemma perturbation_finite_dimensional {S : Set (StrongDual 𝕜 X)}
   have hγ : 0 < γ := by
     dsimp [γ]
     nlinarith [hε, hδ]
-
-  have hW0 : (0 : WeakDual 𝕜 X) ∈ W := by
-    simp only [W, Set.mem_setOf_eq]
-    intro v _
-    rw [ContinuousLinearMap.zero_apply, norm_zero]
-    exact hγ
-
+  have hW0 : (0 : WeakDual 𝕜 X) ∈ W := fun _ _ => by
+    rw [ContinuousLinearMap.zero_apply, norm_zero]; exact hγ
   -- Use weak-star density to find x ∈ S that is small on F
   obtain ⟨_, hwW, ⟨x, hxS, rfl⟩⟩ : ∃ w ∈ W, ∃ x ∈ S, StrongDual.toWeakDual x = w :=
       (_root_.mem_closure_iff).mp h_weak_star W hW_open hW0
-
   -- 4. Verify the inequality
   refine ⟨x, hxS, fun e c ↦ ?_⟩
   rcases eq_or_ne e 0 with rfl | he_ne; · simp [norm_nonneg]
@@ -122,7 +106,6 @@ lemma perturbation_finite_dimensional {S : Set (StrongDual 𝕜 X)}
   let e_norm := ‖e‖
   let e' : E := (e_norm⁻¹ : 𝕜) • e
   have he'_norm : ‖e'‖ = 1 := norm_smul_inv_norm he_ne
-
   -- Main estimate logic
   have estimate : ‖e'  + (e_norm⁻¹ * c) • x‖ ≥ 1 - ε := by
     let c' := e_norm⁻¹ * c
@@ -133,14 +116,11 @@ lemma perturbation_finite_dimensional {S : Set (StrongDual 𝕜 X)}
         _ ≥ ‖c' • x‖ - ‖(e' : StrongDual 𝕜 X)‖  := norm_sub_le_norm_add _ _
         _ = ‖c'‖ * ‖x‖ - 1                      := by rw [norm_smul, norm_coe, he'_norm]
         _ ≥ M * δ - 1                           := by gcongr; exact h_norm_S x hxS
-        _ = (2 / δ) * δ - 1                     := rfl
-        _ = 1                                   := by field_simp [hδ]; ring
-        _ ≥ 1 - ε                               := by linarith
+        _ ≥ 1 - ε                               := by dsimp [M]; field_simp [hδ.ne']; nlinarith
     · -- Case 2: c' is small, e dominates
       obtain this := hF_cover (mem_sphere_zero_iff_norm.mpr he'_norm)
       rw [Set.mem_iUnion₂] at this
       obtain ⟨v, hvF, hv_lower⟩ := this
-
       calc ‖e' + c' • x‖
         _ ≥ ‖(e' + c' • x) v‖               := ContinuousLinearMap.unit_le_opNorm _ _ v.property
         _ = ‖(e' : StrongDual 𝕜 X) v + (c' • x) v‖          := by simp only
@@ -152,30 +132,14 @@ lemma perturbation_finite_dimensional {S : Set (StrongDual 𝕜 X)}
             gcongr
             exact hv_lower.le
         _ = 1 - ε                        := by dsimp [M, γ]; field_simp [hδ.ne']; ring
-
-  -- Reconstruct for original e and c
+  -- Reconstruct for original e and c: factor out ‖e‖
   have h_norm_ne : (e_norm : 𝕜) ≠ 0 := RCLike.ofReal_ne_zero.mpr (norm_ne_zero_iff.mpr he_ne)
-  -- Key: e = e_norm • e' and c = e_norm * (e_norm⁻¹ * c)
-  have he_eq : (e : StrongDual 𝕜 X) = (e_norm : 𝕜) • (e' : StrongDual 𝕜 X) := by
-    simp only [e', Submodule.coe_smul, smul_smul, mul_inv_cancel₀ h_norm_ne, one_smul]
-  have hc_eq : c = (e_norm : 𝕜) * ((e_norm⁻¹ : 𝕜) * c) := by
-    rw [← mul_assoc, mul_inv_cancel₀ h_norm_ne, one_mul]
-  calc ‖(e : StrongDual 𝕜 X) + c • x‖
-    _ = ‖(e_norm : 𝕜) • (e' : StrongDual 𝕜 X) + ((e_norm : 𝕜) * ((e_norm⁻¹ : 𝕜) * c)) • x‖ := by
-      conv_lhs => rw [he_eq, hc_eq]
-    _ = ‖(e_norm : 𝕜) • ((e' : StrongDual 𝕜 X) + ((e_norm⁻¹ : 𝕜) * c) • x)‖ := by
-      rw [smul_add, smul_smul]
-    _ = ‖(e_norm : 𝕜)‖ * ‖(e' : StrongDual 𝕜 X) + ((e_norm⁻¹ : 𝕜) * c) • x‖ := by
-      rw [norm_smul]
-    _ = ‖e‖ * ‖(e' : StrongDual 𝕜 X) + ((e_norm⁻¹ : 𝕜) * c) • x‖ := by
-      simp only [e_norm, RCLike.norm_ofReal, abs_norm]
-    _ ≥ ‖e‖ * (1 - ε) := by
-      gcongr
-      -- estimate uses (↑(e_norm⁻¹) * c), but here we have ((↑e_norm)⁻¹ * c)
-      -- These are equal by RCLike.ofReal_inv
-      rw [← RCLike.ofReal_inv]
-      exact estimate
-    _ = (1 - ε) * ‖e‖ := mul_comm _ _
+  have hfactor : (e : StrongDual 𝕜 X) + c • x =
+      (e_norm : 𝕜) • ((e' : StrongDual 𝕜 X) + ((e_norm⁻¹ : 𝕜) * c) • x) := by
+    simp only [e', smul_add, Submodule.coe_smul, smul_smul,
+      mul_inv_cancel₀ h_norm_ne, one_smul, ← mul_assoc, one_mul]
+  rw [ge_iff_le, hfactor, norm_smul, RCLike.norm_ofReal, abs_norm, mul_comm (1 - ε)]
+  gcongr; rw [← RCLike.ofReal_inv]; exact estimate.le
 
 theorem basic_sequence_selection_dual {S : Set (StrongDual 𝕜 X)}
     (h_weak_star : (0 : WeakDual 𝕜 X) ∈ closure (StrongDual.toWeakDual '' S))
@@ -193,18 +157,10 @@ theorem basic_sequence_selection_dual {S : Set (StrongDual 𝕜 X)}
     have hp' : 0 < (1 / 2 : ℝ) ^ n := pow_pos (by norm_num) n
     constructor <;> { dsimp [u]; nlinarith }
   have hδ_pos : ∀ n, 0 < δ n := fun n ↦ by
-    have hp_n1 : (1 / 2 : ℝ) ^ (n + 1) ≤ 1 := pow_le_one₀ (by norm_num) (by norm_num)
-    have hpos_un1 : 0 < u (n + 1) := by nlinarith [(hu (n + 1)).1]
-    dsimp [δ, u]
-    rw [sub_pos, div_lt_one hpos_un1]
-    have hp' : 0 < (1 / 2 : ℝ) ^ n := pow_pos (by norm_num) n
-    have : (1 / 2 : ℝ) ^ (n + 1) = (1 / 2) * (1 / 2 : ℝ) ^ n := by ring
-    have hpow_lt : (1 / 2 : ℝ) ^ (n + 1) < (1 / 2 : ℝ) ^ n := by
-      rw [this]
-      have : (1/2 : ℝ) * (1/2)^n < 1 * (1/2)^n := by nlinarith
-      linarith
-    simp only [u]
-    nlinarith [hε, hpow_lt]
+    have hp : 0 < (1 / 2 : ℝ) ^ n := pow_pos (by norm_num) n
+    dsimp [δ, u]; rw [sub_pos, div_lt_one (by nlinarith [(hu (n + 1)).1])]
+    nlinarith [show (1 / 2 : ℝ) ^ (n + 1) = 1 / 2 * (1 / 2) ^ n from by ring]
+  have hu_pos : ∀ k, 0 < u k := fun k => lt_of_lt_of_le (by linarith) (hu k).1
   -- 2. Construct the sequence `f` via strong recursion.
   let f : ℕ → StrongDual 𝕜 X := fun n => Nat.strongRecOn n (fun k prev ↦
     let E := Submodule.span 𝕜 (Set.range (fun i : Fin k ↦ prev i i.isLt))
@@ -214,15 +170,11 @@ theorem basic_sequence_selection_dual {S : Set (StrongDual 𝕜 X)}
   have hf_spec (n : ℕ) :
       f n ∈ S ∧ ∀ (e : Submodule.span 𝕜 (Set.range (fun i : Fin n ↦ f i))) (c : 𝕜),
         (1 - δ n) * ‖e‖ ≤ ‖(e : StrongDual 𝕜 X) + c • f n‖ := by
-    -- Rewriting `f n` definition to match the `prev` in recursion
-    have hfn : f n = Classical.choose (perturbation_finite_dimensional h_weak_star h_norm
-        (Submodule.span 𝕜 (Set.range (fun i : Fin n ↦ f i)))
-        (FiniteDimensional.span_of_finite 𝕜 (Set.finite_range _)) (hδ_pos n)) := by
-      unfold f; rw [Nat.strongRecOn_eq]
-    rw [hfn]
-    exact Classical.choose_spec (perturbation_finite_dimensional h_weak_star h_norm
-        (Submodule.span 𝕜 (Set.range (fun i : Fin n ↦ f i)))
-        (FiniteDimensional.span_of_finite 𝕜 (Set.finite_range _)) (hδ_pos n))
+    let P := perturbation_finite_dimensional h_weak_star h_norm
+      (Submodule.span 𝕜 (Set.range (fun i : Fin n ↦ f i)))
+      (FiniteDimensional.span_of_finite 𝕜 (Set.finite_range _)) (hδ_pos n)
+    have hfn : f n = Classical.choose P := by unfold f; rw [Nat.strongRecOn_eq]
+    rw [hfn]; exact Classical.choose_spec P
   -- 4. Prove the Grünblum condition via telescoping product.
   -- Keep the explicit bound with K = 1 + ε for later use
   have h_grunblum_bound : ∀ n m (a : ℕ → 𝕜), m ≤ n →
@@ -237,16 +189,13 @@ theorem basic_sequence_selection_dual {S : Set (StrongDual 𝕜 X)}
       have h := (hf_spec k).2 e (a k)
       simp only [e, S] at h
       have h1δ : 0 < 1 - δ k := by
-        simp only [δ, sub_sub_cancel]
-        exact div_pos (lt_of_lt_of_le (by linarith) (hu k).1)
-          (lt_of_lt_of_le (by linarith) (hu (k+1)).1)
+        simp only [δ, sub_sub_cancel]; exact div_pos (hu_pos k) (hu_pos (k+1))
       rw [le_inv_mul_iff₀ h1δ]
       calc (1 - δ k) * ‖S k‖ ≤ ‖S k + a k • f k‖ := h
         _ = ‖S (k + 1)‖ := by simp only [S, Finset.sum_range_succ]
     -- The key bound: ‖S m‖ ≤ (1 + ε) * ‖S n‖ via telescoping product
     -- Each step gives ‖S k‖ ≤ (1 - δ k)⁻¹ * ‖S (k+1)‖
     -- Product of (1 - δ k)⁻¹ from m to n-1 equals u n / u m ≤ (1 + ε)
-    have hu_pos : ∀ k, 0 < u k := fun k => lt_of_lt_of_le (by linarith) (hu k).1
     -- Key identity: (1 - δ k)⁻¹ = u (k+1) / u k
     have h_inv : ∀ k, (1 - δ k)⁻¹ = u (k + 1) / u k := fun k => by
       simp only [δ, sub_sub_cancel]; rw [inv_div]
@@ -256,34 +205,27 @@ theorem basic_sequence_selection_dual {S : Set (StrongDual 𝕜 X)}
       induction d with
       | zero => simp [(hu_pos m).ne']
       | succ d ih =>
-        have h_step' : ∀ k < m + d, ‖S k‖ ≤ (1 - δ k)⁻¹ * ‖S (k + 1)‖ :=
-          fun k hk => h_step k (Nat.lt_add_right 1 hk)
-        calc ‖S m‖ ≤ (u (m + d) / u m) * ‖S (m + d)‖ := ih (Nat.le_add_right m d) h_step'
+        calc ‖S m‖
+          _ ≤ (u (m + d) / u m) * ‖S (m + d)‖ :=
+              ih (Nat.le_add_right m d) (fun k hk => h_step k (Nat.lt_add_right 1 hk))
           _ ≤ (u (m + d) / u m) * ((1 - δ (m + d))⁻¹ * ‖S (m + d + 1)‖) := by
               gcongr
-              · exact div_nonneg (le_of_lt (hu_pos _)) (le_of_lt (hu_pos _))
+              · exact div_nonneg (hu_pos _).le (hu_pos _).le
               · exact h_step (m + d) (by omega)
-          _ = (u (m + d) / u m) * (u (m + d + 1) / u (m + d)) * ‖S (m + d + 1)‖ := by
-              rw [h_inv]; ring
           _ = (u (m + (d + 1)) / u m) * ‖S (m + (d + 1))‖ := by
-              rw [show m + d + 1 = m + (d + 1) by ring]
+              rw [h_inv, show m + d + 1 = m + (d + 1) from by ring]
               field_simp [(hu_pos _).ne']
     -- Finally bound u n / u m ≤ (1 + ε)
     calc ‖S m‖ ≤ (u n / u m) * ‖S n‖ := h_chain
       _ ≤ (1 + ε) * ‖S n‖ := by
-          gcongr
-          calc u n / u m
-            _ ≤ u n := div_le_self (le_of_lt (hu_pos n)) (hu m).1
-            _ ≤ 1 + ε := le_of_lt (hu n).2
-  -- Package into SatisfiesGrunblumCondition for isBasicSequence_of_grunblum
-  have h_grunblum : SatisfiesGrunblumCondition 𝕜 f (1 + ε) := h_grunblum_bound
+          gcongr; exact (div_le_self (hu_pos n).le (hu m).1).trans (hu n).2.le
   -- 5. Final assembly.
   have h_nz n : f n ≠ 0 := by
     intro hfn
     apply h_norm
     rw [← hfn]
     exact subset_closure (hf_spec n).1
-  obtain ⟨b, hb, hbound⟩ := isBasicSequence_of_grunblum_with_bound h_grunblum h_nz
+  obtain ⟨b, hb, hbound⟩ := isBasicSequence_of_grunblum_with_bound h_grunblum_bound h_nz
   refine ⟨b, ?_, hbound⟩
   intro n
   rw [show b n = f n from congrFun hb n]
@@ -305,10 +247,8 @@ lemma weak_closure_sphere_contains_zero (hinf : ¬ FiniteDimensional 𝕜 X) :
   -- So there exists V open in (StrongDual 𝕜 X → 𝕜) with U = preimage of V
   rw [isOpen_induced_iff] at hU_open
   obtain ⟨V, hV_open, hV_eq⟩ := hU_open
-  -- 0 ∈ U means the zero functional is in the preimage
   have h0V : (fun f => (0 : WeakDual 𝕜 (StrongDual 𝕜 X)) f) ∈ V := by
-    rw [← hV_eq] at hU_zero
-    exact hU_zero
+    rw [← hV_eq] at hU_zero; exact hU_zero
   -- V is open in the product topology, so it contains a basic open neighborhood of 0
   -- Basic open sets in the product topology are determined by finitely many coordinates
   rw [isOpen_pi_iff] at hV_open
@@ -324,42 +264,24 @@ lemma weak_closure_sphere_contains_zero (hinf : ¬ FiniteDimensional 𝕜 X) :
     -- If K = ⊥, then the map x ↦ (f(x))_{f ∈ F} is injective
     -- This gives an embedding X ↪ 𝕜^F, contradicting infinite-dimensionality
     have : FiniteDimensional 𝕜 X := by
-      have hfin : FiniteDimensional 𝕜 (F → 𝕜) := inferInstance
-      -- Define a linear map from X to F → 𝕜
-      let φ : X →ₗ[𝕜] (F → 𝕜) := {
-        toFun := fun x f => (f : StrongDual 𝕜 X) x
-        map_add' := fun x y => by ext f; simp [map_add]
-        map_smul' := fun c x => by ext f; simp [map_smul]
-      }
+      let φ := LinearMap.pi (fun (f : F) => (f : StrongDual 𝕜 X).toLinearMap)
       apply Module.Finite.of_injective φ
       intro x y hxy
-      simp only [LinearMap.coe_mk, AddHom.coe_mk, funext_iff] at hxy
+      simp only [funext_iff] at hxy
       have hmem : x - y ∈ K := by
-        rw [Submodule.mem_iInf]
-        intro f
-        rw [Submodule.mem_iInf]
-        intro hf
-        rw [LinearMap.mem_ker, map_sub, sub_eq_zero]
-        exact hxy ⟨f, hf⟩
+        simp only [K, Submodule.mem_iInf, LinearMap.mem_ker, map_sub, sub_eq_zero]
+        exact fun f hf => hxy ⟨f, hf⟩
       rw [h_bot, Submodule.mem_bot] at hmem
       exact sub_eq_zero.mp hmem
     exact hinf this
   -- Pick nonzero v ∈ K and normalize to unit sphere
   obtain ⟨v, hvK, hv_ne⟩ := Submodule.exists_mem_ne_zero_of_ne_bot hK_nontrivial
   let x := (‖v‖⁻¹ : 𝕜) • v
-  have hx_norm : ‖x‖ = 1 := by
-    rw [norm_smul]
-    have : ‖(‖v‖ : 𝕜)⁻¹‖ = ‖v‖⁻¹ := by
-      rw [norm_inv, RCLike.norm_ofReal, abs_norm]
-    rw [this, inv_mul_cancel₀ (norm_ne_zero_iff.mpr hv_ne)]
+  have hx_norm : ‖x‖ = 1 := norm_smul_inv_norm hv_ne
   have hx_K : x ∈ K := K.smul_mem _ hvK
   -- x satisfies f(x) = 0 for all f ∈ F
-  have h_vanish : ∀ f ∈ F, (f : StrongDual 𝕜 X) x = 0 := fun f hf => by
-    have hmem : x ∈ K := hx_K
-    rw [Submodule.mem_iInf] at hmem
-    have := hmem f
-    rw [Submodule.mem_iInf] at this
-    exact LinearMap.mem_ker.mp (this hf)
+  have h_vanish : ∀ f ∈ F, (f : StrongDual 𝕜 X) x = 0 := fun f hf =>
+    LinearMap.mem_ker.mp ((Submodule.mem_iInf _).mp ((Submodule.mem_iInf _).mp hx_K f) hf)
   -- J(x) is in the set S (image of the sphere)
   have hJx_S : StrongDual.toWeakDual (J x) ∈ S :=
     ⟨J x, ⟨x, mem_sphere_zero_iff_norm.mpr hx_norm, rfl⟩, rfl⟩
@@ -370,9 +292,7 @@ lemma weak_closure_sphere_contains_zero (hinf : ¬ FiniteDimensional 𝕜 X) :
     intro f hf
     -- topDualPairing evaluates the double dual at a functional
     change topDualPairing 𝕜 (StrongDual 𝕜 X) (StrongDual.toWeakDual (J x)) f ∈ t f
-    simp only [topDualPairing_apply, StrongDual.coe_toWeakDual]
-    -- J x evaluates to f x by definition (dual_def)
-    simp only [J, NormedSpace.dual_def]
+    simp only [topDualPairing_apply, StrongDual.coe_toWeakDual, J, NormedSpace.dual_def]
     rw [h_vanish f hf]
     -- 0 ∈ t f because the zero functional evaluates to 0 there
     exact (ht_cond f hf).2
