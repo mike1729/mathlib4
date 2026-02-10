@@ -95,7 +95,6 @@ lemma perturbBasicSequence [CompleteSpace X] (b : BasicSequence 𝕜 X)
     have h_val : f (y n) = 1 := by simp [y, f.map_add, hf', hu0]
     rw [h_zero, f.map_zero] at h_val
     exact zero_ne_one h_val
-    -- fun h => by simpa [y, hf, hu0, h] using f.map_zero
 
   -- 2. Grünblum Condition
   have hK := basicSequence_satisfiesGrunblum b
@@ -103,7 +102,6 @@ lemma perturbBasicSequence [CompleteSpace X] (b : BasicSequence 𝕜 X)
   -- Define the distortion constant C
   let C := 1 + ‖f‖ * ‖u‖
   have hC : 0 ≤ C := add_nonneg zero_le_one (mul_nonneg (norm_nonneg f) (norm_nonneg u))
-  have hC_ge_one : 1 ≤ C := le_add_of_nonneg_right (mul_nonneg (norm_nonneg f) (norm_nonneg u))
 
   refine isBasicSequence_of_grunblum (K := K * C ^ 2) h_nz
     fun n m a hnm ↦ ?_
@@ -113,31 +111,23 @@ lemma perturbBasicSequence [CompleteSpace X] (b : BasicSequence 𝕜 X)
     simp only [Y, E, y, smul_add, Finset.sum_add_distrib, ← Finset.sum_smul]
     congr 1
     simp only [map_add, map_sum, map_smul, hf', hu0, smul_eq_mul, mul_one, mul_zero, add_zero]
+  have h_pert (v : X) : ‖v‖ + ‖f v • u‖ ≤ C * ‖v‖ := by
+    calc ‖v‖ + ‖f v • u‖ = ‖v‖ + ‖f v‖ * ‖u‖ := by rw [norm_smul]
+      _ ≤ ‖v‖ + ‖f‖ * ‖v‖ * ‖u‖ := by gcongr; exact f.le_opNorm v
+      _ = C * ‖v‖ := by ring
   have h_E_Y (k) : ‖E k‖ ≤ C * ‖Y k‖ := by
-    have hE_eq : E k = Y k - f (Y k) • u := (sub_eq_of_eq_add (h_rel k)).symm
-    calc ‖E k‖
-      _ = ‖Y k - f (Y k) • u‖ := by rw [hE_eq]
-      _ ≤ ‖Y k‖ + ‖f (Y k) • u‖ := norm_sub_le _ _
-      _ = ‖Y k‖ + ‖f (Y k)‖ * ‖u‖ := by rw [norm_smul]
-      _ ≤ ‖Y k‖ + ‖f‖ * ‖Y k‖ * ‖u‖ := by gcongr; exact f.le_opNorm _
-      _ = C * ‖Y k‖ := by ring
+    rw [(sub_eq_of_eq_add (h_rel k)).symm]
+    exact (norm_sub_le _ _).trans (h_pert (Y k))
   have h_Y_E (k) : ‖Y k‖ ≤ C * ‖E k‖ := by
     have hfY_eq : f (Y k) = f (E k) := by
       rw [h_rel k, map_add, map_smul, hu0, smul_zero, add_zero]
-    rw [h_rel k, hfY_eq]
-    calc ‖E k + f (E k) • u‖
-      _ ≤ ‖E k‖ + ‖f (E k) • u‖ := norm_add_le _ _
-      _ = ‖E k‖ + ‖f (E k)‖ * ‖u‖ := by rw [norm_smul]
-      _ ≤ ‖E k‖ + ‖f‖ * ‖E k‖ * ‖u‖ := by gcongr; exact f.le_opNorm _
-      _ = C * ‖E k‖ := by ring
+    rw [h_rel k, hfY_eq]; exact (norm_add_le _ _).trans (h_pert (E k))
   calc ‖Y m‖
     _ ≤ C * ‖E m‖ := h_Y_E m
     _ ≤ C * (K * ‖E n‖) := by gcongr; exact hK n m a hnm
-    _ = C * K * ‖E n‖ := by ring
-    _ ≤ C * K * (C * ‖Y n‖) := by
-        apply mul_le_mul_of_nonneg_left (h_E_Y n)
-        exact mul_nonneg hC (zero_le_one.trans b.basicSequenceConstant_ge_one)
-
+    _ ≤ C * (K * (C * ‖Y n‖)) := by
+        apply mul_le_mul_of_nonneg_left _ hC
+        exact mul_le_mul_of_nonneg_left (h_E_Y n) (zero_le_one.trans b.basicSequenceConstant_ge_one)
     _ = (K * C ^ 2) * ‖Y n‖ := by ring
 
 /-- If a bounded set S in a Banach space X does not contain a basic sequence,
@@ -190,9 +180,8 @@ def schauderBasisOfClosure [CompleteSpace X] {Y : Submodule 𝕜 X}
   haveI : CompleteSpace Z := isClosed_closure.completeSpace_coe
   let ι : Y →L[𝕜] Z := (Submodule.inclusion Y.le_topologicalClosure).mkContinuous 1 (fun y => by
     simp only [one_mul, Submodule.coe_norm, Submodule.coe_inclusion, le_refl])
-  have h_isometry : Isometry ι := fun y₁ y₂ => by
-    simp only [ι, edist_dist, dist_eq_norm]
-    congr 1
+  have h_isometry : Isometry ι :=
+    AddMonoidHomClass.isometry_of_norm ι fun _ => rfl
   -- 2. Verify that ι is a dense uniform embedding
   have h_dense : DenseRange ι := by
     have h_range : Set.range ι = {z : Z | (z : X) ∈ Y} := Set.ext fun z => ⟨
@@ -222,45 +211,38 @@ def schauderBasisOfClosure [CompleteSpace X] {Y : Submodule 𝕜 X}
   have h_uniform : ∀ n, ‖P n‖ ≤ C := by
     intro n
     simp only [P]
-    have h_norm : ∀ x, ‖x‖ = ‖ι x‖ := fun x ↦ h_isometry.norm_map_of_map_zero (map_zero _) x
     refine (ContinuousLinearMap.opNorm_extend_le (ι.comp (b.proj n)) (N := 1) h_dense
-      (fun x ↦ by simp [h_norm])).trans ?_
+      (fun x ↦ by simp [h_isometry.norm_map_of_map_zero (map_zero _)])).trans ?_
     rw [NNReal.coe_one, one_mul]
     calc ‖ι.comp (b.proj n)‖
-        ≤ ‖ι‖ * ‖b.proj n‖ := ContinuousLinearMap.opNorm_comp_le _ _
-      _ ≤ 1 * ‖b.proj n‖ := by gcongr
-      _ = ‖b.proj n‖ := one_mul _
+        ≤ ‖b.proj n‖ := (ContinuousLinearMap.opNorm_comp_le _ _).trans
+          (mul_le_of_le_one_left (norm_nonneg _) h_ι_norm)
       _ ≤ C := by
-        dsimp only [C]
-        exact (ENNReal.ofReal_le_iff_le_toReal h_bound.ne).mp
-          (by simp only [ofReal_norm]; exact b.norm_proj_le_enormProjBound n)
+          dsimp only [C]
+          exact (ENNReal.ofReal_le_iff_le_toReal h_bound.ne).mp
+            (by simp only [ofReal_norm]; exact b.norm_proj_le_enormProjBound n)
   -- 6. Convergence: P n x → x for all x ∈ Z
   have hlim : ∀ x, Filter.Tendsto (fun n ↦ P n x) Filter.atTop (𝓝 x) := by
     intro z
     have h_tendsto_on_Y : ∀ y : Y, Tendsto (fun n => (P n) (ι y)) atTop (𝓝 (ι y)) := fun y => by
       simp_rw [h_agree]; exact ι.continuous.continuousAt.tendsto.comp (b.tendsto_proj y)
     rw [Metric.tendsto_atTop]; intro ε hε
-    have hC1 : C + 1 > 0 := by linarith
-    set δ := ε / (2 * (C + 2)); have hδ_pos : δ > 0 := div_pos hε (by linarith)
+    have hC1_pos : C + 1 > 0 := by linarith
     obtain ⟨_, ⟨y, rfl⟩, h_close⟩ := Metric.mem_closure_iff.mp
-      (h_dense.closure_eq ▸ Set.mem_univ z) δ hδ_pos
+      (h_dense.closure_eq ▸ Set.mem_univ z) (ε / (2 * (C + 1))) (div_pos hε (by linarith))
     obtain ⟨N, hN⟩ := Metric.tendsto_atTop.mp (h_tendsto_on_Y y) (ε / 2) (half_pos hε)
     refine ⟨N, fun n hn => ?_⟩
     have h1 : dist ((P n) z) ((P n) (ι y)) ≤ C * dist z (ι y) := by
       simp only [dist_eq_norm, ← map_sub]
       exact ((P n).le_opNorm _).trans (mul_le_mul_of_nonneg_right (h_uniform n) (norm_nonneg _))
-    have h2 : (C + 1) * δ < ε / 2 := by
-      calc (C + 1) * δ = (C + 1) * ε / (2 * (C + 2)) := by ring
-        _ < (C + 2) * ε / (2 * (C + 2)) := by gcongr; linarith
-        _ = ε / 2 := by field_simp
     calc dist ((P n) z) z
         ≤ dist ((P n) z) ((P n) (ι y)) + dist ((P n) (ι y)) (ι y) + dist (ι y) z :=
-          dist_triangle4 _ _ _ _
-      _ ≤ C * dist z (ι y) + dist ((P n) (ι y)) (ι y) + dist z (ι y) := by
+          dist_triangle4 ..
+      _ ≤ (C + 1) * dist z (ι y) + dist ((P n) (ι y)) (ι y) := by
           rw [dist_comm (ι y)]; linarith [h1]
-      _ = (C + 1) * dist z (ι y) + dist ((P n) (ι y)) (ι y) := by ring
-      _ < (C + 1) * δ + ε / 2 := by linarith [mul_lt_mul_of_pos_left h_close hC1, hN n hn]
-      _ < ε := by linarith [h2]
+      _ < (C + 1) * (ε / (2 * (C + 1))) + ε / 2 :=
+          add_lt_add (mul_lt_mul_of_pos_left h_close hC1_pos) (hN n hn)
+      _ = ε := by field_simp; ring
   -- 7. Extend each coordinate functional from Y to Z
   let coord_ext (n : ℕ) : StrongDual 𝕜 Z := (b.coord n).extend ι
   have h_coord_agree (n : ℕ) (y : Y) : coord_ext n (ι y) = b.coord n y :=
