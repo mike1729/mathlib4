@@ -240,8 +240,6 @@ def schauderBasisOfClosure [CompleteSpace X] {Y : Submodule 𝕜 X}
     rfl
   -- 5. Define the basis sequence in Z (inclusion of original basis)
   let e (n : ℕ) : Z := ι (b n)
-  have hPe : ∀ n i, P n (e i) = if i < n then e i else 0 := fun n i => by
-    simp only [e]; rw [h_agree]; rw [b.proj_basis_element]; split_ifs <;> simp [map_zero]
   have h_ι_norm : ‖ι‖ ≤ 1 :=
     ι.opNorm_le_bound zero_le_one (fun x ↦ by
       simp only [h_isometry.norm_map_of_map_zero (map_zero _), one_mul, le_refl])
@@ -260,58 +258,11 @@ def schauderBasisOfClosure [CompleteSpace X] {Y : Submodule 𝕜 X}
         dsimp only [C]
         exact (ENNReal.ofReal_le_iff_le_toReal h_bound.ne).mp
           (by simp only [ofReal_norm]; exact b.norm_proj_le_enormProjBound n)
-  -- 6. Verify properties required for CanonicalProjectionProperties
-  have h0 : P 0 = 0 := by
-    simp only [P, b.proj_zero, ContinuousLinearMap.comp_zero,
-      ContinuousLinearMap.extend_zero h_dense h_unif]
-  have hdim : ∀ n, Module.finrank 𝕜 (LinearMap.range (P n).toLinearMap) = n := by
-    intro n
-    -- The range of P n equals the span of {e 0, ..., e (n-1)}
-    have h_range_eq : LinearMap.range (P n).toLinearMap =
-        Submodule.span 𝕜 (Set.range (fun i : Fin n => e i)) := by
-      apply le_antisymm
-      · -- Range P n ⊆ span {e i | i < n}
-        intro z hz
-        obtain ⟨w, rfl⟩ := hz
-        -- The span is finite-dimensional, hence closed
-        let S := Submodule.span 𝕜 (Set.range (fun i : Fin n => e i))
-        haveI : FiniteDimensional 𝕜 S := FiniteDimensional.span_of_finite 𝕜 (Set.finite_range _)
-        have hS_closed : IsClosed (S : Set Z) := Submodule.closed_of_finiteDimensional S
-        -- Use density: if property holds on ι(Y) and is closed, it holds on Z
-        have h_P_in_S : ∀ z : Z, (P n) z ∈ S := fun z =>
-          h_dense.induction_on (p := fun z => (P n) z ∈ S) z
-            (hS_closed.preimage (P n).continuous)
-            (fun y => by
-              simp only [S]
-              rw [h_agree, b.proj_apply]
-              simp_rw [map_sum, map_smul]
-              apply Submodule.sum_mem
-              intro i hi
-              have hi' : i < n := Finset.mem_range.mp hi
-              have h_e_mem : e i ∈ Set.range (fun j : Fin n => e j) :=
-                ⟨⟨i, hi'⟩, rfl⟩
-              exact Submodule.smul_mem _ _ (Submodule.subset_span h_e_mem))
-        exact h_P_in_S w
-      · -- span {e i | i < n} ⊆ range(P n)
-        rw [Submodule.span_le]
-        rintro _ ⟨i, rfl⟩
-        exact ⟨e i, by simp [hPe, i.is_lt]⟩
-    rw [h_range_eq, finrank_span_eq_card]
-    · exact Fintype.card_fin n
-    · -- Linear independence of e restricted to Fin n
-      exact (b.linearIndependent.map' (Submodule.inclusion Y.le_topologicalClosure) (by
-          simp only [Submodule.ker_inclusion])).comp
-        (fun (i : Fin n) => (i : ℕ)) Fin.val_injective
-  have hcomp : ∀ n m, ∀ x, P n (P m x) = P (min n m) x := fun n m =>
-    congr_fun (DenseRange.equalizer h_dense ((P n).continuous.comp (P m).continuous)
-      (P (min n m)).continuous (funext fun y => by
-        simp only [Function.comp_apply, h_agree, b.proj_comp]))
+  -- 6. Convergence: P n x → x for all x ∈ Z
   have hlim : ∀ x, Filter.Tendsto (fun n ↦ P n x) Filter.atTop (𝓝 x) := by
     intro z
-    -- Convergence on ι(Y): P n (ι y) → ι y
     have h_tendsto_on_Y : ∀ y : Y, Tendsto (fun n => (P n) (ι y)) atTop (𝓝 (ι y)) := fun y => by
       simp_rw [h_agree]; exact ι.continuous.continuousAt.tendsto.comp (b.tendsto_proj y)
-    -- Extend to Z using density and uniform bounds
     rw [Metric.tendsto_atTop]; intro ε hε
     have hC1 : C + 1 > 0 := by linarith
     set δ := ε / (2 * (C + 2)); have hδ_pos : δ > 0 := div_pos hε (by linarith)
@@ -334,16 +285,31 @@ def schauderBasisOfClosure [CompleteSpace X] {Y : Submodule 𝕜 X}
       _ = (C + 1) * dist z (ι y) + dist ((P n) (ι y)) (ι y) := by ring
       _ < (C + 1) * δ + ε / 2 := by linarith [mul_lt_mul_of_pos_left h_close hC1, hN n hn]
       _ < ε := by linarith [h2]
-  have he_range : ∀ n, e n ∈ LinearMap.range (SchauderBasis.succSub P n).toLinearMap := by
-    intro n
-    use e n
-    simp only [SchauderBasis.succSub, ContinuousLinearMap.coe_sub, ContinuousLinearMap.coe_coe,
-      LinearMap.sub_apply, hPe, Nat.lt_succ_self, ite_true, Nat.lt_irrefl, ite_false, sub_zero]
-  have he_ne : ∀ n, e n ≠ 0 := fun n h => by
-    simp only [e, ← map_zero ι] at h
-    exact b.linearIndependent.ne_zero n (h_isometry.injective h)
-  -- 7. Construct the basis using the projections
-  exact (SchauderBasis.ProjectionData.mk P e h0 hdim hcomp hlim he_range he_ne).basis
+  -- 7. Extend each coordinate functional from Y to Z
+  let coord_ext (n : ℕ) : StrongDual 𝕜 Z := (b.coord n).extend ι
+  have h_coord_agree (n : ℕ) (y : Y) : coord_ext n (ι y) = b.coord n y :=
+    ContinuousLinearMap.extend_eq (b.coord n) h_dense h_unif y
+  -- 8. Partial sums of the extended coords equal the projection operators
+  have h_partial_eq_P (n : ℕ) (z : Z) :
+      ∑ i ∈ Finset.range n, coord_ext i z • e i = P n z :=
+    congr_fun (DenseRange.equalizer h_dense
+      (continuous_finset_sum _ fun i _ => ((coord_ext i).continuous.smul continuous_const))
+      (P n).continuous
+      (funext fun y => by
+        simp only [Function.comp_apply, e]
+        rw [h_agree]
+        simp_rw [b.proj_apply, map_sum, map_smul, h_coord_agree])) z
+  -- 9. Construct the SchauderBasis directly
+  exact {
+    basis := e
+    coord := coord_ext
+    ortho := fun i j => by
+      change coord_ext i (e j) = _
+      simp only [e]; rw [h_coord_agree]; exact b.ortho i j
+    expansion := fun z => by
+      rw [HasSum, SummationFilter.conditional_filter_eq_map_range, Filter.tendsto_map'_iff]
+      exact (hlim z).congr (fun n => (h_partial_eq_P n z).symm)
+  }
 
 /-- The closure basis vectors are the inclusion of the original basis vectors. -/
 @[simp]
