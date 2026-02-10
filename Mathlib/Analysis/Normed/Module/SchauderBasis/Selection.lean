@@ -183,22 +183,19 @@ theorem basic_sequence_selection_dual {S : Set (StrongDual 𝕜 X)}
     {ε : ℝ} (hε : ε > 0) :
     ∃ (b : BasicSequence 𝕜 (StrongDual 𝕜 X)),
       (∀ n, b n ∈ S) ∧
-      b.basicSequenceConstant < 1 + ε := by
+      b.basicSequenceConstant ≤ 1 + ε := by
   -- Use ε/2 in the construction so that the Grünblum constant is 1 + ε/2 < 1 + ε
-  let ε' := ε / 2
-  have hε' : ε' > 0 := by simp only [ε']; linarith
-  have hε'_lt : 1 + ε' < 1 + ε := by simp only [ε']; linarith
   -- 1. Setup control sequence `δ` using a telescoping product `u`.
-  let u (n : ℕ) := 1 + ε' * (1 - (1/2) ^ n)
+  let u (n : ℕ) := 1 + ε * (1 - (1/2) ^ n)
   let δ (n : ℕ) := 1 - u n / u (n + 1)
-  have hu : ∀ n, 1 ≤ u n ∧ u n < 1 + ε' := fun n ↦ by
+  have hu : ∀ n, 1 ≤ u n ∧ u n < 1 + ε := fun n ↦ by
     have hp : (1 / 2 : ℝ) ^ n ≤ 1 := pow_le_one₀ (by norm_num) (by norm_num)
     have hp' : 0 < (1 / 2 : ℝ) ^ n := pow_pos (by norm_num) n
-    constructor <;> { dsimp [u, ε']; nlinarith }
+    constructor <;> { dsimp [u]; nlinarith }
   have hδ_pos : ∀ n, 0 < δ n := fun n ↦ by
     have hp_n1 : (1 / 2 : ℝ) ^ (n + 1) ≤ 1 := pow_le_one₀ (by norm_num) (by norm_num)
     have hpos_un1 : 0 < u (n + 1) := by nlinarith [(hu (n + 1)).1]
-    dsimp [δ, u, ε']
+    dsimp [δ, u]
     rw [sub_pos, div_lt_one hpos_un1]
     have hp' : 0 < (1 / 2 : ℝ) ^ n := pow_pos (by norm_num) n
     have : (1 / 2 : ℝ) ^ (n + 1) = (1 / 2) * (1 / 2 : ℝ) ^ n := by ring
@@ -206,15 +203,13 @@ theorem basic_sequence_selection_dual {S : Set (StrongDual 𝕜 X)}
       rw [this]
       have : (1/2 : ℝ) * (1/2)^n < 1 * (1/2)^n := by nlinarith
       linarith
-    simp only [u, ε']
+    simp only [u]
     nlinarith [hε, hpow_lt]
-
   -- 2. Construct the sequence `f` via strong recursion.
   let f : ℕ → StrongDual 𝕜 X := fun n => Nat.strongRecOn n (fun k prev ↦
     let E := Submodule.span 𝕜 (Set.range (fun i : Fin k ↦ prev i i.isLt))
     Classical.choose (perturbation_finite_dimensional h_weak_star h_norm E
       (FiniteDimensional.span_of_finite 𝕜 (Set.finite_range _)) (hδ_pos k)))
-
   -- 3. Extract properties of `f`.
   have hf_spec (n : ℕ) :
       f n ∈ S ∧ ∀ (e : Submodule.span 𝕜 (Set.range (fun i : Fin n ↦ f i))) (c : 𝕜),
@@ -228,11 +223,10 @@ theorem basic_sequence_selection_dual {S : Set (StrongDual 𝕜 X)}
     exact Classical.choose_spec (perturbation_finite_dimensional h_weak_star h_norm
         (Submodule.span 𝕜 (Set.range (fun i : Fin n ↦ f i)))
         (FiniteDimensional.span_of_finite 𝕜 (Set.finite_range _)) (hδ_pos n))
-
   -- 4. Prove the Grünblum condition via telescoping product.
-  -- Keep the explicit bound with K = 1 + ε' for later use
+  -- Keep the explicit bound with K = 1 + ε for later use
   have h_grunblum_bound : ∀ n m (a : ℕ → 𝕜), m ≤ n →
-      ‖∑ i ∈ Finset.range m, a i • f i‖ ≤ (1 + ε') * ‖∑ i ∈ Finset.range n, a i • f i‖ := by
+      ‖∑ i ∈ Finset.range m, a i • f i‖ ≤ (1 + ε) * ‖∑ i ∈ Finset.range n, a i • f i‖ := by
     intro n m a hnm
     let S (k : ℕ) := ∑ i ∈ Finset.range k, a i • f i
     have h_step (k) (hk : k < n) : ‖S k‖ ≤ (1 - δ k)⁻¹ * ‖S (k + 1)‖ := by
@@ -249,7 +243,6 @@ theorem basic_sequence_selection_dual {S : Set (StrongDual 𝕜 X)}
       rw [le_inv_mul_iff₀ h1δ]
       calc (1 - δ k) * ‖S k‖ ≤ ‖S k + a k • f k‖ := h
         _ = ‖S (k + 1)‖ := by simp only [S, Finset.sum_range_succ]
-
     -- The key bound: ‖S m‖ ≤ (1 + ε) * ‖S n‖ via telescoping product
     -- Each step gives ‖S k‖ ≤ (1 - δ k)⁻¹ * ‖S (k+1)‖
     -- Product of (1 - δ k)⁻¹ from m to n-1 equals u n / u m ≤ (1 + ε)
@@ -275,85 +268,28 @@ theorem basic_sequence_selection_dual {S : Set (StrongDual 𝕜 X)}
           _ = (u (m + (d + 1)) / u m) * ‖S (m + (d + 1))‖ := by
               rw [show m + d + 1 = m + (d + 1) by ring]
               field_simp [(hu_pos _).ne']
-    -- Finally bound u n / u m ≤ (1 + ε')
+    -- Finally bound u n / u m ≤ (1 + ε)
     calc ‖S m‖ ≤ (u n / u m) * ‖S n‖ := h_chain
-      _ ≤ (1 + ε') * ‖S n‖ := by
+      _ ≤ (1 + ε) * ‖S n‖ := by
           gcongr
           calc u n / u m
             _ ≤ u n := div_le_self (le_of_lt (hu_pos n)) (hu m).1
-            _ ≤ 1 + ε' := le_of_lt (hu n).2
+            _ ≤ 1 + ε := le_of_lt (hu n).2
   -- Package into SatisfiesGrunblumCondition for isBasicSequence_of_grunblum
-  have h_grunblum : SatisfiesGrunblumCondition 𝕜 f (1 + ε') := h_grunblum_bound
-
+  have h_grunblum : SatisfiesGrunblumCondition 𝕜 f (1 + ε) := h_grunblum_bound
   -- 5. Final assembly.
   have h_nz n : f n ≠ 0 := by
     intro hfn
     apply h_norm
     rw [← hfn]
     exact subset_closure (hf_spec n).1
+  obtain ⟨b, hb, hbound⟩ := isBasicSequence_of_grunblum_with_bound h_grunblum h_nz
+  refine ⟨b, ?_, hbound⟩
+  intro n
+  rw [show b n = f n from congrFun hb n]
+  exact (hf_spec n).1
 
-  obtain ⟨b, hb⟩ := isBasicSequence_of_grunblum h_nz h_grunblum
-  refine ⟨b, ?_, ?_⟩
-  · -- Show ∀ n, b n ∈ S
-    intro n
-    rw [show b n = f n from congrFun hb n]
-    exact (hf_spec n).1
-  · -- Show basicSequenceConstant b < 1 + ε
-    -- The basisConstant is bounded by the Grünblum constant 1 + ε'
-    -- This follows from the SchauderBasis projection bound
-    have hK_pos : (0 : ℝ) ≤ 1 + ε' := by linarith
-    -- Key: b.basis vectors equal f (via eq_basis)
-    have heq : ∀ i, (b.basis i : StrongDual 𝕜 X) = f i := fun i => by
-      have h1 := congrFun b.basis_eq i
-      rw [← hb]; exact congrArg Subtype.val h1
-    -- The projection bound follows from Grünblum applied to basis expansions
-    have h_proj_bound : ∀ m, ‖b.basis.proj m‖ ≤ 1 + ε' := fun m => by
-      apply ContinuousLinearMap.opNorm_le_bound _ hK_pos
-      intro x
-      rw [SchauderBasis.proj_apply]
-      -- The sum in the subspace has the same norm as its coercion
-      have hsum_coe : ∀ N, ‖∑ i ∈ Finset.range N, (b.basis.coord i) x • b.basis i‖ =
-                          ‖∑ i ∈ Finset.range N, (b.basis.coord i) x • f i‖ := fun N => by
-        rw [← norm_coe, Submodule.coe_sum]
-        congr 1
-        apply Finset.sum_congr rfl; intro i _
-        rw [Submodule.coe_smul, heq]
-      rw [hsum_coe]
-      -- The partial sums converge to x (in the subspace)
-      have hexp := b.basis.expansion x
-      rw [HasSum, SummationFilter.conditional_filter_eq_map_range] at hexp
-      -- Convert to convergence of the coerced sums to x (in the ambient space)
-      have hconv_x : Filter.Tendsto (fun N => ∑ i ∈ Finset.range N, (b.basis.coord i) x • f i)
-                     Filter.atTop (nhds (x : StrongDual 𝕜 X)) := by
-        -- Show functions are equal
-        have hfun_eq :
-            (fun N => ∑ i ∈ Finset.range N, (b.basis.coord i) x • f i) =
-            ((Subtype.val ∘ (fun s => ∑ i ∈ s, (b.basis.coord i) x • b.basis i)) ∘
-              Finset.range) := by
-          funext N
-          simp only [Function.comp_apply, Submodule.coe_sum]
-          apply Finset.sum_congr rfl; intro i _
-          rw [Submodule.coe_smul, heq]
-        rw [hfun_eq]
-        simp only [Filter.Tendsto]
-        exact continuous_subtype_val.continuousAt.tendsto.comp hexp
-      have hconv : Filter.Tendsto
-          (fun N => (1 + ε') * ‖∑ i ∈ Finset.range N, (b.basis.coord i) x • f i‖)
-          Filter.atTop (nhds ((1 + ε') * ‖(x : StrongDual 𝕜 X)‖)) :=
-        hconv_x.norm.const_mul (1 + ε')
-      apply ge_of_tendsto hconv
-      filter_upwards [Filter.eventually_ge_atTop m] with N hN
-      exact h_grunblum_bound N m (fun i => b.basis.coord i x) hN
-    -- Bound enormProjBound
-    calc basicSequenceConstant b
-      _ = b.basis.enormProjBound.toReal := rfl
-      _ ≤ 1 + ε' := by
-          apply ENNReal.toReal_le_of_le_ofReal hK_pos
-          simp only [SchauderBasis.enormProjBound]
-          apply iSup_le; intro n
-          rw [← ENNReal.ofReal_coe_nnreal]
-          exact ENNReal.ofReal_le_ofReal (h_proj_bound n)
-      _ < 1 + ε := hε'_lt
+
 
 lemma weak_closure_sphere_contains_zero (hinf : ¬ FiniteDimensional 𝕜 X) :
     (0 : WeakDual 𝕜 (StrongDual 𝕜 X)) ∈
