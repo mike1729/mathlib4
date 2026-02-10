@@ -136,7 +136,7 @@ lemma perturbBasicSequence [CompleteSpace X] (b : BasicSequence 𝕜 X)
     _ = C * K * ‖E n‖ := by ring
     _ ≤ C * K * (C * ‖Y n‖) := by
         apply mul_le_mul_of_nonneg_left (h_E_Y n)
-        exact mul_nonneg hC (zero_le_one.trans (grunblum_const_ge_1 hK h_nz 0))
+        exact mul_nonneg hC (zero_le_one.trans b.basicSequenceConstant_ge_one)
 
     _ = (K * C ^ 2) * ‖Y n‖ := by ring
 

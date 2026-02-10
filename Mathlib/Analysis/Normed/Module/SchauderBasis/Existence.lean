@@ -70,7 +70,7 @@ private lemma nonzero_not_in_all_tail_closures {E : Type*} [NormedAddCommGroup E
     BasicSequences.schauderBasisOfClosure (Y := Y) b.basis h_bound
   have h_basis_coe : ∀ n, (basis_Z n : E) = b.toFun n := fun n => by
     rw [BasicSequences.schauderBasisOfClosure_apply]
-    exact congrArg Subtype.val (congr_fun b.basis_eq n)
+    exact b.basis_eq n
   -- w_Z ≠ 0 implies some coordinate is nonzero
   have ⟨k, hk_ne⟩ : ∃ k, basis_Z.coord k w_Z ≠ 0 := by
     by_contra! h
