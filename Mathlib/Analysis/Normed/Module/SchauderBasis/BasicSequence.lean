@@ -129,6 +129,11 @@ theorem grunblum_bound_transfer {Y : Type*}
     _ = b.basicSequenceConstant * ‖J (∑ i ∈ Finset.range n, a i • x i)‖ := by rw [h_sum_eq]
     _ = b.basicSequenceConstant * ‖∑ i ∈ Finset.range n, a i • x i‖ := by rw [hJ_iso]
 
+/-- Elements of a basic sequence are nonzero. -/
+lemma ne_zero (b : BasicSequence 𝕜 X) (n : ℕ) : b n ≠ 0 := fun h =>
+  b.basis.linearIndependent.ne_zero n
+    (Subtype.ext ((congrArg Subtype.val (congrFun b.basis_eq n)).trans h))
+
 theorem grunblum_const_ge_1 {e : ℕ → X} {K : ℝ}
     (h : SatisfiesGrunblumCondition 𝕜 e K) (h_nz : ∀ n, e n ≠ 0) : 1 ≤ K := by
   have h0 := h 1 1 (fun _ => 1) le_rfl
@@ -331,7 +336,6 @@ theorem isBasicSequence_of_grunblum [CompleteSpace X] {e : ℕ → X} {K : ℝ} 
   obtain ⟨b, hb_eq, _⟩ := isBasicSequence_of_grunblum_with_bound h h_nz
   exact ⟨b, hb_eq⟩
 
-
 /-- The tail of a basic sequence (starting from index N) is also a basic sequence. -/
 theorem tail_basic_sequence [CompleteSpace X] (bs : BasicSequence 𝕜 X) (N : ℕ) :
     IsBasicSequence 𝕜 (fun n => bs (n + N)) := by
@@ -379,6 +383,33 @@ theorem tail_basic_sequence [CompleteSpace X] (bs : BasicSequence 𝕜 X) (N : �
   rw [h_sum_eq m, h_sum_eq n]
   exact hK_bound (n + N) (m + N) a' (by omega)
 
+/-- Pull back a basic sequence through a norm-preserving linear map.
+    If every element of `b` in `Y` lies in `J '' S` for some set `S ⊆ X`
+    and norm-preserving `J`, then `S` contains a basic sequence with
+    the same basis constant bound. -/
+lemma pullback [CompleteSpace X]
+    {Y : Type*} [NormedAddCommGroup Y] [NormedSpace 𝕜 Y]
+    (b : BasicSequence 𝕜 Y) {S : Set X} (J : X →L[𝕜] Y)
+    (hJ_iso : ∀ y : X, ‖J y‖ = ‖y‖) (hb_mem : ∀ n, b n ∈ J '' S) :
+    ∃ (b' : BasicSequence 𝕜 X), (∀ n, b' n ∈ S) ∧
+      b'.basicSequenceConstant ≤ b.basicSequenceConstant := by
+  choose seq hseq_S hseq_J using hb_mem
+  have h_nz : ∀ n, seq n ≠ 0 := fun n h =>
+    b.ne_zero n (by rw [← hseq_J n, h, map_zero])
+  have h_grunblum : SatisfiesGrunblumCondition 𝕜 seq b.basicSequenceConstant :=
+    fun n m a hmn => b.grunblum_bound_transfer seq J hJ_iso hseq_J n m a hmn
+  obtain ⟨b', hb'_eq, hb'_bound⟩ := isBasicSequence_of_grunblum_with_bound h_grunblum h_nz
+  exact ⟨b', fun n => (congrFun hb'_eq n).symm ▸ hseq_S n, hb'_bound⟩
+
+/-- Pull back through a norm-preserving linear map (predicate version). -/
+lemma IsBasicSequence.pullback [CompleteSpace X]
+    {Y : Type*} [NormedAddCommGroup Y] [NormedSpace 𝕜 Y]
+    {e : ℕ → Y} (he : IsBasicSequence 𝕜 e) {S : Set X} (J : X →L[𝕜] Y)
+    (hJ_iso : ∀ y : X, ‖J y‖ = ‖y‖) (he_mem : ∀ n, e n ∈ J '' S) :
+    ∃ (seq : ℕ → X), (∀ n, seq n ∈ S) ∧ IsBasicSequence 𝕜 seq := by
+  obtain ⟨b, hb_eq⟩ := he
+  obtain ⟨b', hb'_S, _⟩ := b.pullback J hJ_iso (fun n => hb_eq ▸ he_mem n)
+  exact ⟨⇑b', hb'_S, ⟨b', rfl⟩⟩
 
 end BasicSequence
 
@@ -600,19 +631,13 @@ theorem SatisfiesNikolskiiCondition.to_SatisfiesGrunblumCondition {e : ℕ → X
   have hAB : A ⊆ B := Finset.range_subset_range.mpr hmn
   exact h A B a hAB
 
-
-
 end UnconditionalBasicSequence
-
-
-
-
 
 namespace BasicSequence
 
-/-- A continuous linear functional with a lower bound on a set closed under 𝕜-scaling and containing 0
-    must vanish on that set. If u < re(g y) for all y ∈ S, 0 ∈ S, and c • y ∈ S for all c : 𝕜, y ∈ S,
-    then g = 0 on S. -/
+/-- A continuous linear functional with a lower bound on a set closed under 𝕜-scaling and
+  containing 0 must vanish on that set.
+  If u < re(g y) for all y ∈ S, 0 ∈ S, and c • y ∈ S for all c : 𝕜, y ∈ S, then g = 0 on S. -/
 lemma functional_vanishes_on_set_of_bound {E : Type*} [NormedAddCommGroup E] [NormedSpace 𝕜 E]
     {S : Set E} (h0 : (0 : E) ∈ S) (hS_smul : ∀ (c : 𝕜) (y : E), y ∈ S → c • y ∈ S)
     (g : E →L[𝕜] 𝕜) (u : ℝ) (hg_bound : ∀ y ∈ S, u < RCLike.re (g y)) :

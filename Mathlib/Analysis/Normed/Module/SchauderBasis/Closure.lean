@@ -66,6 +66,7 @@ theorem NormedSpace.inclusionInDoubleDual_isEmbedding_weak
 
 namespace BasicSequence
 
+/- -/
 lemma perturbBasicSequence [CompleteSpace X] (b : BasicSequence 𝕜 X)
     (h_bound : b.basis.enormProjBound < ⊤)
     (u : X) (g : StrongDual 𝕜 X)
@@ -151,11 +152,9 @@ theorem not_mem_weakClosure_of_no_basicSequence [CompleteSpace X]
     (0 : X) ∉ closure (toWeakSpace 𝕜 X '' S) := by
   -- We prove the contrapositive: if 0 is in the weak closure, we can find a basic sequence.
   contrapose! h_no_basic
-
   -- 1. Setup the Bidual embedding J : X → X**
   let J := NormedSpace.inclusionInDoubleDual 𝕜 X
   let S' := J '' S
-
   -- 2. Translate the weak closure hypothesis to the bidual's weak* topology.
   -- The embedding φ : WeakSpace X → WeakDual X** satisfies closure s = φ⁻¹' closure (φ '' s).
   have h_weak_star : (0 : WeakDual 𝕜 (StrongDual 𝕜 X)) ∈ closure (StrongDual.toWeakDual '' S') := by
@@ -166,7 +165,6 @@ theorem not_mem_weakClosure_of_no_basicSequence [CompleteSpace X]
     rw [h_eq]; rw [hemb.closure_eq_preimage_closure_image] at h_no_basic
     have h0 : φ (toWeakSpace 𝕜 X 0) = 0 := by simp [φ, map_zero]
     exact h0 ▸ (Set.mem_preimage.mp h_no_basic)
-
   -- 3. Show 0 is not in the norm closure of S' in the bidual.
   -- Since J is an isometry from a complete space, it is a closed embedding.
   have h_norm_S' : (0 : StrongDual 𝕜 (StrongDual 𝕜 X)) ∉ closure S' := by
@@ -174,36 +172,14 @@ theorem not_mem_weakClosure_of_no_basicSequence [CompleteSpace X]
     rw [show S' = (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)) '' S from rfl,
       hce.closure_image_eq]
     exact fun ⟨x, hx, hJx⟩ => h_norm (hce.injective (hJx.trans (map_zero _).symm) ▸ hx)
-
   -- 4. Apply the Selection Principle for Dual Spaces with ε = 1.
   obtain ⟨b_bidual, hb_mem, -⟩ :=
     basic_sequence_selection_dual h_weak_star h_norm_S' zero_lt_one
+  -- 5. Pull the basic sequence back to X using the pullback lemma.
+  have hb_basic : IsBasicSequence 𝕜 ⇑b_bidual := ⟨b_bidual, rfl⟩
+  exact hb_basic.pullback J
+    (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).norm_map hb_mem
 
-  -- 5. Pull the sequence back to X.
-  -- Since b_bidual n ∈ S' = J '' S, there exists x_n ∈ S such that J x_n = b_bidual n.
-  choose e he_S he_eq using hb_mem
-
-  -- 6. Show e is a basic sequence in S using the Grünblum condition.
-  use e, he_S
-
-  -- e has nonzero elements (since b_bidual is basic and J is injective)
-  have hb_nz : ∀ n, b_bidual n ≠ 0 := fun n h =>
-    b_bidual.basis.linearIndependent.ne_zero n
-      (Subtype.ext ((congrArg Subtype.val (congrFun b_bidual.basis_eq n)).trans h))
-  have h_nz : ∀ n, e n ≠ 0 := fun n h =>
-    hb_nz n (by rw [← he_eq n, h, map_zero])
-
-  -- The Grünblum constant for b_bidual
-  let K := b_bidual.basicSequenceConstant
-
-  -- Transfer Grünblum condition from b_bidual to e using J being an isometry
-  have hK_bound_e : ∀ (n m : ℕ) (a : ℕ → 𝕜), m ≤ n →
-      ‖∑ i ∈ Finset.range m, a i • e i‖ ≤ K * ‖∑ i ∈ Finset.range n, a i • e i‖ :=
-    fun n m a hmn => b_bidual.grunblum_bound_transfer e J
-      (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).norm_map he_eq n m a hmn
-
-  -- Apply Grünblum criterion
-  exact isBasicSequence_of_grunblum h_nz hK_bound_e
 
 
 def schauderBasisOfClosure [CompleteSpace X] {Y : Submodule 𝕜 X}

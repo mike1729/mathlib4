@@ -289,11 +289,12 @@ theorem basic_sequence_selection_dual {S : Set (StrongDual 𝕜 X)}
   rw [show b n = f n from congrFun hb n]
   exact (hf_spec n).1
 
-
-
+/- TODO this may be turned into a more general result about the weak* closure
+  of the unit sphere in the bidual (that it's whole unit ball), but for now we
+  just need this specific case until Goldstine theorem is proved. -/
 lemma weak_closure_sphere_contains_zero (hinf : ¬ FiniteDimensional 𝕜 X) :
-    (0 : WeakDual 𝕜 (StrongDual 𝕜 X)) ∈
-    closure (StrongDual.toWeakDual '' (NormedSpace.inclusionInDoubleDual 𝕜 X '' Metric.sphere 0 1)) := by
+    (0 : WeakDual 𝕜 (StrongDual 𝕜 X)) ∈ closure (
+      StrongDual.toWeakDual '' (NormedSpace.inclusionInDoubleDual 𝕜 X '' Metric.sphere 0 1)) := by
   -- Let J be the canonical embedding X → X**
   let J := NormedSpace.inclusionInDoubleDual 𝕜 X
   let S := StrongDual.toWeakDual '' (J '' Metric.sphere 0 1)
@@ -380,7 +381,7 @@ lemma weak_closure_sphere_contains_zero (hinf : ¬ FiniteDimensional 𝕜 X) :
 /-- Corollary 1.5.3: Every infinite-dimensional Banach space contains a basic sequence
     with basis constant arbitrarily close to 1. -/
 theorem exists_basic_sequence [CompleteSpace X] (hinf : ¬ FiniteDimensional 𝕜 X) {ε : ℝ}
-    (hε : 0 < ε) : ∃ (b : BasicSequence 𝕜 X), b.basicSequenceConstant < 1 + ε := by
+    (hε : 0 < ε) : ∃ (b : BasicSequence 𝕜 X), b.basicSequenceConstant ≤ 1 + ε := by
   -- 1. Setup the Embedding J : X → X**
   let J := NormedSpace.inclusionInDoubleDual 𝕜 X
   let S_bidual := J '' (Metric.sphere 0 1)
@@ -400,45 +401,10 @@ theorem exists_basic_sequence [CompleteSpace X] (hinf : ¬ FiniteDimensional �
     rw [dist_zero_left, hJ_iso, mem_sphere_zero_iff_norm.mp hx]
   -- 3. Apply the Dual Selection Principle to get a basic sequence in the bidual X**
   obtain ⟨b_bidual, hb_mem, hb_const⟩ := basic_sequence_selection_dual h_weak h_norm hε
-  -- 4. Pull back the sequence to X using the isometry J
-  -- Each b_bidual n ∈ J '' sphere, so find the preimage
-  have h_preimage (n : ℕ) : ∃ x ∈ Metric.sphere (0 : X) 1, J x = b_bidual n := hb_mem n
-  let seq (n : ℕ) : X := (h_preimage n).choose
-  have h_seq_sphere (n : ℕ) : seq n ∈ Metric.sphere (0 : X) 1 := (h_preimage n).choose_spec.1
-  have h_seq_eq (n : ℕ) : J (seq n) = b_bidual n := (h_preimage n).choose_spec.2
-  -- 5. The sequence (seq n) satisfies the Grünblum condition with the same constant
-  -- Because J is an isometry: ‖∑ aᵢ • seq i‖ = ‖J(∑ aᵢ • seq i)‖ = ‖∑ aᵢ • J(seq i)‖
-  --                                           = ‖∑ aᵢ • b_bidual i‖
-  have h_nz : ∀ n, seq n ≠ 0 := fun n h => by
-    have := h_seq_sphere n
-    rw [mem_sphere_zero_iff_norm, h, norm_zero] at this
-    exact one_ne_zero this.symm
-  -- Use grunblumConstant which is definitionally max(1, basicSequenceConstant)
-  let K := b_bidual.basicSequenceConstant
-  have hK_lt : K < 1 + ε := hb_const
-  -- The Grünblum condition for seq with constant K
-  have hK_bound_seq : ∀ (n m : ℕ) (a : ℕ → 𝕜), m ≤ n →
-      ‖∑ i ∈ Finset.range m, a i • seq i‖ ≤ K * ‖∑ i ∈ Finset.range n, a i • seq i‖ := by
-    intro n m a hmn
-    -- Use that J is an isometry to transfer the inequality
-    have h_J_sum (k : ℕ) : J (∑ i ∈ Finset.range k, a i • seq i) =
-        ∑ i ∈ Finset.range k, a i • b_bidual i := by
-      simp only [map_sum, map_smul, h_seq_eq]
-    have hJ_norm : ∀ y : X, ‖J y‖ = ‖y‖ :=
-      (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).norm_map
-    calc ‖∑ i ∈ Finset.range m, a i • seq i‖
-      _ = ‖J (∑ i ∈ Finset.range m, a i • seq i)‖ := (hJ_norm _).symm
-      _ = ‖∑ i ∈ Finset.range m, a i • b_bidual i‖ := by rw [h_J_sum]
-      _ ≤ K * ‖∑ i ∈ Finset.range n, a i • b_bidual i‖ :=
-          basicSequence_satisfiesGrunblum b_bidual n m a hmn
-      _ = K * ‖J (∑ i ∈ Finset.range n, a i • seq i)‖ := by rw [h_J_sum]
-      _ = K * ‖∑ i ∈ Finset.range n, a i • seq i‖ := by rw [hJ_norm]
-  -- 6. Apply the Grünblum criterion with bound to get a basic sequence
-  obtain ⟨b, hb_eq, hb_bound2⟩ := isBasicSequence_of_grunblum_with_bound hK_bound_seq h_nz
-  use b
-  -- 7. Bound the basis constant: basicSequenceConstant b ≤ K < 1 + ε
-  calc basicSequenceConstant b
-    _ ≤ K := hb_bound2
-    _ < 1 + ε := hK_lt
+  -- 4. Pull back the sequence to X using the pullback lemma
+  obtain ⟨b, _, hb_bound⟩ := b_bidual.pullback J
+    (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).norm_map hb_mem
+  exact ⟨b, hb_bound.trans hb_const⟩
+
 
 end BasicSequence

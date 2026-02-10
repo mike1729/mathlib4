@@ -203,15 +203,6 @@ noncomputable def NormedSpace.inclusionInDoubleDual_homeomorph_weak
   -- The embedding induces the topology, so e is a homeomorphism
   exact e.toHomeomorphOfIsInducing (IsInducing.subtypeVal.of_comp_iff.mp emb.toIsInducing)
 
-/-- Elements of a basic sequence are nonzero because the underlying Schauder basis is linearly
-    independent. Extracted to reduce elaboration overhead in the main theorem. -/
-private lemma basic_sequence_element_nonzero {E : Type*} [NormedAddCommGroup E] [NormedSpace 𝕜 E]
-    (b : BasicSequence 𝕜 E) (n : ℕ) : b n ≠ 0 := fun hb0 => by
-  have h_indep := b.basis.linearIndependent
-  have h_ne := h_indep.ne_zero n
-  have h_basis_val : (b.basis n : E) = b.toFun n :=
-    congrArg Subtype.val (congr_fun b.basis_eq n)
-  exact h_ne (Subtype.ext (h_basis_val.trans hb0))
 
 /-- Construct a functional that separates a basic sequence tail from w'.
     Given J : X →L[𝕜] E with closed range, w' ∉ range J, and a sequence e where
@@ -376,14 +367,11 @@ theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
         rfl
 
       have h_basicS' : ∃ e : ℕ → Xbidual, (∀ n, e n ∈ S') ∧ IsBasicSequence 𝕜 e := by
-        obtain ⟨b, hb_mem, -, hb_bound⟩ := basic_sequence_selection_dual h_weak_starS' h_normS' zero_lt_one
-        use b
-        constructor
-        · exact hb_mem
-        · exact ⟨b, rfl, hb_bound⟩
+        obtain ⟨b, hb_mem, -⟩ := basic_sequence_selection_dual h_weak_starS' h_normS' zero_lt_one
+        exact ⟨⇑b, hb_mem, ⟨b, rfl⟩⟩
 
       obtain ⟨e, he_S', he_basic⟩ := h_basicS'
-      rcases he_basic with ⟨b, rfl, hb_bound⟩
+      rcases he_basic with ⟨b, rfl⟩
       have h_w_span : ∃ N : ℕ, w' ∉ closure (Submodule.span 𝕜 (Set.range (fun n => b (n+N)))) := by
         -- w' ≠ 0 since w ∉ J(X) but 0 = J 0 ∈ J(X)
         have hw_ne : w' ≠ 0 := fun h => hw_not_JX <| by
@@ -391,7 +379,7 @@ theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
           exact ⟨J 0, mem_range_self 0, by simp only [map_zero]⟩
         -- If w' is in closure of all tails, it's in the full closure, contradicting helper
         by_contra h_contra; push_neg at h_contra
-        exact (nonzero_not_in_all_tail_closures b hb_bound w' (by simpa using h_contra 0) hw_ne).elim
+        exact (nonzero_not_in_all_tail_closures b b.basisConstant_lt_top w' (by simpa using h_contra 0) hw_ne).elim
           (fun N hN => hN (h_contra N))
 
 
@@ -422,35 +410,10 @@ theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
 
       -- s = e + w' is basic by the extracted helper lemma
       have h_basicS : IsBasicSequence 𝕜 s :=
-        translated_tail_is_basic (E := Xbidual) b hb_bound N w' f hf_e.1 hf_e.2 h_w_notin_span
+        translated_tail_is_basic (E := Xbidual) b b.basisConstant_lt_top N w' f hf_e.1 hf_e.2 h_w_notin_span
 
-      have h_in_S : ∀ n, s n ∈ S_bidual := hs_in_S_bidual
-
-      --transfer back the basic sequence to S and get a contradiction with h_no_basic
-      -- Since s n ∈ S_bidual = J '' S, there exists x_n ∈ S with J(x_n) = s n
-      have h_preimage : ∀ n, ∃ x ∈ S, J x = s n := fun n => h_in_S n
-
-      let x : ℕ → X := fun n => (h_preimage n).choose
-      have hx_S : ∀ n, x n ∈ S := fun n => (h_preimage n).choose_spec.1
-      have hx_J : ∀ n, J (x n) = s n := fun n => (h_preimage n).choose_spec.2
-
-      -- J is an isometric embedding, so J preserves the Grünblum condition
-      -- If s is basic in Xbidual, then x is basic in X
-      have hx_basic : IsBasicSequence 𝕜 x := by
-        rcases h_basicS with ⟨b_s, hb_s_eq, h_bs_bound⟩
-        -- x n ≠ 0 since s n = J(x n) = b_s n ≠ 0 (by extracted lemma) and J is injective
-        have hx_nz : ∀ n, x n ≠ 0 := fun n hx0 => by
-          have := basic_sequence_element_nonzero (E := Xbidual) b_s n
-          rw [congrFun hb_s_eq n, ← hx_J n, hx0, map_zero] at this
-          exact this rfl
-        -- Transfer Grünblum bound using extracted lemma
-        have hx_J' : ∀ n, J (x n) = b_s n := fun n => (hx_J n).trans (congrFun hb_s_eq n).symm
-        have h_grunblum : ∀ n m (a : ℕ → 𝕜), m ≤ n →
-            ‖∑ i ∈ Finset.range m, a i • x i‖ ≤
-            b_s.basicSequenceConstant * ‖∑ i ∈ Finset.range n, a i • x i‖ := fun n m a hmn =>
-          b_s.grunblum_bound_transfer x J hJ_iso hx_J' n m a hmn
-        exact isBasicSequence_of_grunblum hx_nz h_grunblum
-
+      -- Pull back the basic sequence from the bidual to X using the pullback lemma
+      obtain ⟨x, hx_S, hx_basic⟩ := h_basicS.pullback J hJ_iso hs_in_S_bidual
       exact h_no_basic x hx_S hx_basic
 
     -- Transfer compactness back to X via the extracted helper lemma
