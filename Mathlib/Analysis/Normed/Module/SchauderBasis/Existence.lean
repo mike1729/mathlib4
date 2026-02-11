@@ -41,16 +41,30 @@ private lemma coord_vanish_on_tail_span {E : Type*} [NormedAddCommGroup E] [Norm
   induction hv using Submodule.span_induction with
   | mem x hx =>
     obtain ⟨n, rfl⟩ := hx
-    have h_eq : (⟨b (n + N), _⟩ : Y.topologicalClosure) = basis_Z (n + N) :=
+    have h_mem : b (n + N) ∈ Y.topologicalClosure :=
+      Y.le_topologicalClosure (h_tail_in_Y (h_tail_span_eq ▸ Submodule.subset_span ⟨n, rfl⟩))
+    have h_eq : (⟨b (n + N), h_mem⟩ : Y.topologicalClosure) = basis_Z (n + N) :=
       Subtype.ext (h_basis_coe (n + N)).symm
     rw [h_eq]; simp [basis_Z.ortho k (n + N), ne_of_gt (by omega : k < n + N)]
   | zero => exact map_zero _
   | add x y hx' hy' hx hy =>
-    rw [show basis_Z.coord k ⟨x + y, _⟩ = basis_Z.coord k ⟨x, _⟩ + basis_Z.coord k ⟨y, _⟩ from
-      map_add ..]; simp [hx (h_tail_span_eq ▸ hx'), hy (h_tail_span_eq ▸ hy')]
+    have hx_tc : x ∈ Y.topologicalClosure :=
+      Y.le_topologicalClosure (h_tail_in_Y (h_tail_span_eq ▸ hx'))
+    have hy_tc : y ∈ Y.topologicalClosure :=
+      Y.le_topologicalClosure (h_tail_in_Y (h_tail_span_eq ▸ hy'))
+    calc basis_Z.coord k ⟨x + y, _⟩
+        = basis_Z.coord k ((⟨x, hx_tc⟩ : Y.topologicalClosure) + ⟨y, hy_tc⟩) := rfl
+      _ = basis_Z.coord k ⟨x, hx_tc⟩ + basis_Z.coord k ⟨y, hy_tc⟩ := map_add ..
+      _ = 0 + 0 := by rw [hx (h_tail_span_eq ▸ hx'), hy (h_tail_span_eq ▸ hy')]
+      _ = 0 := add_zero 0
   | smul c x hx' hx =>
-    rw [show basis_Z.coord k ⟨c • x, _⟩ = c • basis_Z.coord k ⟨x, _⟩ from
-      map_smul ..]; simp [hx (h_tail_span_eq ▸ hx')]
+    have hx_tc : x ∈ Y.topologicalClosure :=
+      Y.le_topologicalClosure (h_tail_in_Y (h_tail_span_eq ▸ hx'))
+    calc basis_Z.coord k ⟨c • x, _⟩
+        = basis_Z.coord k (c • (⟨x, hx_tc⟩ : Y.topologicalClosure)) := rfl
+      _ = c • basis_Z.coord k ⟨x, hx_tc⟩ := map_smul ..
+      _ = c • 0 := by rw [hx (h_tail_span_eq ▸ hx')]
+      _ = 0 := smul_zero c
 
 /-- A nonzero element in the closure of a basic sequence's span cannot be in the closure of all
     tail spans. This is because some Schauder coordinate must be nonzero, but that coordinate
@@ -90,11 +104,9 @@ private lemma nonzero_not_in_all_tail_closures {E : Type*} [NormedAddCommGroup E
   -- By closure_minimal: {v : Z | coord k v = 0} is closed and contains the tail span
   have h_coord_w_zero : basis_Z.coord k w_Z = 0 :=
     closure_minimal (fun (v : Z) (hv : v.val ∈ tail_span) => h_vanish_on_tail v.val hv)
-      (isClosed_eq (basis_Z.coord k).continuous continuous_const) (by
-        rw [Topology.IsEmbedding.subtypeVal.closure_eq_preimage_closure_image,
-          Set.image_preimage_eq_of_subset (fun x hx =>
-            ⟨⟨x, Y.le_topologicalClosure (h_tail_in_Y hx)⟩, rfl⟩)]
-        exact h_contra)
+      (isClosed_eq (basis_Z.coord k).continuous continuous_const)
+      (by rw [closure_subtype]; refine closure_mono (fun x hx => ?_) h_contra
+          exact ⟨⟨x, Y.le_topologicalClosure (h_tail_in_Y hx)⟩, hx, rfl⟩)
   -- Contradiction
   exact hk_ne h_coord_w_zero
 
@@ -124,25 +136,27 @@ private lemma separation_functional_for_translated_sequence
     ∃ f : StrongDual 𝕜 E, (∀ n, f (e n) = 1) ∧ f w' = -1 := by
   let M := LinearMap.range (J : X →L[𝕜] E).toLinearMap
   have hM_eq : (M : Set E) = range J := LinearMap.coe_range _
+  have hw'_not_in_M : w' ∉ (M : Set E) := hM_eq ▸ hw'_not_in_range
   obtain ⟨f, hf_w', hf_vanish⟩ :=
-    _root_.exists_functional_neg_one_and_vanishes_on_closed_submodule
-      M (hM_eq ▸ hJ_closed) w' (hM_eq ▸ hw'_not_in_range)
+    exists_functional_neg_one_and_vanishes_on_closed_submodule
+      M (hM_eq ▸ hJ_closed) w' hw'_not_in_M
   exact ⟨f, fun n => by
-    obtain ⟨x, rfl⟩ := he_form n
-    rw [map_sub, hf_vanish (J x) (hM_eq ▸ mem_range_self x), hf_w']; ring, hf_w'⟩
+    obtain ⟨x, hx⟩ := he_form n
+    rw [hx, map_sub, hf_vanish (J x) (hM_eq ▸ mem_range_self x), hf_w']; ring, hf_w'⟩
 
 /-- A translated tail of a basic sequence is still basic, under suitable functional conditions.
     If b is a basic sequence, w' ∉ closure(span(tail)), and there exists f with f(b n) = 1
     and f(w') = -1, then n ↦ b(n+N) + w' is basic. Extracted to reduce elaboration overhead. -/
 private lemma translated_tail_is_basic {E : Type*} [NormedAddCommGroup E] [NormedSpace 𝕜 E]
     [CompleteSpace E] (b : BasicSequence 𝕜 E)
-    (h_bound : b.basis.enormProjBound < ⊤) (N : ℕ) (w' : E)
+    (N : ℕ) (w' : E)
     (f : StrongDual 𝕜 E) (hf_e : ∀ n, f (b (n + N)) = 1) (hf_w : f w' = -1)
     (h_w_notin_span : w' ∉ closure (Submodule.span 𝕜 (Set.range (fun n => b (n + N))))) :
     IsBasicSequence 𝕜 (fun n => b (n + N) + w') := by
   have he_basic : IsBasicSequence 𝕜 (fun n => b (n + N)) := tail_basic_sequence b N
-  obtain ⟨b_tail, hb_tail_eq, hb_tail_bound⟩ := he_basic
-  convert perturbBasicSequence b_tail hb_tail_bound w' f ?_ hf_w ?_ using 1
+  let b_tail := he_basic.toBasicSequence
+  have hb_tail_eq : ⇑b_tail = fun n => b (n + N) := he_basic.coe_toBasicSequence
+  convert perturbBasicSequence b_tail b_tail.basisConstant_lt_top w' f ?_ hf_w ?_ using 1
   · funext n; exact congrArg (· + w') (congrFun hb_tail_eq n).symm
   · intro n; rw [congrFun hb_tail_eq n]; exact hf_e n
   · rw [congrArg Set.range hb_tail_eq]; exact h_w_notin_span
@@ -303,7 +317,7 @@ theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
 
       -- s = e + w' is basic by the extracted helper lemma
       have h_basicS : IsBasicSequence 𝕜 s :=
-        translated_tail_is_basic (E := Xbidual) b b.basisConstant_lt_top N w' f hf_e.1 hf_e.2 h_w_notin_span
+        translated_tail_is_basic (E := Xbidual) b N w' f hf_e.1 hf_e.2 h_w_notin_span
 
       -- Pull back the basic sequence from the bidual to X using the pullback lemma
       obtain ⟨x, hx_S, hx_basic⟩ := h_basicS.pullback J hJ_iso hs_in_S_bidual
