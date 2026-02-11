@@ -29,17 +29,4 @@ theorem IsSeqCompact_IsCountablyCompact {A : Set E} :
   obtain ⟨a, ha_mem, φ, hφ_mono, hφ_tendsto⟩ := hA h_mem
   exact ⟨a, ha_mem, (hφ_tendsto.mapClusterPt).of_comp hφ_mono.tendsto_atTop⟩
 
-def IsCountablyTight (A : Set E) : Prop :=
-  ∀ x : closure A, ∃ S : Set A, Countable S ∧ x ∈ closure S
-
-class CountablyTight : Prop :=
-  exists_countable_subset : ∀ A : Set E, IsCountablyTight A
-
-class Angelic : Prop :=
-  countablyCompact_is_compact : ∀ A : Set E, IsCountablyCompact (closure A) → IsCompact (closure A)
-  countably_tight : ∀ A : Set E, IsCountablyTight A
-
-theorem Compact_CountablyTight_iff_Angelic [CompactSpace E] : CountablyTight ↔ Angelic := sorry
-
-
 end
