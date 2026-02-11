@@ -124,6 +124,10 @@ noncomputable def NormedSpace.inclusionInDoubleDual_homeomorph_weak
   -- The embedding induces the topology, so e is a homeomorphism
   exact e.toHomeomorphOfIsInducing (IsInducing.subtypeVal.of_comp_iff.mp emb.toIsInducing)
 
+instance WeakSpace.instT2Space (𝕜 : Type*) [RCLike 𝕜] (X : Type*) [NormedAddCommGroup X]
+    [NormedSpace 𝕜 X] : T2Space (WeakSpace 𝕜 X) :=
+  (NormedSpace.inclusionInDoubleDual_homeomorph_weak 𝕜 X).isEmbedding.t2Space
+
 /-- Construct a functional that separates a basic sequence tail from w'.
     Given J : X →L[𝕜] E with closed range, w' ∉ range J, and a sequence e where
     each e n = J x - w' for some x, there exists f with f(e n) = 1 and f(w') = -1.
@@ -176,8 +180,6 @@ lemma compactness_transfer_from_bidual
   let J := NormedSpace.inclusionInDoubleDual 𝕜 X
   let ι := fun x : WeakSpace 𝕜 X => StrongDual.toWeakDual (J x)
   let homeo := NormedSpace.inclusionInDoubleDual_homeomorph_weak 𝕜 X
-  haveI : T2Space (WeakSpace 𝕜 X) := homeo.isEmbedding.t2Space
-  -- K is compact by Alaoglu: bounded preimage + closed
   have hK_bounded_preimage : Bornology.IsBounded (StrongDual.toWeakDual ⁻¹' K) := by
     obtain ⟨R, hR⟩ := Metric.isBounded_iff_subset_closedBall 0 |>.mp h_S_bidual_bounded
     refine Metric.isBounded_iff_subset_closedBall 0 |>.mpr ⟨R, fun x hx => ?_⟩

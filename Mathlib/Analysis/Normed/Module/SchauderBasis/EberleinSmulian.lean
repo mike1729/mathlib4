@@ -244,13 +244,6 @@ theorem Eberlein_Smulian [CompleteSpace X] (A : Set (WeakSpace 𝕜 X))
     intro x₀ hx₀
     let x₀_X : X := (toWeakSpace 𝕜 X).symm x₀
     have hx₀_eq : toWeakSpace 𝕜 X x₀_X = x₀ := (toWeakSpace 𝕜 X).apply_symm_apply x₀
-    -- T2 via Hahn-Banach separation (no global instance for WeakSpace)
-    haveI : T2Space (WeakSpace 𝕜 X) :=
-      (WeakBilin.isEmbedding (B := (topDualPairing 𝕜 X).flip) (fun x y hxy => by
-        by_contra hne
-        obtain ⟨f, -, hf⟩ := exists_dual_vector 𝕜 (x - y) (sub_ne_zero.mpr hne)
-        rw [map_sub, LinearMap.congr_fun hxy f, sub_self] at hf
-        exact (norm_ne_zero_iff.mpr (sub_ne_zero.mpr hne)) (by exact_mod_cast hf.symm))).t2Space
     by_cases h_norm_x : x₀_X ∈ closure A_X
     · -- Case 1: x₀ in norm closure → extract norm-convergent sequence
       haveI : FrechetUrysohnSpace X := FirstCountableTopology.frechetUrysohnSpace
