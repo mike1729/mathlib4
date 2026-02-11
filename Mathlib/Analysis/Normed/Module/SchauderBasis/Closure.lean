@@ -132,6 +132,7 @@ lemma perturbBasicSequence [CompleteSpace X] (b : BasicSequence 𝕜 X)
         exact mul_le_mul_of_nonneg_left (h_E_Y n) (zero_le_one.trans b.basicSequenceConstant_ge_one)
     _ = (K * C ^ 2) * ‖Y n‖ := by ring
 
+-- TODO contrapose the statement
 /-- If a bounded set S in a Banach space X does not contain a basic sequence,
     then 0 is not in the weak closure of S.
 
@@ -160,10 +161,17 @@ theorem not_mem_weakClosure_of_no_basicSequence [CompleteSpace X]
   -- 3. Show 0 is not in the norm closure of S' in the bidual.
   -- Since J is an isometry from a complete space, it is a closed embedding.
   have h_norm_S' : (0 : StrongDual 𝕜 (StrongDual 𝕜 X)) ∉ closure S' := by
-    have hce := (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).isometry.isClosedEmbedding
+    have hce : IsClosedEmbedding (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)) := by
+      let li := NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)
+      have : @Isometry X (StrongDual 𝕜 (StrongDual 𝕜 X))
+          EMetricSpace.toPseudoEMetricSpace EMetricSpace.toPseudoEMetricSpace li :=
+        fun x y => li.isometry.edist_eq x y
+      exact this.isClosedEmbedding
     rw [show S' = (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)) '' S from rfl,
       hce.closure_image_eq]
-    exact fun ⟨x, hx, hJx⟩ => h_norm (hce.injective (hJx.trans (map_zero _).symm) ▸ hx)
+    exact fun ⟨x, hx, hJx⟩ => h_norm (hce.injective (hJx.trans
+      (show (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)) 0 = 0 from
+        map_zero (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).toContinuousLinearMap).symm) ▸ hx)
   -- 4. Apply the Selection Principle for Dual Spaces with ε = 1.
   obtain ⟨b_bidual, hb_mem, -⟩ :=
     basic_sequence_selection_dual h_weak_star h_norm_S' zero_lt_one
@@ -172,7 +180,14 @@ theorem not_mem_weakClosure_of_no_basicSequence [CompleteSpace X]
   exact hb_basic.pullback J
     (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).norm_map hb_mem
 
-
+/-- Contrapositive of `not_mem_weakClosure_of_no_basicSequence`: if `0` is in the weak closure
+of `S` but not in the norm closure, then `S` contains a basic sequence. -/
+theorem exists_basicSequence_of_weakClosure_not_normClosure [CompleteSpace X]
+    {S : Set X} (hS_ne : S.Nonempty) (h_norm : (0 : X) ∉ closure S)
+    (h_weak : (0 : X) ∈ closure (toWeakSpace 𝕜 X '' S)) :
+    ∃ e : ℕ → X, (∀ n, e n ∈ S) ∧ IsBasicSequence 𝕜 e := by
+  by_contra h_no; push_neg at h_no
+  exact (not_mem_weakClosure_of_no_basicSequence hS_ne h_norm h_no) h_weak
 
 def schauderBasisOfClosure [CompleteSpace X] {Y : Submodule 𝕜 X}
     (b : SchauderBasis 𝕜 Y) (h_bound : b.enormProjBound < ⊤) :
@@ -370,8 +385,26 @@ theorem cluster_point_of_basicSequence [CompleteSpace X] (x : X)
   rw [← hg_ext ⟨x, h_mem_Z⟩]
   exact h_gx_eq_0
 
-def IsCountablyCompact {E : Type*} [TopologicalSpace E] (A : Set E) : Prop :=
-  ∀ x : ℕ → E, (∀ n, x n ∈ A) → ∃ a ∈ A, MapClusterPt a atTop x
+/-- If `e` is a basic sequence and `y` is a weak cluster point of the sequence
+`fun n => toWeakSpace 𝕜 X (e n + x₀)`, then `y = toWeakSpace 𝕜 X x₀`. -/
+theorem weakClusterPt_of_basicSequence_add [CompleteSpace X]
+    {e : ℕ → X} (he : IsBasicSequence 𝕜 e) (x₀ : X)
+    {y : WeakSpace 𝕜 X}
+    (hy : MapClusterPt y atTop (fun n => toWeakSpace 𝕜 X (e n + x₀))) :
+    y = toWeakSpace 𝕜 X x₀ := by
+  suffices h : y - toWeakSpace 𝕜 X x₀ = 0 by rwa [sub_eq_zero] at h
+  have h_sub : MapClusterPt (y - toWeakSpace 𝕜 X x₀) atTop
+      (fun n => toWeakSpace 𝕜 X (e n)) := by
+    have h_eq : (fun n => toWeakSpace 𝕜 X (e n)) =
+        (fun n => toWeakSpace 𝕜 X (e n + x₀) - toWeakSpace 𝕜 X x₀) := by
+      ext n; simp [map_add]
+    rw [h_eq]
+    exact hy.tendsto_comp (continuous_id.sub continuous_const).continuousAt.tendsto
+  let b := he.toBasicSequence
+  have h_cluster_b : MapClusterPt (X := WeakSpace 𝕜 X) (y - toWeakSpace 𝕜 X x₀) atTop b := by
+    convert h_sub using 1
+    exact IsBasicSequence.coe_toBasicSequence he
+  exact cluster_point_of_basicSequence b _ h_cluster_b
 
 theorem unique_clusterPt_limit
   (A : Set (WeakSpace 𝕜 X))
@@ -392,170 +425,5 @@ theorem unique_clusterPt_limit
   have hy_eq : y = w := h_unique y hy_original
   subst hy_eq
   exact (hy_cluster.frequently hU_mem) (Filter.Eventually.of_forall hφ_outside)
-
-/-- From an injective function `σ : ℕ → ℕ`, extract a subsequence `ψ` such that
-    both `ψ` and `σ ∘ ψ` are strictly monotone. -/
-lemma exists_strictMono_comp_strictMono (σ : ℕ → ℕ) (hσ : Function.Injective σ) :
-    ∃ ψ : ℕ → ℕ, StrictMono ψ ∧ StrictMono (σ ∘ ψ) := by
-  -- σ injective on ℕ implies σ tends to atTop
-  have hσ_tendsto : Filter.Tendsto σ Filter.atTop Filter.atTop := by
-    rw [Filter.tendsto_atTop_atTop]
-    intro b
-    have hfin : Set.Finite (σ ⁻¹' Set.Iic b) :=
-      (Set.finite_Iic b).preimage (hσ.injOn)
-    obtain ⟨N, hN⟩ := hfin.bddAbove
-    exact ⟨N + 1, fun n hn => by
-      by_contra h; push_neg at h
-      have hmem : n ∈ σ ⁻¹' Set.Iic b := le_of_lt h
-      exact absurd (hN hmem) (by omega)⟩
-  -- The predicate "σ(n) > M" holds frequently for any M, so we can extract
-  -- a subsequence where σ is strictly increasing
-  -- Build ψ using Nat.rec: ψ(0) = 0, ψ(n+1) = first k > ψ(n) with σ(k) > σ(ψ(n))
-  have h_exists : ∀ n : ℕ, ∃ k, n < k ∧ σ n < σ k := by
-    intro n
-    obtain ⟨M, hM⟩ := Filter.tendsto_atTop_atTop.mp hσ_tendsto (σ n + 1)
-    refine ⟨max (n + 1) M, lt_of_lt_of_le (Nat.lt_succ_of_le le_rfl) (le_max_left _ _),
-      Nat.lt_of_succ_le (hM _ (le_max_right _ _))⟩
-  -- Define ψ by recursion
-  let next (n : ℕ) : ℕ := (h_exists n).choose
-  have h_next_gt (n : ℕ) : n < next n := (h_exists n).choose_spec.1
-  have h_next_σ (n : ℕ) : σ n < σ (next n) := (h_exists n).choose_spec.2
-  -- ψ(k) = next^k(0)
-  let ψ : ℕ → ℕ := fun k => next^[k] 0
-  refine ⟨ψ, ?_, ?_⟩
-  · -- StrictMono ψ
-    apply strictMono_nat_of_lt_succ
-    intro n
-    simp only [ψ, Function.iterate_succ', Function.comp_def]
-    exact h_next_gt _
-  · -- StrictMono (σ ∘ ψ)
-    apply strictMono_nat_of_lt_succ
-    intro n
-    simp only [Function.comp_def, ψ, Function.iterate_succ', Function.comp_def]
-    exact h_next_σ _
-
-theorem Eberlein_Smulian [CompleteSpace X] (A : Set (WeakSpace 𝕜 X))
-    (hA : IsCountablyCompact A) : IsCompact A := by
-  sorry
-
-theorem Eberlein_Smulian' [CompleteSpace X] (A : Set (WeakSpace 𝕜 X))
-    (hA : IsCountablyCompact A) : IsSeqCompact A := by
-  intro xn h_mem
-  -- Get a weak cluster point x ∈ A
-  obtain ⟨x, hxA, hx_cluster⟩ := hA xn h_mem
-  -- View the sequence in X (norm topology) vs WeakSpace 𝕜 X
-  -- WeakSpace 𝕜 X is definitionally X, so we can cast freely
-  let xnX : ℕ → X := xn
-  let xX : X := x
-  -- Case split: is x a norm cluster point?
-  by_cases h_sep : ∃ ε > 0, ∀ᶠ n in atTop, ε ≤ ‖xnX n - xX‖
-  · -- Case B: x is NOT a norm cluster point (tail is ε-separated)
-    -- Extract ε and N for the separation
-    obtain ⟨ε, hε, hev⟩ := h_sep
-    obtain ⟨N, hN⟩ := hev.exists_forall_of_atTop
-    -- Define the tail sequence and the shifted set S
-    let xn'X : ℕ → X := fun n => xnX (n + N)
-    let S : Set X := Set.range (fun n => xn'X n - xX)
-    -- S is nonempty
-    have hS_ne : S.Nonempty := ⟨xn'X 0 - xX, Set.mem_range_self 0⟩
-    -- 0 ∉ norm closure of S (ε-separation)
-    have h_norm_0 : (0 : X) ∉ closure S := by
-      intro h0
-      rw [Metric.mem_closure_iff] at h0
-      obtain ⟨y, hy, hd⟩ := h0 ε hε
-      obtain ⟨n, rfl⟩ := hy
-      rw [dist_comm, dist_eq_norm, sub_zero] at hd
-      exact not_lt.mpr (hN (n + N) (Nat.le_add_left N n)) hd
-    -- 0 ∈ weak closure of S
-    have h_weak_0 : (0 : X) ∈ closure (toWeakSpace 𝕜 X '' S) := by
-      -- x is a weak cluster point of xn, hence of the tail
-      have h_tail_cluster : MapClusterPt x atTop (fun n => xn (n + N)) := by
-        rw [mapClusterPt_iff_frequently]
-        intro s hs
-        have hf := mapClusterPt_iff_frequently.mp hx_cluster s hs
-        rw [Filter.frequently_atTop] at hf ⊢
-        intro a; obtain ⟨n, hn, hns⟩ := hf (a + N)
-        exact ⟨n - N, by omega, by rwa [show n - N + N = n from by omega]⟩
-      -- So 0 is a weak cluster point of xn(· + N) - x
-      have h_sub_cluster : MapClusterPt (0 : WeakSpace 𝕜 X) atTop
-          (fun n => xn (n + N) - x) := by
-        have : (fun n => xn (n + N) - x) = (· - x) ∘ (fun n => xn (n + N)) := rfl
-        rw [this]; rw [show (0 : WeakSpace 𝕜 X) = x - x from (sub_self x).symm]
-        exact h_tail_cluster.tendsto_comp
-          (continuous_id.sub continuous_const).continuousAt.tendsto
-      -- The range is contained in toWeakSpace '' S
-      have h_range : ∀ n, (fun n => xn (n + N) - x) n ∈ toWeakSpace 𝕜 X '' S :=
-        fun n => ⟨xn'X n - xX, Set.mem_range_self n, rfl⟩
-      exact clusterPt_iff_forall_mem_closure.mp h_sub_cluster.clusterPt
-        (toWeakSpace 𝕜 X '' S) (Filter.mem_map.mpr (Filter.Eventually.of_forall h_range))
-    -- By contrapositive of not_mem_weakClosure_of_no_basicSequence: get a basic sequence in S
-    have h_basic : ∃ (e : ℕ → X), (∀ n, e n ∈ S) ∧ IsBasicSequence 𝕜 e := by
-      by_contra h_no; push_neg at h_no
-      exact absurd
-        (not_mem_weakClosure_of_no_basicSequence hS_ne h_norm_0 h_no)
-        (not_not.mpr h_weak_0)
-    obtain ⟨e, he_mem, he_basic⟩ := h_basic
-    -- Each e k ∈ S gives σ(k) with e k = xn'X(σ(k)) - xX
-    choose σ hσ using he_mem
-    -- σ is injective (e is injective since it's a basic sequence)
-    have he_inj : Function.Injective e := by
-      have := he_basic.toBasicSequence.injective
-      rwa [IsBasicSequence.coe_toBasicSequence] at this
-    have hσ_inj : Function.Injective σ := by
-      intro k₁ k₂ hk
-      apply he_inj
-      have h1 := hσ k₁; have h2 := hσ k₂; rw [hk] at h1; exact h1.symm.trans h2
-    -- Extract ψ with StrictMono ψ and StrictMono (σ ∘ ψ)
-    obtain ⟨ψ, hψ_mono, hσψ_mono⟩ := exists_strictMono_comp_strictMono σ hσ_inj
-    -- Define yn = xn(σ(·) + N)
-    let yn : ℕ → WeakSpace 𝕜 X := fun k => xn (σ k + N)
-    -- Show any weak cluster point of yn equals x
-    have h_unique : ∀ y : WeakSpace 𝕜 X, MapClusterPt y atTop yn → y = x := by
-      intro y hy_cluster
-      -- y - x is a weak cluster point of yn - x
-      have h_sub_cluster : MapClusterPt (y - x) atTop (fun k => yn k - x) :=
-        hy_cluster.tendsto_comp (continuous_id.sub continuous_const).continuousAt.tendsto
-      -- yn k - x = e k (in WeakSpace, which is definitionally X)
-      -- yn k - x = e k as elements of X, hence also WeakSpace
-      have h_yn_sub_eq : ∀ k, (yn k - x : WeakSpace 𝕜 X) =
-          (e k : WeakSpace 𝕜 X) := fun k => hσ k
-      -- Rewrite cluster point hypothesis
-      let b := he_basic.toBasicSequence
-      have hb_coe : ⇑b = e := IsBasicSequence.coe_toBasicSequence he_basic
-      have h_cluster_b : MapClusterPt (X := WeakSpace 𝕜 X) (y - x) atTop b := by
-        have : (fun k => yn k - x) = (fun k => (b k : WeakSpace 𝕜 X)) := by
-          ext k; rw [h_yn_sub_eq, hb_coe]
-        rwa [this] at h_sub_cluster
-      -- By cluster_point_of_basicSequence: y - x = 0
-      exact sub_eq_zero.mp (cluster_point_of_basicSequence b (y - x) h_cluster_b)
-    -- By unique cluster point argument: yn → x weakly
-    have h_yn_mem : ∀ n, yn n ∈ A := fun n => h_mem (σ n + N)
-    have h_yn_tendsto : Tendsto yn atTop (𝓝 x) :=
-      unique_clusterPt_limit A hA x yn h_yn_mem h_unique
-    -- Extract the strictly monotone subsequence
-    let φ : ℕ → ℕ := fun k => σ (ψ k) + N
-    have hφ_mono : StrictMono φ := fun _ _ hab => Nat.add_lt_add_right (hσψ_mono hab) N
-    -- xn ∘ φ = yn ∘ ψ, which converges since yn → x
-    have h_conv : Tendsto (xn ∘ φ) atTop (𝓝 x) := by
-      change Tendsto (yn ∘ ψ) atTop (𝓝 x)
-      exact h_yn_tendsto.comp hψ_mono.tendsto_atTop
-    exact ⟨x, hxA, φ, hφ_mono, h_conv⟩
-  · -- Case A: x IS a norm cluster point
-    push_neg at h_sep
-    -- h_sep : ∀ ε > 0, ∃ᶠ n in atTop, ‖xnX n - xX‖ < ε
-    -- This means x is a norm-topology cluster point
-    have h_norm_cluster : MapClusterPt xX atTop xnX := by
-      rw [mapClusterPt_iff_frequently]
-      intro s hs
-      rw [Metric.mem_nhds_iff] at hs
-      obtain ⟨ε, hε, hball⟩ := hs
-      exact (h_sep ε hε).mono fun n hn => hball (Metric.mem_ball.mpr (by rwa [dist_eq_norm]))
-    -- First-countable norm topology gives a convergent subsequence
-    obtain ⟨ψ, hψ_mono, hψ_tendsto⟩ :=
-      TopologicalSpace.FirstCountableTopology.tendsto_subseq h_norm_cluster
-    -- Norm convergence implies weak convergence
-    have h_weak_tendsto : Tendsto (xn ∘ ψ) atTop (𝓝 x) :=
-      (toWeakSpaceCLM 𝕜 X).continuous.continuousAt.tendsto.comp hψ_tendsto
-    exact ⟨x, hxA, ψ, hψ_mono, h_weak_tendsto⟩
 
 end BasicSequence

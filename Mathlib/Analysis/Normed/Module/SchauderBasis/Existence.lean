@@ -17,7 +17,7 @@ public import Mathlib.Topology.Maps.Basic
 
 noncomputable section
 
-open Submodule Set WeakDual Metric Filter Topology BasicSequences
+open Submodule Set WeakDual Metric Filter Topology
 
 variable {𝕜 : Type*} [RCLike 𝕜]
 variable {X : Type*} [NormedAddCommGroup X] [NormedSpace 𝕜 X]
@@ -67,9 +67,9 @@ private lemma nonzero_not_in_all_tail_closures {E : Type*} [NormedAddCommGroup E
   have hw_Z_ne : w_Z ≠ 0 := fun h => hw_ne (congrArg Subtype.val h)
   -- Build Schauder basis for Z from b
   let basis_Z : SchauderBasis 𝕜 Z :=
-    BasicSequences.schauderBasisOfClosure (Y := Y) b.basis h_bound
+    schauderBasisOfClosure (Y := Y) b.basis h_bound
   have h_basis_coe : ∀ n, (basis_Z n : E) = b.toFun n := fun n => by
-    rw [BasicSequences.schauderBasisOfClosure_apply]
+    rw [schauderBasisOfClosure_apply]
     exact b.basis_eq n
   -- w_Z ≠ 0 implies some coordinate is nonzero
   have ⟨k, hk_ne⟩ : ∃ k, basis_Z.coord k w_Z ≠ 0 := by
@@ -125,7 +125,7 @@ private lemma separation_functional_for_translated_sequence
   let M := LinearMap.range (J : X →L[𝕜] E).toLinearMap
   have hM_eq : (M : Set E) = range J := LinearMap.coe_range _
   obtain ⟨f, hf_w', hf_vanish⟩ :=
-    BasicSequences.exists_functional_neg_one_and_vanishes_on_closed_submodule
+    _root_.exists_functional_neg_one_and_vanishes_on_closed_submodule
       M (hM_eq ▸ hJ_closed) w' (hM_eq ▸ hw'_not_in_range)
   exact ⟨f, fun n => by
     obtain ⟨x, rfl⟩ := he_form n
@@ -150,7 +150,7 @@ private lemma translated_tail_is_basic {E : Type*} [NormedAddCommGroup E] [Norme
 /-- Transfer compactness from the weak-star topology on the bidual back to the weak topology on X.
     Given a compact set K in the weak-star bidual that contains the image of S, the preimage
     in the weak topology on X is compact. Extracted to reduce context bloat. -/
-private lemma compactness_transfer_from_bidual
+lemma compactness_transfer_from_bidual
     (S : Set X) (S_bidual : Set (StrongDual 𝕜 (StrongDual 𝕜 X)))
     (hS_eq : S_bidual = NormedSpace.inclusionInDoubleDual 𝕜 X '' S)
     (K : Set (WeakDual 𝕜 (StrongDual 𝕜 X)))
@@ -198,12 +198,12 @@ private lemma compactness_transfer_from_bidual
   have h_homeo : homeo (toWeakSpace 𝕜 X x) = ⟨ι x, x, rfl⟩ := Subtype.ext rfl
   exact ⟨⟨ι x, x, rfl⟩, h_in_K, by rw [← h_homeo, Homeomorph.symm_apply_apply]⟩
 
+-- TODO contrapose the statement
 /-- Main theorem: in a Banach space, a set S that is bounded
     and does not contain any basic sequence, has relatively weakly compact closure in the weak
     topology. -/
 theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
-    {S : Set X} (hS_ne : S.Nonempty) (h_norm : (0 : X) ∉ closure S)
-    (h_bounded : Bornology.IsBounded S)
+    {S : Set X} (hS_ne : S.Nonempty) (h_bounded : Bornology.IsBounded S)
     (h_no_basic : ∀ (e : ℕ → X), (∀ n, e n ∈ S) → ¬ IsBasicSequence 𝕜 e) :
     IsCompact (closure (toWeakSpace 𝕜 X '' S)) :=
 
@@ -245,9 +245,14 @@ theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
         exact mem_image_of_mem _ hwK
 
       -- The range of J is closed (isometry from complete space)
-      have hJ_closed : IsClosed (range J) :=
-        (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).isometry
-          |>.isClosedEmbedding.isClosed_range
+      have hJ_closed : IsClosed (range J) := by
+        have : IsClosedEmbedding (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)) := by
+          let li := NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)
+          have : @Isometry X (StrongDual 𝕜 (StrongDual 𝕜 X))
+              EMetricSpace.toPseudoEMetricSpace EMetricSpace.toPseudoEMetricSpace li :=
+            fun x y => li.isometry.edist_eq x y
+          exact this.isClosedEmbedding
+        exact this.isClosed_range
 
       have h_normS' : (0 : Xbidual) ∉ closure S' := by
         intro h0
