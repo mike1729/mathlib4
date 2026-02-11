@@ -138,17 +138,9 @@ variable (b : GeneralSchauderBasis β 𝕜 X L)
 open scoped Classical in
 /-- The basis vectors are linearly independent. -/
 theorem linearIndependent : LinearIndependent 𝕜 b := by
-  rw [linearIndependent_iff]
-  intro l hl
-  ext i
-  have hsum : ∑ i ∈ l.support, l i • b i = 0 := hl
-  -- Apply the i-th coordinate functional to the linear combination
-  have happ : b.coord i (∑ j ∈ l.support, l j • b j) = 0 := by rw [hsum, map_zero]
-  simp_rw [map_sum, map_smul] at happ
-  rw [Finset.sum_eq_single i, b.ortho i i] at happ
-  · simpa using happ
-  · intro j _ hji; rw [b.ortho i j, Pi.single_apply, if_neg hji.symm, smul_eq_mul, mul_zero]
-  · intro hi; simp [Finsupp.notMem_support_iff.mp hi, smul_eq_mul, zero_mul]
+  refine linearIndependent_iff.mpr (fun l hl ↦ l.ext ?_)
+  simpa [l.linearCombination_apply, Finsupp.sum, b.ortho, Pi.single_apply] using
+    fun i ↦ congr_arg (b.coord i) hl
 
 /-- Projection onto a finite set of basis vectors. -/
 def proj (A : Finset β) : X →L[𝕜] X := ∑ i ∈ A, (b.coord i).smulRight (b i)
