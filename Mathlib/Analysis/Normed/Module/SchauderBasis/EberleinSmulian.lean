@@ -419,3 +419,12 @@ theorem IsCompact.frechetUrysohnSpace [CompleteSpace X]
       unique_clusterPt_limit K hK_cc ↑a (fun n => ↑(t n))
         (fun n => h_S_W_sub_K (h_in_S_W n)) h_unique
     exact ⟨t, ht_mem, Topology.IsInducing.subtypeVal.tendsto_nhds_iff.mpr h_tendsto⟩
+
+def IsCountablyTight {E : Type*} [TopologicalSpace E] (A : Set E) : Prop :=
+  ∀ x : closure A, ∃ S : Set A, Countable S ∧ x ∈ closure S
+
+class CountablyTight {E : Type*} [TopologicalSpace E] : Prop :=
+  exists_countable_subset : ∀ A : Set E, IsCountablyTight A
+
+theorem Compact.CountablyTight [CompleteSpace X] {K : Set (WeakSpace 𝕜 X)} (hK : IsCompact K) :
+    CountablyTight K := sorry

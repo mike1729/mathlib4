@@ -214,6 +214,7 @@ lemma compactness_transfer_from_bidual
   have h_homeo : homeo (toWeakSpace 𝕜 X x) = ⟨ι x, x, rfl⟩ := Subtype.ext rfl
   exact ⟨⟨ι x, x, rfl⟩, h_in_K, by rw [← h_homeo, Homeomorph.symm_apply_apply]⟩
 
+set_option maxHeartbeats 250000 in
 -- TODO contrapose the statement
 /-- Main theorem: in a Banach space, a set S that is bounded
     and does not contain any basic sequence, has relatively weakly compact closure in the weak
