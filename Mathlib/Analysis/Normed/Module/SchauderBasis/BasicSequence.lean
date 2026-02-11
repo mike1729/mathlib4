@@ -136,13 +136,8 @@ theorem grunblum_bound_transfer {Y : Type*}
   have h_sum_eq : ∀ k, J (∑ i ∈ Finset.range k, a i • x i) =
       ∑ i ∈ Finset.range k, a i • b i := by
     intro k; simp only [map_sum, ContinuousLinearMap.map_smul, hx_J]
-  calc ‖∑ i ∈ Finset.range m, a i • x i‖
-      = ‖J (∑ i ∈ Finset.range m, a i • x i)‖ := (hJ_iso _).symm
-    _ = ‖∑ i ∈ Finset.range m, a i • b i‖ := by rw [h_sum_eq]
-    _ ≤ b.basicSequenceConstant * ‖∑ i ∈ Finset.range n, a i • b i‖ :=
-        basicSequence_satisfiesGrunblum b n m a hmn
-    _ = b.basicSequenceConstant * ‖J (∑ i ∈ Finset.range n, a i • x i)‖ := by rw [h_sum_eq]
-    _ = b.basicSequenceConstant * ‖∑ i ∈ Finset.range n, a i • x i‖ := by rw [hJ_iso]
+  rw [← hJ_iso, h_sum_eq]
+  exact (basicSequence_satisfiesGrunblum b n m a hmn).trans_eq (by rw [← h_sum_eq, hJ_iso])
 
 /-- Elements of a basic sequence are nonzero. -/
 lemma ne_zero (b : BasicSequence 𝕜 X) (n : ℕ) : b n ≠ 0 := fun h =>
@@ -224,10 +219,8 @@ theorem isBasicSequence_of_grunblum_with_bound [CompleteSpace X] {e : ℕ → X}
       rw [b_S.constr_apply, Finsupp.sum_congr]
       intro i hi
       rw [if_pos]
-      calc i
-        _ ≤ (b_S.repr x).support.sup id   := Finset.le_sup hi (f := id)
-        _ < (b_S.repr x).support.sup id + 1 := Nat.lt_succ_self _
-        _ ≤ N                    := le_max_right _ _
+      exact (Finset.le_sup hi (f := id)).trans_lt (Nat.lt_succ_self _)
+        |>.trans_le (le_max_right _ _)
     rw [← norm_coe, ← norm_coe, hx, h_P_span_apply]
     simp_rw [Submodule.coe_sum, Submodule.coe_smul, hbS]
     exact h_grunblum N k (b_S.repr x) hk_le_N
@@ -288,9 +281,7 @@ theorem isBasicSequence_of_grunblum_with_bound [CompleteSpace X] {e : ℕ → X}
       apply Finset.sum_subset
       · intro i hi
         apply Finset.mem_range.mpr
-        calc i ≤ (b_S.repr x).support.sup id := Finset.le_sup hi (f := id)
-          _ < N := Nat.lt_succ_self _
-          _ ≤ n := hn
+        exact (Finset.le_sup hi (f := id)).trans_lt (Nat.lt_succ_self _) |>.trans_le hn
       · intro i _ hi
         simp [Finsupp.notMem_support_iff.mp hi]
     rw [h_eq, sub_self, norm_zero]
@@ -339,9 +330,8 @@ theorem isBasicSequence_of_grunblum_with_bound [CompleteSpace X] {e : ℕ → X}
     simp only [coe_nnnorm]
     rw [SchauderBasis.ProjectionData.basis_proj D]
     exact h_bound_P n
-  calc b_basis.enormProjBound.toReal
-    _ ≤ (ENNReal.ofReal K).toReal := ENNReal.toReal_mono ENNReal.ofReal_ne_top h_bound_ennreal
-    _ = K := ENNReal.toReal_ofReal hK
+  exact (ENNReal.toReal_mono ENNReal.ofReal_ne_top h_bound_ennreal).trans_eq
+    (ENNReal.toReal_ofReal hK)
 
 /-- Convenience wrapper: the Grünblum criterion as a predicate. -/
 theorem isBasicSequence_of_grunblum [CompleteSpace X] {e : ℕ → X} {K : ℝ} (h_nz : ∀ n, e n ≠ 0)
@@ -519,9 +509,7 @@ theorem isUnconditionalBasicSequence_of_Nikolskii [CompleteSpace X] {e : β → 
   set K' := max K 0 with hK'_def
   have hK'_nonneg : 0 ≤ K' := le_max_right _ _
   have h' : SatisfiesNikolskiiCondition 𝕜 e K' := fun A B a hAB => by
-    calc ‖∑ i ∈ A, a i • e i‖ ≤ K * ‖∑ i ∈ B, a i • e i‖ := h A B a hAB
-      _ ≤ K' * ‖∑ i ∈ B, a i • e i‖ := by
-          apply mul_le_mul_of_nonneg_right (le_max_left _ _) (norm_nonneg _)
+    exact (h A B a hAB).trans (mul_le_mul_of_nonneg_right (le_max_left _ _) (norm_nonneg _))
   -- Step 1: Linear independence
   have h_indep := linearIndependent_of_Nikolskii h h_nz
   -- Step 2: Algebraic basis of span
@@ -598,11 +586,7 @@ theorem isUnconditionalBasicSequence_of_Nikolskii [CompleteSpace X] {e : β → 
       rw [h_y_as_sum y]
       exact (Finset.sum_subset Finset.subset_union_right (fun i _ hi =>
         by rw [Finsupp.notMem_support_iff.mp hi, zero_smul])).symm
-    calc ‖∑ i ∈ A, (b_S.repr y) i • e i‖
-        ≤ K' * ‖∑ i ∈ A ∪ (b_S.repr y).support, (b_S.repr y) i • e i‖ :=
-          h' A (A ∪ (b_S.repr y).support) _ Finset.subset_union_left
-      _ = K' * ‖(y : X)‖ := by rw [h_union_eq]
-      _ = K' * ‖y‖ := by rw [norm_coe]
+    exact (h' A _ _ Finset.subset_union_left).trans_eq (by rw [h_union_eq, norm_coe])
   -- Step 11: enormProjBound < ⊤
   have h_lt_top : ubs_basis.enormProjBound < ⊤ := by
     apply lt_of_le_of_lt _ ENNReal.ofReal_lt_top

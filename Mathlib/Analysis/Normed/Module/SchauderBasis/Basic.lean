@@ -558,9 +558,7 @@ theorem proj_uniform_bound [CompleteSpace X] : ∃ C : ℝ, ∀ A : Finset β, �
     apply Finset.le_sup' (f := _root_.id)
     simp only [Finset.mem_image, Finset.mem_powerset]
     exact ⟨A ∩ A₀, Finset.inter_subset_right, rfl⟩
-  calc ‖b.proj (A ∩ A₀) x + b.proj (A \ A₀) x‖
-      ≤ ‖b.proj (A ∩ A₀) x‖ + ‖b.proj (A \ A₀) x‖ := norm_add_le _ _
-    _ ≤ M + 1 := by linarith
+  exact (norm_add_le _ _).trans (by linarith)
 
 /-- The basis constant for unconditional bases (supremum over all finite sets) as nnnorm.
     Requires completeness to guarantee the supremum is finite. -/
