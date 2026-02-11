@@ -53,6 +53,8 @@ lemma exists_strictMono_comp_strictMono (σ : ℕ → ℕ) (hσ : Function.Injec
 
 end BasicSequence
 
+open BasicSequence
+
 open scoped Pointwise in
 theorem IsCountablyCompact.isVonNBounded
     {𝕜 : Type*} [NontriviallyNormedField 𝕜]
@@ -108,7 +110,8 @@ theorem IsCountablyCompact_IsBounded
     intro f
     have hV_mem : (fun (x : WeakSpace 𝕜 X) => ((topDualPairing 𝕜 X).flip x) f) ⁻¹'
         (Metric.ball 0 1) ∈ 𝓝 (0 : WeakSpace 𝕜 X) :=
-      (WeakBilin.eval_continuous _ f).continuousAt.preimage_mem_nhds (by simp [Metric.ball_mem_nhds])
+      (WeakBilin.eval_continuous _ f).continuousAt.preimage_mem_nhds
+        (by simp [Metric.ball_mem_nhds])
     obtain ⟨r, hr_pos, hr_abs⟩ := (hVNB hV_mem).exists_pos
     obtain ⟨c, hc⟩ := NormedField.exists_lt_norm 𝕜 r
     have hc_ne : c ≠ 0 := norm_pos_iff.mp (hr_pos.trans hc)
@@ -151,10 +154,9 @@ theorem Eberlein_Smulian' [CompleteSpace X] (A : Set (WeakSpace 𝕜 X))
       exact not_lt.mpr (hN (n + N) (Nat.le_add_left N n)) hd
     have h_weak_0 : (0 : X) ∈ closure (toWeakSpace 𝕜 X '' S) := by
       have h_tail_cluster : MapClusterPt x atTop (fun n => xn (n + N)) := by
-        rw [show (fun n => xn (n + N)) = xn ∘ (· + N) from rfl, mapClusterPt_comp]
-        exact hx_cluster.mono (Filter.map_mono fun s hs => by
-          rw [Filter.mem_atTop_sets] at hs ⊢; obtain ⟨a, ha⟩ := hs
-          exact ⟨a + N, fun b hb => ha (b + N) (by omega)⟩)
+        rw [show (fun n => xn (n + N)) = xn ∘ (· + N) from rfl, mapClusterPt_comp,
+          map_add_atTop_eq_nat]
+        exact hx_cluster
       have h_sub_cluster : MapClusterPt (0 : WeakSpace 𝕜 X) atTop
           (fun n => xn (n + N) - x) := by
         rw [show (0 : WeakSpace 𝕜 X) = x - x from (sub_self x).symm]
@@ -168,7 +170,7 @@ theorem Eberlein_Smulian' [CompleteSpace X] (A : Set (WeakSpace 𝕜 X))
       exists_basicSequence_of_weakClosure_not_normClosure hS_ne h_norm_0 h_weak_0
     choose σ hσ using he_mem
     have he_inj : Function.Injective e :=
-      IsBasicSequence.coe_toBasicSequence ▸ he_basic.toBasicSequence.injective
+      he_basic.coe_toBasicSequence ▸ he_basic.toBasicSequence.injective
     have hσ_inj : Function.Injective σ := fun k₁ k₂ hk =>
       he_inj ((hσ k₁).symm.trans (hk ▸ hσ k₂))
     obtain ⟨ψ, hψ_mono, hσψ_mono⟩ := exists_strictMono_comp_strictMono σ hσ_inj
@@ -218,7 +220,8 @@ theorem Eberlein_Smulian [CompleteSpace X] (A : Set (WeakSpace 𝕜 X))
   letI : CompleteSpace (StrongDual 𝕜 (StrongDual 𝕜 X)) := inferInstance
   let J := NormedSpace.inclusionInDoubleDual 𝕜 X
   let ι := fun x : WeakSpace 𝕜 X => StrongDual.toWeakDual (J x)
-  have hJ_iso := (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).norm_map
+  have hJ_iso : ∀ y, ‖J y‖ = ‖y‖ := fun y =>
+    (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).norm_map y
   have hι_cont : Continuous ι :=
     (NormedSpace.inclusionInDoubleDual_isEmbedding_weak 𝕜 X).continuous
   have h_range_eq : Set.range ι = StrongDual.toWeakDual '' (J '' Set.univ) := by
@@ -232,9 +235,11 @@ theorem Eberlein_Smulian [CompleteSpace X] (A : Set (WeakSpace 𝕜 X))
     exact (isBounded_iff_subset_closedBall 0).mpr ⟨R, fun y ⟨x, hxS, hx_eq⟩ => by
       rw [mem_closedBall, dist_zero_right, ← hx_eq, hJ_iso]
       exact mem_closedBall_zero_iff.mp (hR hxS)⟩
-  have h_mem_iff : ∀ x : X, x ∈ A_X ↔ toWeakSpace 𝕜 X x ∈ A := fun x =>
-    ⟨fun ⟨a, ha, rfl⟩ => (toWeakSpace 𝕜 X).apply_symm_apply a ▸ ha,
-     fun h => ⟨toWeakSpace 𝕜 X x, h, (toWeakSpace 𝕜 X).symm_apply_apply x⟩⟩
+  have h_mem_iff : ∀ x : X, x ∈ A_X ↔ toWeakSpace 𝕜 X x ∈ A := fun x => by
+    constructor
+    · rintro ⟨a, ha, rfl⟩
+      exact (toWeakSpace 𝕜 X).apply_symm_apply a ▸ ha
+    · exact fun h => ⟨toWeakSpace 𝕜 X x, h, (toWeakSpace 𝕜 X).symm_apply_apply x⟩
   suffices hK : K ⊆ StrongDual.toWeakDual '' (J '' Set.univ) by
     have h_compact_cl := compactness_transfer_from_bidual A_X S_bidual rfl K rfl
       h_S_bidual_bounded hK
@@ -330,7 +335,8 @@ theorem Eberlein_Smulian [CompleteSpace X] (A : Set (WeakSpace 𝕜 X))
     exact hw_not_range_ι ⟨y, rfl⟩
   obtain ⟨e, he_mem, he_basic⟩ : ∃ (e : ℕ → X), (∀ n, e n ∈ A₀) ∧ IsBasicSequence 𝕜 e := by
     by_contra h_no; push_neg at h_no
-    exact h_not_compact (no_basic_sequence_implies_relatively_weakly_compact hA₀_ne hA₀_bounded h_no)
+    exact h_not_compact
+      (no_basic_sequence_implies_relatively_weakly_compact hA₀_ne hA₀_bounded h_no)
   obtain ⟨a, _, ha_cluster⟩ := hA (fun n => (toWeakSpace 𝕜 X) (e n))
     (fun n => (h_mem_iff (e n)).mp (he_mem n).1)
   have ha_eq_0 : a = 0 := by
@@ -339,9 +345,9 @@ theorem Eberlein_Smulian [CompleteSpace X] (A : Set (WeakSpace 𝕜 X))
   have h_cluster_f : MapClusterPt (0 : 𝕜) atTop (fun n => f (e n)) := by
     have := (WeakBilin.eval_continuous (topDualPairing 𝕜 X).flip f).continuousAt
       |> ha_cluster.continuousAt_comp
-    rwa [ha_eq_0, map_zero f] at this
+    simp only [ha_eq_0, map_zero, LinearMap.zero_apply] at this; exact this
   obtain ⟨n, hn⟩ := (h_cluster_f.frequently (ball_mem_nhds 0 one_pos)).exists
-  exact absurd (dist_zero_right _ ▸ hn) (not_lt.mpr (le_of_lt (he_mem n).2))
+  exact absurd (dist_zero_right (f (e n)) ▸ hn) (not_lt.mpr (le_of_lt (he_mem n).2))
 
 /-- Weakly compact subsets of a Banach space are Fréchet-Urysohn in the subspace topology.
 This is the "angelic" property of weakly compact sets: in a weakly compact set, closure
@@ -361,11 +367,12 @@ theorem IsCompact.frechetUrysohnSpace [CompleteSpace X]
   swap
   · exfalso; rw [Set.not_nonempty_iff_eq_empty] at hS_ne
     have : S_W = ∅ := by
-      rwa [show S_W = toWeakSpace 𝕜 X '' S_X from by simp [S_X, Set.image_image],
-        hS_ne, Set.image_empty]
+      have : S_X = ∅ := hS_ne
+      rw [show S_W = toWeakSpace 𝕜 X '' S_X from by simp [S_X, Set.image_image],
+        this, Set.image_empty]
     rw [this, closure_empty] at ha_cl; exact ha_cl
   have h_img_eq : toWeakSpace 𝕜 X '' S_X = S_W := by simp [S_X, Set.image_image]
-  have h_S_W_sub_K : S_W ⊆ K := fun _ ⟨k, _, rfl⟩ => k.property
+  have h_S_W_sub_K : S_W ⊆ K := fun _ ⟨k, _, hk⟩ => hk ▸ k.property
   by_cases h_norm : x₀ ∈ closure S_X
   · -- Case 1: x₀ in norm closure → norm-convergent sequence
     haveI : FrechetUrysohnSpace X := FirstCountableTopology.frechetUrysohnSpace
@@ -416,11 +423,13 @@ theorem IsCompact.frechetUrysohnSpace [CompleteSpace X]
       exact (weakClusterPt_of_basicSequence_add he_basic x₀ hy).trans hx₀_eq
     have h_tendsto : Tendsto (fun n => (↑(t n) : WeakSpace 𝕜 X)) atTop
         (𝓝 (↑a : WeakSpace 𝕜 X)) :=
-      unique_clusterPt_limit K hK_cc ↑a (fun n => ↑(t n))
-        (fun n => h_S_W_sub_K (h_in_S_W n)) h_unique
+      let a_w : WeakSpace 𝕜 X := ↑a
+      unique_clusterPt_limit K hK_cc a_w (fun n => ↑(t n))
+        (fun n => (t n).property) h_unique
     exact ⟨t, ht_mem, Topology.IsInducing.subtypeVal.tendsto_nhds_iff.mpr h_tendsto⟩
 
-theorem Reflexive_iff_ball_seqCompact [CompleteSpace X] : Reflexive 𝕜 X ↔ IsSeqCompact (Metric.closedBall (0 : X) 1) := sorry
+theorem Reflexive_iff_ball_seqCompact [CompleteSpace X] :
+    Module.IsReflexive 𝕜 X ↔ IsSeqCompact (Metric.closedBall (0 : X) 1) := sorry
 
 def IsCountablyTight {E : Type*} [TopologicalSpace E] (A : Set E) : Prop :=
   ∀ x ∈ closure A, ∃ S ⊆ A, S.Countable ∧ x ∈ closure S
