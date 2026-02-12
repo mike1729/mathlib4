@@ -138,18 +138,14 @@ variable (b : GeneralSchauderBasis β 𝕜 X L)
 open scoped Classical in
 /-- The basis vectors are linearly independent. -/
 theorem linearIndependent : LinearIndependent 𝕜 b := by
-  rw [linearIndependent_iff]
-  intro l hl
-  ext i
-  have hsum : ∑ i ∈ l.support, l i • b i = 0 := hl
-  -- Apply the i-th coordinate functional to the linear combination
-  have happ : b.coord i (∑ j ∈ l.support, l j • b j) = 0 := by rw [hsum, map_zero]
-  rw [map_sum] at happ
-  simp_rw [ContinuousLinearMap.map_smul] at happ
+  rw [linearIndependent_iff]; intro l hl; ext i
+  have happ : b.coord i (∑ j ∈ l.support, l j • b j) = 0 := by
+    rw [show ∑ j ∈ l.support, l j • b j = 0 from hl, map_zero]
+  simp only [map_sum, ContinuousLinearMap.map_smul] at happ
   rw [Finset.sum_eq_single i, b.ortho i i] at happ
   · simpa using happ
   · intro j _ hji; rw [b.ortho i j, Pi.single_apply, if_neg hji.symm, smul_eq_mul, mul_zero]
-  · intro hi; simp only [Finsupp.notMem_support_iff.mp hi, smul_eq_mul, zero_mul]
+  · intro hi; simp [Finsupp.notMem_support_iff.mp hi]
 
 /-- Projection onto a finite set of basis vectors. -/
 def proj (A : Finset β) : X →L[𝕜] X := ∑ i ∈ A, (b.coord i).smulRight (b i)
@@ -166,15 +162,8 @@ theorem proj_apply (A : Finset β) (x : X) : b.proj A x = ∑ i ∈ A, b.coord i
 open scoped Classical in
 /-- The action of the projection on a basis element e i. -/
 theorem proj_apply_basis (A : Finset β) (i : β) : b.proj A (b i) = if i ∈ A then b i else 0 := by
-  rw [proj_apply]
-  by_cases hiA : i ∈ A
-  · rw [Finset.sum_eq_single_of_mem i hiA]
-    · simp only [b.ortho, Pi.single_apply, ↓reduceIte, one_smul, if_pos hiA]
-    · intro j _ hji; rw [b.ortho j i, Pi.single_apply, if_neg hji, zero_smul]
-  rw [if_neg hiA, Finset.sum_eq_zero]
-  intro j hj
-  rw [b.ortho j i, Pi.single_apply, if_neg, zero_smul]
-  exact fun h => hiA (h ▸ hj)
+  simp_rw [proj_apply, b.ortho, Pi.single_apply, ite_smul, one_smul, zero_smul,
+    Finset.sum_ite_eq']
 
 /-- Projections converge to identity along the summation filter. -/
 theorem tendsto_proj (x : X) : Tendsto (fun A ↦ b.proj A x) L.filter (𝓝 x) := by
@@ -275,14 +264,10 @@ theorem proj_comp (n m : ℕ) (x : X) : b.proj n (b.proj m x) = b.proj (min n m)
 
 /-- The canonical projections are uniformly bounded (Banach-Steinhaus). -/
 theorem proj_uniform_bound [CompleteSpace X] : ∃ C : ℝ, ∀ n : ℕ, ‖b.proj n‖ ≤ C := by
-  apply banach_steinhaus
-  intro x
-  let f : ℕ → X := fun n => b.proj n x
-  have : ∃ M : ℝ, ∀ x ∈ Set.range f, ‖x‖ ≤ M :=
-      isBounded_iff_forall_norm_le.mp (Metric.isBounded_range_of_tendsto f (tendsto_proj b x))
-  rcases this with ⟨M, hM⟩
-  rw [Set.forall_mem_range] at hM
-  use M
+  apply banach_steinhaus; intro x
+  obtain ⟨M, hM⟩ := isBounded_iff_forall_norm_le.mp
+    (Metric.isBounded_range_of_tendsto (fun n => b.proj n x) (tendsto_proj b x))
+  exact ⟨M, Set.forall_mem_range.mp hM⟩
 
 /-- The basis constant for Schauder bases (supremum over canonical projections) as enorm. -/
 noncomputable def enormProjBound : ℝ≥0∞ := ⨆ n, ‖b.proj n‖₊
@@ -315,13 +300,9 @@ theorem norm_proj_le_normProjBound [CompleteSpace X] (n : ℕ) :
 theorem enormProjBound_lt_top_of_bound {C : ℝ}
     (h : ∀ n, ‖b.proj n‖ ≤ C) : b.enormProjBound < ⊤ := by
   have hC : 0 ≤ C := by simpa [proj_zero] using h 0
-  apply lt_of_le_of_lt _ ENNReal.ofReal_lt_top
-  show (⨆ n, ‖b.proj n‖₊ : ℝ≥0∞) ≤ ENNReal.ofReal C
-  apply iSup_le
-  intro n
-  rw [← ENNReal.ofReal_coe_nnreal, ENNReal.ofReal_le_ofReal_iff hC]
-  simp only [coe_nnnorm]
-  exact h n
+  exact (iSup_le fun n => by
+    rw [← ENNReal.ofReal_coe_nnreal, ENNReal.ofReal_le_ofReal_iff hC, coe_nnnorm]
+    exact h n).trans_lt ENNReal.ofReal_lt_top
 
 /-!
 ### Construction of Schauder basis
@@ -354,11 +335,9 @@ lemma succSub_ortho {P : ℕ → X →L[𝕜] X} (hcomp : ∀ n m, ∀ x : X, P 
     abel
   · rcases Nat.lt_or_gt_of_ne h with h' | h'
     · rw [min_eq_left_of_lt h', min_eq_left (Nat.succ_le_of_lt h'),
-        min_eq_left_of_lt (Nat.lt_succ_of_lt h')]
-      abel
+          min_eq_left_of_lt (Nat.lt_succ_of_lt h')]; abel
     · rw [min_eq_right_of_lt h', min_eq_right (Nat.succ_le_of_lt h'),
-        min_eq_right_of_lt (Nat.lt_succ_of_lt h')]
-      abel
+          min_eq_right_of_lt (Nat.lt_succ_of_lt h')]; abel
 
 /-- The rank of `succSub P n` is `1`. -/
 lemma succSub_rank_one {P : ℕ → X →L[𝕜] X}

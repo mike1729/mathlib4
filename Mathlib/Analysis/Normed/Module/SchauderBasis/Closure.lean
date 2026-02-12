@@ -93,26 +93,18 @@ lemma perturbBasicSequence [CompleteSpace X] (b : BasicSequence 𝕜 X)
     simp only [f, ContinuousLinearMap.sub_apply, hf n, hg_b n, sub_zero]
 
   let y := fun n ↦ b n + u
-  -- 1. Elements are non-zero because f(y n) = 1
   have h_nz : ∀ n, y n ≠ 0 := fun n h_zero ↦ by
-    have h_val : f (y n) = 1 := by simp [y, f.map_add, hf', hu0]
-    rw [h_zero, f.map_zero] at h_val
-    exact zero_ne_one h_val
-
-  -- 2. Grünblum Condition
+    have : f (y n) = 1 := by simp [y, f.map_add, hf', hu0]
+    rw [h_zero, f.map_zero] at this; exact zero_ne_one this
   have hK := basicSequence_satisfiesGrunblum b
   let K := b.basicSequenceConstant
-  -- Define the distortion constant C
   let C := 1 + ‖f‖ * ‖u‖
   have hC : 0 ≤ C := add_nonneg zero_le_one (mul_nonneg (norm_nonneg f) (norm_nonneg u))
-
-  refine isBasicSequence_of_grunblum (K := K * C ^ 2) h_nz
-    fun n m a hnm ↦ ?_
+  refine isBasicSequence_of_grunblum (K := K * C ^ 2) h_nz fun n m a hnm ↦ ?_
   let Y k := ∑ i ∈ Finset.range k, a i • y i
   let E k := ∑ i ∈ Finset.range k, a i • b i
   have h_rel (k) : Y k = E k + f (Y k) • u := by
-    simp only [Y, E, y, smul_add, Finset.sum_add_distrib, ← Finset.sum_smul]
-    congr 1
+    simp only [Y, E, y, smul_add, Finset.sum_add_distrib, ← Finset.sum_smul]; congr 1
     simp only [map_add, map_sum, map_smul, hf', hu0, smul_eq_mul, mul_one, mul_zero, add_zero]
   have h_pert (v : X) : ‖v‖ + ‖f v • u‖ ≤ C * ‖v‖ := by
     calc ‖v‖ + ‖f v • u‖ = ‖v‖ + ‖f v‖ * ‖u‖ := by rw [norm_smul]
@@ -122,9 +114,8 @@ lemma perturbBasicSequence [CompleteSpace X] (b : BasicSequence 𝕜 X)
     rw [(sub_eq_of_eq_add (h_rel k)).symm]
     exact (norm_sub_le _ _).trans (h_pert (Y k))
   have h_Y_E (k) : ‖Y k‖ ≤ C * ‖E k‖ := by
-    have hfY_eq : f (Y k) = f (E k) := by
-      rw [h_rel k, map_add, map_smul, hu0, smul_zero, add_zero]
-    rw [h_rel k, hfY_eq]; exact (norm_add_le _ _).trans (h_pert (E k))
+    have : f (Y k) = f (E k) := by rw [h_rel k, map_add, map_smul, hu0, smul_zero, add_zero]
+    rw [h_rel k, this]; exact (norm_add_le _ _).trans (h_pert (E k))
   calc ‖Y m‖
     _ ≤ C * ‖E m‖ := h_Y_E m
     _ ≤ C * (K * ‖E n‖) := by gcongr; exact hK n m a hnm
@@ -193,14 +184,12 @@ theorem exists_basicSequence_of_weakClosure_not_normClosure [CompleteSpace X]
 def schauderBasisOfClosure [CompleteSpace X] {Y : Submodule 𝕜 X}
     (b : SchauderBasis 𝕜 Y) (h_bound : b.enormProjBound < ⊤) :
     SchauderBasis 𝕜 Y.topologicalClosure := by
-  -- 1. Identify the closure Z and the inclusion map ι
   let Z := Y.topologicalClosure
   haveI : CompleteSpace Z := isClosed_closure.completeSpace_coe
   let ι : Y →L[𝕜] Z := (Submodule.inclusion Y.le_topologicalClosure).mkContinuous 1 (fun y => by
     simp only [one_mul, Submodule.coe_norm, Submodule.coe_inclusion, le_refl])
   have h_isometry : Isometry ι :=
     AddMonoidHomClass.isometry_of_norm ι fun _ => rfl
-  -- 2. Verify that ι is a dense uniform embedding
   have h_dense : DenseRange ι := by
     have h_range : Set.range ι = {z : Z | (z : X) ∈ Y} := Set.ext fun z => ⟨
       fun ⟨y, hy⟩ => hy ▸ y.2,
@@ -211,23 +200,18 @@ def schauderBasisOfClosure [CompleteSpace X] {Y : Submodule 𝕜 X}
       ⟨⟨y, subset_closure hy⟩, hy, rfl⟩
     exact closure_mono hsub hxZ
   have h_unif : IsUniformInducing ι := h_isometry.isUniformInducing
-  -- 3. Extract the uniform bound C for the projections
   let C := b.enormProjBound.toReal
   have hC : 0 ≤ C := ENNReal.toReal_nonneg
-  -- 4. Extend the projections P_n from Y to Z
   let P (n : ℕ) : Z →L[𝕜] Z := (ι.comp (b.proj n)).extend ι
-  -- Helper: P' agrees with b.proj on Y
   have h_agree (n : ℕ) (y : Y) : P n (ι y) = ι (b.proj n y) := by
     simp only [P]
     rw [ContinuousLinearMap.extend_eq (e := ι) (ι ∘L b.proj n) h_dense h_unif y]
     rfl
-  -- 5. Define the basis sequence in Z (inclusion of original basis)
   let e (n : ℕ) : Z := ι (b n)
   have h_ι_norm : ‖ι‖ ≤ 1 :=
     ι.opNorm_le_bound zero_le_one (fun x ↦ by
       simp only [h_isometry.norm_map_of_map_zero (map_zero _), one_mul, le_refl])
-  have h_uniform : ∀ n, ‖P n‖ ≤ C := by
-    intro n
+  have h_uniform : ∀ n, ‖P n‖ ≤ C := fun n => by
     simp only [P]
     refine (ContinuousLinearMap.opNorm_extend_le (ι.comp (b.proj n)) (N := 1) h_dense
       (fun x ↦ by simp [h_isometry.norm_map_of_map_zero (map_zero _)])).trans ?_
@@ -239,9 +223,7 @@ def schauderBasisOfClosure [CompleteSpace X] {Y : Submodule 𝕜 X}
           dsimp only [C]
           exact (ENNReal.ofReal_le_iff_le_toReal h_bound.ne).mp
             (by simp only [ofReal_norm]; exact b.norm_proj_le_enormProjBound n)
-  -- 6. Convergence: P n x → x for all x ∈ Z
-  have hlim : ∀ x, Filter.Tendsto (fun n ↦ P n x) Filter.atTop (𝓝 x) := by
-    intro z
+  have hlim : ∀ x, Filter.Tendsto (fun n ↦ P n x) Filter.atTop (𝓝 x) := fun z => by
     have h_tendsto_on_Y : ∀ y : Y, Tendsto (fun n => (P n) (ι y)) atTop (𝓝 (ι y)) := fun y => by
       simp_rw [h_agree]; exact ι.continuous.continuousAt.tendsto.comp (b.tendsto_proj y)
     rw [Metric.tendsto_atTop]; intro ε hε
@@ -261,11 +243,9 @@ def schauderBasisOfClosure [CompleteSpace X] {Y : Submodule 𝕜 X}
       _ < (C + 1) * (ε / (2 * (C + 1))) + ε / 2 :=
           add_lt_add (mul_lt_mul_of_pos_left h_close hC1_pos) (hN n hn)
       _ = ε := by field_simp; ring
-  -- 7. Extend each coordinate functional from Y to Z
   let coord_ext (n : ℕ) : StrongDual 𝕜 Z := (b.coord n).extend ι
   have h_coord_agree (n : ℕ) (y : Y) : coord_ext n (ι y) = b.coord n y :=
     ContinuousLinearMap.extend_eq (b.coord n) h_dense h_unif y
-  -- 8. Partial sums of the extended coords equal the projection operators
   have h_partial_eq_P (n : ℕ) (z : Z) :
       ∑ i ∈ Finset.range n, coord_ext i z • e i = P n z :=
     congr_fun (DenseRange.equalizer h_dense
@@ -275,7 +255,6 @@ def schauderBasisOfClosure [CompleteSpace X] {Y : Submodule 𝕜 X}
         simp only [Function.comp_apply, e]
         rw [h_agree]
         simp_rw [b.proj_apply, map_sum, map_smul, h_coord_agree])) z
-  -- 9. Construct the SchauderBasis directly
   exact {
     basis := e
     coord := coord_ext
