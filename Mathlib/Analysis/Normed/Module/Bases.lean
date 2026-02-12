@@ -157,14 +157,8 @@ theorem proj_apply (A : Finset β) (x : X) : b.proj A x = ∑ i ∈ A, b.coord i
 open scoped Classical in
 /-- The action of the projection on a basis element e i. -/
 theorem proj_apply_basis (A : Finset β) (i : β) : b.proj A (b i) = if i ∈ A then b i else 0 := by
-  rw [proj_apply]
-  by_cases hiA : i ∈ A
-  · rw [Finset.sum_eq_single_of_mem i hiA]
-    · simp [b.ortho, one_smul, if_pos hiA]
-    · intro _ _ hji; simp [b.ortho, Pi.single_apply, if_neg hji]
-  rw [if_neg hiA, Finset.sum_eq_zero]
-  simp only [b.ortho, Pi.single_apply, ite_smul, one_smul, zero_smul, ite_eq_right_iff]
-  exact fun _ h hi ↦ (hiA (hi ▸ h)).elim
+  simp_rw [proj_apply, b.ortho, Pi.single_apply, ite_smul, one_smul, zero_smul,
+    Finset.sum_ite_eq']
 
 /-- Projections converge to identity along the summation filter. -/
 theorem tendsto_proj (x : X) : Tendsto (fun A ↦ b.proj A x) L.filter (𝓝 x) := by
@@ -176,10 +170,8 @@ theorem range_proj (A : Finset β) :
   apply le_antisymm
   · rintro _ ⟨x, rfl⟩
     rw [ContinuousLinearMap.coe_coe, proj_apply]
-    apply Submodule.sum_mem
-    intro i hi
-    apply Submodule.smul_mem _ _ (Submodule.subset_span _ )
-    exact ⟨i, hi, rfl⟩
+    exact Submodule.sum_mem _ fun i hi =>
+      Submodule.smul_mem _ _ (Submodule.subset_span ⟨i, hi, rfl⟩)
   · rw [Submodule.span_le]
     rintro _ ⟨i, hi, rfl⟩
     use b i
@@ -310,35 +302,27 @@ theorem finrank_range_proj (n : ℕ) :
 /-- The canonical projections converge pointwise to the identity map. -/
 theorem tendsto_proj (x : X) : Tendsto (fun n ↦ b.proj n x) atTop (𝓝 x) := by
   have := GeneralSchauderBasis.tendsto_proj b x
-  rw [SummationFilter.conditional_filter_eq_map_range] at this
-  exact this
+  rwa [SummationFilter.conditional_filter_eq_map_range] at this
 
 /-- Composition of canonical projections: `proj n (proj m x) = proj (min n m) x`. -/
 theorem proj_comp (n m : ℕ) (x : X) : b.proj n (b.proj m x) = b.proj (min n m) x := by
-  simp only [proj, GeneralSchauderBasis.proj_comp]
-  congr 2
-  ext i
-  simp only [Finset.mem_inter, Finset.mem_range]
-  omega
+  simp only [proj, GeneralSchauderBasis.proj_comp]; congr 2; ext i
+  simp only [Finset.mem_inter, Finset.mem_range]; omega
 
 /-- The canonical projections are uniformly bounded (Banach-Steinhaus). -/
 theorem proj_uniform_bound [CompleteSpace X] : ∃ C : ℝ, ∀ n : ℕ, ‖b.proj n‖ ≤ C := by
   apply banach_steinhaus
   intro x
-  let f : ℕ → X := fun n => b.proj n x
-  have : ∃ M : ℝ, ∀ x ∈ Set.range f, ‖x‖ ≤ M :=
-      isBounded_iff_forall_norm_le.mp (Metric.isBounded_range_of_tendsto f (tendsto_proj b x))
-  rcases this with ⟨M, hM⟩
-  rw [Set.forall_mem_range] at hM
-  use M
+  obtain ⟨M, hM⟩ := isBounded_iff_forall_norm_le.mp
+    (Metric.isBounded_range_of_tendsto (fun n => b.proj n x) (tendsto_proj b x))
+  exact ⟨M, Set.forall_mem_range.mp hM⟩
 
 /-- The basis constant for Schauder bases (supremum over canonical projections) as enorm. -/
 noncomputable def enormProjBound : ℝ≥0∞ := ⨆ n, ‖b.proj n‖₊
 
 /-- The norm of any projection is bounded by the basis constant (general case). -/
-theorem norm_proj_le_enormProjBound (n : ℕ) : ‖b.proj n‖₊ ≤ b.enormProjBound := by
-  rw [enormProjBound]
-  exact le_iSup (fun i ↦ (‖b.proj i‖₊ : ℝ≥0∞)) n
+theorem norm_proj_le_enormProjBound (n : ℕ) : ‖b.proj n‖₊ ≤ b.enormProjBound :=
+  le_iSup (fun i ↦ (‖b.proj i‖₊ : ℝ≥0∞)) n
 
 /-- The basis constant for Schauder bases (supremum over canonical projections) as nnnorm.
     Requires completeness to guarantee the supremum is finite. -/
@@ -355,8 +339,7 @@ theorem normProjBound_bddAbove [CompleteSpace X] :
   exact hC n
 
 /-- The norm of any projection is bounded by the basis constant. -/
-theorem norm_proj_le_normProjBound [CompleteSpace X] (n : ℕ) :
-    ‖b.proj n‖₊ ≤ b.normProjBound :=
+theorem norm_proj_le_normProjBound [CompleteSpace X] (n : ℕ) : ‖b.proj n‖₊ ≤ b.normProjBound :=
   le_ciSup (normProjBound_bddAbove b) n
 
 /-!
@@ -462,14 +445,13 @@ lemma exists_coeff (D : ProjectionData 𝕜 X) (n : ℕ) (x : X) :
   have hrank : Module.finrank 𝕜 (LinearMap.range succSubN) = 1 :=
     succSub_rank_one D.projZero D.finrankRange D.hcomp n
   haveI : FiniteDimensional 𝕜 (LinearMap.range succSubN) :=
-    FiniteDimensional.of_finrank_eq_succ (succSub_rank_one D.projZero D.finrankRange D.hcomp n)
+    FiniteDimensional.of_finrank_eq_succ hrank
   have hspan : LinearMap.range succSubN = Submodule.span 𝕜 {D.e n} := by
     symm
     apply Submodule.eq_of_le_of_finrank_eq
     · rw [Submodule.span_le, Set.singleton_subset_iff]
       exact D.heInRange n
-    · rw [succSub_rank_one D.projZero D.finrankRange D.hcomp n,
-        finrank_span_singleton (D.heNe n)]
+    · rw [hrank, finrank_span_singleton (D.heNe n)]
   have hmem : succSubN x ∈ Submodule.span 𝕜 {D.e n} := by
     rw [← hspan]
     exact LinearMap.mem_range_self succSubN x
