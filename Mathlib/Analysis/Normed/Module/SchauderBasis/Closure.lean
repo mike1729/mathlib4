@@ -121,7 +121,8 @@ lemma perturbBasicSequence [CompleteSpace X] (b : BasicSequence 𝕜 X)
     _ ≤ C * (K * ‖E n‖) := by gcongr; exact hK n m a hnm
     _ ≤ C * (K * (C * ‖Y n‖)) := by
         apply mul_le_mul_of_nonneg_left _ hC
-        exact mul_le_mul_of_nonneg_left (h_E_Y n) (zero_le_one.trans b.basicSequenceConstant_ge_one)
+        exact mul_le_mul_of_nonneg_left (h_E_Y n)
+          (zero_le_one.trans b.basicSequenceConstant_ge_one)
     _ = (K * C ^ 2) * ‖Y n‖ := by ring
 
 -- TODO contrapose the statement
@@ -161,9 +162,10 @@ theorem not_mem_weakClosure_of_no_basicSequence [CompleteSpace X]
       exact this.isClosedEmbedding
     rw [show S' = (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)) '' S from rfl,
       hce.closure_image_eq]
-    exact fun ⟨x, hx, hJx⟩ => h_norm (hce.injective (hJx.trans
-      (show (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)) 0 = 0 from
-        map_zero (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).toContinuousLinearMap).symm) ▸ hx)
+    have hJ0 : (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)) 0 = 0 :=
+      map_zero (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).toContinuousLinearMap
+    exact fun ⟨x, hx, hJx⟩ =>
+      h_norm (hce.injective (hJx.trans hJ0.symm) ▸ hx)
   -- 4. Apply the Selection Principle for Dual Spaces with ε = 1.
   obtain ⟨b_bidual, hb_mem, -⟩ :=
     basic_sequence_selection_dual h_weak_star h_norm_S' zero_lt_one
@@ -204,13 +206,11 @@ def schauderBasisOfClosure [CompleteSpace X] {Y : Submodule 𝕜 X}
   have hC : 0 ≤ C := ENNReal.toReal_nonneg
   let P (n : ℕ) : Z →L[𝕜] Z := (ι.comp (b.proj n)).extend ι
   have h_agree (n : ℕ) (y : Y) : P n (ι y) = ι (b.proj n y) := by
-    simp only [P]
-    rw [ContinuousLinearMap.extend_eq (e := ι) (ι ∘L b.proj n) h_dense h_unif y]
-    rfl
+    simp only [P]; exact ContinuousLinearMap.extend_eq _ h_dense h_unif y
   let e (n : ℕ) : Z := ι (b n)
   have h_ι_norm : ‖ι‖ ≤ 1 :=
-    ι.opNorm_le_bound zero_le_one (fun x ↦ by
-      simp only [h_isometry.norm_map_of_map_zero (map_zero _), one_mul, le_refl])
+    ι.opNorm_le_bound zero_le_one fun x ↦ by
+      simp [h_isometry.norm_map_of_map_zero (map_zero _)]
   have h_uniform : ∀ n, ‖P n‖ ≤ C := fun n => by
     simp only [P]
     refine (ContinuousLinearMap.opNorm_extend_le (ι.comp (b.proj n)) (N := 1) h_dense
@@ -332,9 +332,7 @@ theorem cluster_point_of_basicSequence [CompleteSpace X] (x : X)
   -- g(bs m) = b_cl.coord n (b_cl m) = δ_{nm}
   have h_g_bs : ∀ m, g (bs.toFun m) = (Pi.single m (1 : 𝕜) : ℕ → 𝕜) n := by
     intro m
-    -- Rewrite g(bs m) as g ↑⟨bs m, _⟩ to match hg_ext
-    change g ↑(⟨bs.toFun m, h_range_Z m⟩ : ↥Z) = _
-    rw [hg_ext]
+    change g ↑(⟨bs.toFun m, h_range_Z m⟩ : ↥Z) = _; rw [hg_ext]
     -- Show ⟨bs m, _⟩ = b_cl m via schauderBasisOfClosure_apply
     have h_basis : (⟨bs.toFun m, h_range_Z m⟩ : ↥Z) = b_cl m :=
       Subtype.ext (by

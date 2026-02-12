@@ -167,8 +167,7 @@ theorem proj_apply_basis (A : Finset β) (i : β) : b.proj A (b i) = if i ∈ A 
 
 /-- Projections converge to identity along the summation filter. -/
 theorem tendsto_proj (x : X) : Tendsto (fun A ↦ b.proj A x) L.filter (𝓝 x) := by
-  simp only [proj_apply]
-  exact b.expansion x
+  simp only [proj_apply]; exact b.expansion x
 
 /-- The range of the projection is the span of the basis elements in A. -/
 theorem range_proj (A : Finset β) :
@@ -176,11 +175,8 @@ theorem range_proj (A : Finset β) :
   apply le_antisymm
   · rintro _ ⟨x, rfl⟩
     rw [ContinuousLinearMap.coe_coe, proj_apply]
-    apply Submodule.sum_mem
-    intros i hi
-    apply Submodule.smul_mem
-    apply Submodule.subset_span
-    exact ⟨i, hi, rfl⟩
+    exact Submodule.sum_mem _ fun i hi =>
+      Submodule.smul_mem _ _ (Submodule.subset_span ⟨i, hi, rfl⟩)
   · rw [Submodule.span_le]
     rintro _ ⟨i, hi, rfl⟩
     use b i
@@ -251,16 +247,12 @@ theorem finrank_range_proj (n : ℕ) :
 /-- The canonical projections converge pointwise to the identity map. -/
 theorem tendsto_proj (x : X) : Tendsto (fun n ↦ b.proj n x) atTop (𝓝 x) := by
   have := GeneralSchauderBasis.tendsto_proj b x
-  rw [SummationFilter.conditional_filter_eq_map_range] at this
-  exact this
+  rwa [SummationFilter.conditional_filter_eq_map_range] at this
 
 /-- Composition of canonical projections: `proj n (proj m x) = proj (min n m) x`. -/
 theorem proj_comp (n m : ℕ) (x : X) : b.proj n (b.proj m x) = b.proj (min n m) x := by
-  simp only [proj, GeneralSchauderBasis.proj_comp]
-  congr 2
-  ext i
-  simp only [Finset.mem_inter, Finset.mem_range]
-  omega
+  simp only [proj, GeneralSchauderBasis.proj_comp]; congr 2; ext i
+  simp only [Finset.mem_inter, Finset.mem_range]; omega
 
 /-- The canonical projections are uniformly bounded (Banach-Steinhaus). -/
 theorem proj_uniform_bound [CompleteSpace X] : ∃ C : ℝ, ∀ n : ℕ, ‖b.proj n‖ ≤ C := by
@@ -273,9 +265,8 @@ theorem proj_uniform_bound [CompleteSpace X] : ∃ C : ℝ, ∀ n : ℕ, ‖b.pr
 noncomputable def enormProjBound : ℝ≥0∞ := ⨆ n, ‖b.proj n‖₊
 
 /-- The norm of any projection is bounded by the basis constant (general case). -/
-theorem norm_proj_le_enormProjBound (n : ℕ) : ‖b.proj n‖₊ ≤ b.enormProjBound := by
-  rw [enormProjBound]
-  exact le_iSup (fun i ↦ (‖b.proj i‖₊ : ℝ≥0∞)) n
+theorem norm_proj_le_enormProjBound (n : ℕ) : ‖b.proj n‖₊ ≤ b.enormProjBound :=
+  le_iSup (fun i ↦ (‖b.proj i‖₊ : ℝ≥0∞)) n
 
 /-- The basis constant for Schauder bases (supremum over canonical projections) as nnnorm.
     Requires completeness to guarantee the supremum is finite. -/
@@ -405,14 +396,13 @@ lemma exists_coeff (D : ProjectionData 𝕜 X) (n : ℕ) (x : X) :
   have hrank : Module.finrank 𝕜 (LinearMap.range succSubN) = 1 :=
     succSub_rank_one D.projZero D.finrankRange D.hcomp n
   haveI : FiniteDimensional 𝕜 (LinearMap.range succSubN) :=
-    FiniteDimensional.of_finrank_eq_succ (succSub_rank_one D.projZero D.finrankRange D.hcomp n)
+    FiniteDimensional.of_finrank_eq_succ hrank
   have hspan : LinearMap.range succSubN = Submodule.span 𝕜 {D.e n} := by
     symm
     apply Submodule.eq_of_le_of_finrank_eq
     · rw [Submodule.span_le, Set.singleton_subset_iff]
       exact D.heInRange n
-    · rw [succSub_rank_one D.projZero D.finrankRange D.hcomp n,
-        finrank_span_singleton (D.heNe n)]
+    · rw [hrank, finrank_span_singleton (D.heNe n)]
   have hmem : succSubN x ∈ Submodule.span 𝕜 {D.e n} := by
     rw [← hspan]
     exact LinearMap.mem_range_self succSubN x
@@ -471,9 +461,8 @@ theorem basis_proj (D : ProjectionData 𝕜 X) : D.basis.proj = D.P := by
   ext n _
   rw [SchauderBasis.proj_apply, ← succSub_sum D.P D.projZero n]
   simp only [ContinuousLinearMap.coe_sum', Finset.sum_apply]
-  refine Finset.sum_congr rfl fun i _ ↦ ?_
-  dsimp [basis, mkContinuous_apply, IsLinearMap.mk'_apply]
-  rw [D.basisCoeff_spec]
+  exact Finset.sum_congr rfl fun i _ ↦ by
+    dsimp [basis, mkContinuous_apply, IsLinearMap.mk'_apply]; rw [D.basisCoeff_spec]
 
 /-- The sequence of the constructed basis corresponds to the input data e. -/
 @[simp]
@@ -502,9 +491,8 @@ variable (b : UnconditionalSchauderBasis β 𝕜 X)
 noncomputable def enormProjBound : ℝ≥0∞ := ⨆ A : Finset β, ‖b.proj A‖ₑ
 
 /-- The norm of any projection is bounded by the basis constant (general case). -/
-theorem norm_proj_le_enormProjBound (A : Finset β) : ‖b.proj A‖ₑ ≤ b.enormProjBound := by
-  rw [enormProjBound]
-  exact le_iSup (fun A ↦ ‖b.proj A‖ₑ) A
+theorem norm_proj_le_enormProjBound (A : Finset β) : ‖b.proj A‖ₑ ≤ b.enormProjBound :=
+  le_iSup (fun A ↦ ‖b.proj A‖ₑ) A
 
 open scoped Classical in
 /-- Projections are uniformly bounded for unconditional bases (Banach-Steinhaus). -/
@@ -564,7 +552,6 @@ variable (b : UnconditionalSchauderBasis ℕ 𝕜 X)
 theorem toSchauderBasis_enormProjBound_le :
     b.toSchauderBasis.enormProjBound ≤ b.enormProjBound := by
   simp only [SchauderBasis.enormProjBound, enormProjBound, SchauderBasis.proj, toSchauderBasis]
-  apply iSup_le fun n => ?_
-  exact le_iSup (fun A => ‖GeneralSchauderBasis.proj b A‖ₑ) (Finset.range n)
+  exact iSup_le fun n => le_iSup (fun A => ‖GeneralSchauderBasis.proj b A‖ₑ) (Finset.range n)
 
 end UnconditionalSchauderBasis

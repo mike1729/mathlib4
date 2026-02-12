@@ -151,9 +151,7 @@ theorem grunblum_const_ge_1 {e : ℕ → X} {K : ℝ}
     (h : SatisfiesGrunblumCondition 𝕜 e K) (h_nz : ∀ n, e n ≠ 0) : 1 ≤ K := by
   have h0 := h 1 1 (fun _ => 1) le_rfl
   simp only [Finset.range_one, one_smul, sum_singleton] at h0
-  refine le_of_mul_le_mul_right ?_ (norm_pos_iff.mpr (h_nz 0))
-  rw [one_mul]
-  exact h0
+  exact le_of_mul_le_mul_right ((one_mul _).le.trans h0) (norm_pos_iff.mpr (h_nz 0))
 
 /-- The basis constant of a basic sequence is at least 1. -/
 theorem basicSequenceConstant_ge_one : 1 ≤ bs.basicSequenceConstant :=

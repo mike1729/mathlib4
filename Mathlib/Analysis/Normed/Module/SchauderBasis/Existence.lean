@@ -56,16 +56,14 @@ private lemma coord_vanish_on_tail_span {E : Type*} [NormedAddCommGroup E] [Norm
     calc basis_Z.coord k ⟨x + y, _⟩
         = basis_Z.coord k ((⟨x, hx_tc⟩ : Y.topologicalClosure) + ⟨y, hy_tc⟩) := rfl
       _ = basis_Z.coord k ⟨x, hx_tc⟩ + basis_Z.coord k ⟨y, hy_tc⟩ := map_add ..
-      _ = 0 + 0 := by rw [hx (h_tail_span_eq ▸ hx'), hy (h_tail_span_eq ▸ hy')]
-      _ = 0 := add_zero 0
+      _ = 0 := by rw [hx (h_tail_span_eq ▸ hx'), hy (h_tail_span_eq ▸ hy'), add_zero]
   | smul c x hx' hx =>
     have hx_tc : x ∈ Y.topologicalClosure :=
       Y.le_topologicalClosure (h_tail_in_Y (h_tail_span_eq ▸ hx'))
     calc basis_Z.coord k ⟨c • x, _⟩
         = basis_Z.coord k (c • (⟨x, hx_tc⟩ : Y.topologicalClosure)) := rfl
       _ = c • basis_Z.coord k ⟨x, hx_tc⟩ := map_smul ..
-      _ = c • 0 := by rw [hx (h_tail_span_eq ▸ hx')]
-      _ = 0 := smul_zero c
+      _ = 0 := by rw [hx (h_tail_span_eq ▸ hx'), smul_zero]
 
 /-- A nonzero element in the closure of a basic sequence's span cannot be in the closure of all
     tail spans. This is because some Schauder coordinate must be nonzero, but that coordinate
@@ -243,10 +241,7 @@ theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
         exact mem_closedBall_zero_iff.mp (hR hxS)⟩
     let K : Set (WeakDual 𝕜 (StrongDual 𝕜 X)) := closure (StrongDual.toWeakDual '' S_bidual)
     have hK_subset :  K ⊆ StrongDual.toWeakDual '' (J '' (Set.univ)) := by
-      by_contra h_not_subset
-      rw [Set.subset_def] at h_not_subset
-      push_neg at h_not_subset
-      obtain ⟨w, hwK, hw_not_JX⟩ := h_not_subset
+      by_contra! ⟨w, hwK, hw_not_JX⟩
       -- Define S' in StrongDual (Xbidual) space as translation of S_bidual by -w'
       let w' : Xbidual := WeakDual.toStrongDual w
       let S' : Set Xbidual := (fun y => y - w') '' S_bidual

@@ -49,7 +49,7 @@ lemma exists_strictMono_comp_strictMono (σ : ℕ → ℕ) (hσ : Function.Injec
     strictMono_nat_of_lt_succ fun n => by
       simp only [ψ, Function.iterate_succ', Function.comp_def]; exact h_next_gt _,
     strictMono_nat_of_lt_succ fun n => by
-      simp only [Function.comp_def, ψ, Function.iterate_succ', Function.comp_def]; exact h_next_σ _⟩
+      simp only [ψ, Function.comp_def, Function.iterate_succ']; exact h_next_σ _⟩
 
 end BasicSequence
 
@@ -339,9 +339,8 @@ theorem Eberlein_Smulian [CompleteSpace X] (A : Set (WeakSpace 𝕜 X))
       (no_basic_sequence_implies_relatively_weakly_compact hA₀_ne hA₀_bounded h_no)
   obtain ⟨a, _, ha_cluster⟩ := hA (fun n => (toWeakSpace 𝕜 X) (e n))
     (fun n => (h_mem_iff (e n)).mp (he_mem n).1)
-  have ha_eq_0 : a = 0 := by
-    have : MapClusterPt a atTop (fun n => toWeakSpace 𝕜 X (e n + 0)) := by simpa using ha_cluster
-    exact (weakClusterPt_of_basicSequence_add he_basic 0 this).trans (map_zero _)
+  have ha_eq_0 : a = 0 :=
+    (weakClusterPt_of_basicSequence_add he_basic 0 (by simpa using ha_cluster)).trans (map_zero _)
   have h_cluster_f : MapClusterPt (0 : 𝕜) atTop (fun n => f (e n)) := by
     have := (WeakBilin.eval_continuous (topDualPairing 𝕜 X).flip f).continuousAt
       |> ha_cluster.continuousAt_comp
@@ -445,4 +444,4 @@ theorem Compact.CountablyTight [CompleteSpace X] {K : Set (WeakSpace 𝕜 X)} (h
   rw [mem_closure_iff_seq_limit] at hx
   obtain ⟨u, hu_mem, hu_lim⟩ := hx
   exact ⟨Set.range u, Set.range_subset_iff.mpr hu_mem, Set.countable_range u,
-    mem_closure_of_tendsto hu_lim (Filter.Eventually.of_forall (fun n => Set.mem_range_self n))⟩
+    mem_closure_of_tendsto hu_lim (Filter.eventually_of_forall Set.mem_range_self)⟩
