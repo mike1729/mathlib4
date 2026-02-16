@@ -24,8 +24,8 @@ from basic sequences via closure.
 
 * `perturbBasicSequence`: A perturbation of a basic sequence by a fixed vector
   (under suitable functional conditions) is still a basic sequence.
-* `not_mem_weakClosure_of_no_basicSequence`: If a bounded set contains no basic
-  sequence, then 0 is not in its weak closure.
+* `exists_basicSequence_of_weakClosure_not_normClosure`: If `0` is in the weak closure
+  of `S` but not the norm closure, then `S` contains a basic sequence.
 * `schauderBasisOfClosure`: Constructs a Schauder basis for the topological closure
   from a Schauder basis on a subspace.
 -/
@@ -90,7 +90,6 @@ lemma perturbBasicSequence [CompleteSpace X] (b : BasicSequence 𝕜 X)
   have hu0 : f u = 0 := by simp only [f, ContinuousLinearMap.sub_apply, hu, hh_u, sub_self]
   have hf' : ∀ n, f (b n) = 1 := fun n => by
     simp only [f, ContinuousLinearMap.sub_apply, hf n, hg_b n, sub_zero]
-
   let y := fun n ↦ b n + u
   have h_nz : ∀ n, y n ≠ 0 := fun n h_zero ↦ by
     have : f (y n) = 1 := by simp [y, f.map_add, hf', hu0]
@@ -124,19 +123,14 @@ lemma perturbBasicSequence [CompleteSpace X] (b : BasicSequence 𝕜 X)
           (zero_le_one.trans b.basicSequenceConstant_ge_one)
     _ = (K * C ^ 2) * ‖Y n‖ := by ring
 
--- TODO contrapose the statement
-/-- If a bounded set S in a Banach space X does not contain a basic sequence,
-    then 0 is not in the weak closure of S.
-
-    This is a consequence of the basic sequence selection principle: if 0 is in the
-    weak* closure of J(S) but not in its norm closure, then J(S) contains a basic sequence,
-    which can be pulled back to a basic sequence in S. -/
-theorem not_mem_weakClosure_of_no_basicSequence [CompleteSpace X]
-    {S : Set X} (_hS_ne : S.Nonempty) (h_norm : (0 : X) ∉ closure S)
-    (h_no_basic : ∀ (e : ℕ → X), (∀ n, e n ∈ S) → ¬ IsBasicSequence 𝕜 e) :
-    (0 : X) ∉ closure (toWeakSpace 𝕜 X '' S) := by
-  -- We prove the contrapositive: if 0 is in the weak closure, we can find a basic sequence.
-  contrapose! h_no_basic
+/-- If `0` is in the weak closure of `S` but not in the norm closure, then `S` contains a basic
+    sequence. This is a consequence of the basic sequence selection principle: if 0 is in the
+    weak* closure of `J(S)` but not in its norm closure, then `J(S)` contains a basic sequence,
+    which can be pulled back to a basic sequence in `S`. -/
+theorem exists_basicSequence_of_weakClosure_not_normClosure [CompleteSpace X]
+    {S : Set X} (h_norm : (0 : X) ∉ closure S)
+    (h_weak : (0 : X) ∈ closure (toWeakSpace 𝕜 X '' S)) :
+    ∃ e : ℕ → X, (∀ n, e n ∈ S) ∧ IsBasicSequence 𝕜 e := by
   -- 1. Setup the Bidual embedding J : X → X**
   let J := NormedSpace.inclusionInDoubleDual 𝕜 X
   let S' := J '' S
@@ -147,9 +141,10 @@ theorem not_mem_weakClosure_of_no_basicSequence [CompleteSpace X]
     have hemb := NormedSpace.inclusionInDoubleDual_isEmbedding_weak 𝕜 X
     have h_eq : StrongDual.toWeakDual '' S' = φ '' (toWeakSpace 𝕜 X '' S) := by
       simp only [S', Set.image_image]; rfl
-    rw [h_eq]; rw [hemb.closure_eq_preimage_closure_image] at h_no_basic
+    rw [h_eq]
     have h0 : φ (toWeakSpace 𝕜 X 0) = 0 := by simp [φ, map_zero]
-    exact h0 ▸ (Set.mem_preimage.mp h_no_basic)
+    rw [hemb.closure_eq_preimage_closure_image] at h_weak
+    exact h0 ▸ (Set.mem_preimage.mp h_weak)
   -- 3. Show 0 is not in the norm closure of S' in the bidual.
   -- Since J is an isometry from a complete space, it is a closed embedding.
   have h_norm_S' : (0 : StrongDual 𝕜 (StrongDual 𝕜 X)) ∉ closure S' := by
@@ -172,15 +167,6 @@ theorem not_mem_weakClosure_of_no_basicSequence [CompleteSpace X]
   have hb_basic : IsBasicSequence 𝕜 ⇑b_bidual := ⟨b_bidual, rfl⟩
   exact hb_basic.pullback J
     (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).norm_map hb_mem
-
-/-- Contrapositive of `not_mem_weakClosure_of_no_basicSequence`: if `0` is in the weak closure
-of `S` but not in the norm closure, then `S` contains a basic sequence. -/
-theorem exists_basicSequence_of_weakClosure_not_normClosure [CompleteSpace X]
-    {S : Set X} (hS_ne : S.Nonempty) (h_norm : (0 : X) ∉ closure S)
-    (h_weak : (0 : X) ∈ closure (toWeakSpace 𝕜 X '' S)) :
-    ∃ e : ℕ → X, (∀ n, e n ∈ S) ∧ IsBasicSequence 𝕜 e := by
-  by_contra h_no; push_neg at h_no
-  exact (not_mem_weakClosure_of_no_basicSequence hS_ne h_norm h_no) h_weak
 
 def schauderBasisOfClosure [CompleteSpace X] {Y : Submodule 𝕜 X}
     (b : SchauderBasis 𝕜 Y) (h_bound : b.enormProjBound < ⊤) :

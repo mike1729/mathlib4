@@ -165,9 +165,9 @@ theorem Eberlein_Smulian' [CompleteSpace X] (A : Set (WeakSpace 𝕜 X))
       exact clusterPt_iff_forall_mem_closure.mp h_sub_cluster.clusterPt
         (toWeakSpace 𝕜 X '' S) (Filter.mem_map.mpr (Filter.Eventually.of_forall
           fun n => ⟨xn'X n - xX, Set.mem_range_self n, rfl⟩))
-    -- By contrapositive of not_mem_weakClosure_of_no_basicSequence
+    -- Extract a basic sequence from S via weak/norm closure gap
     obtain ⟨e, he_mem, he_basic⟩ :=
-      exists_basicSequence_of_weakClosure_not_normClosure hS_ne h_norm_0 h_weak_0
+      exists_basicSequence_of_weakClosure_not_normClosure h_norm_0 h_weak_0
     choose σ hσ using he_mem
     have he_inj : Function.Injective e :=
       he_basic.coe_toBasicSequence ▸ he_basic.toBasicSequence.injective
@@ -281,7 +281,7 @@ theorem Eberlein_Smulian [CompleteSpace X] (A : Set (WeakSpace 𝕜 X))
         rw [h_eq, ← (Homeomorph.addRight (-x₀ : WeakSpace 𝕜 X)).image_closure]
         exact ⟨x₀, hx₀, by simp [Homeomorph.addRight]⟩
       obtain ⟨e, he_mem, he_basic⟩ :=
-        exists_basicSequence_of_weakClosure_not_normClosure hS_ne h_norm_0 h_weak_0
+        exists_basicSequence_of_weakClosure_not_normClosure h_norm_0 h_weak_0
       choose σ hσ_mem hσ_eq using fun n => he_mem n
       obtain ⟨y, hyA, hy_cp⟩ := hA (fun n => toWeakSpace 𝕜 X (σ n))
         (fun n => (h_mem_iff (σ n)).mp (hσ_mem n))
@@ -408,7 +408,7 @@ theorem IsCompact.frechetUrysohnSpace [CompleteSpace X]
       rw [h_eq, ← (Homeomorph.addRight (-(↑a : WeakSpace 𝕜 X))).image_closure]
       exact ⟨↑a, ha_cl, by simp [Homeomorph.addRight]⟩
     obtain ⟨e, he_mem, he_basic⟩ :=
-      exists_basicSequence_of_weakClosure_not_normClosure hS'_ne h_norm_0 h_weak_0
+      exists_basicSequence_of_weakClosure_not_normClosure h_norm_0 h_weak_0
     have h_in_S_W : ∀ n, toWeakSpace 𝕜 X (e n + x₀) ∈ S_W := by
       intro n
       obtain ⟨z, hz, hze⟩ := he_mem n
