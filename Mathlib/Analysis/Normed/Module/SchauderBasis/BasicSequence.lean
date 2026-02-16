@@ -9,25 +9,42 @@ public import Mathlib.Analysis.Normed.Module.SchauderBasis.Basic
 public import Mathlib.Analysis.Normed.Module.WeakDual
 public import Mathlib.Analysis.LocallyConvex.Separation
 
-
 /-!
 # Basic Sequences in Banach Spaces
 
-This file defines the basic sequence structures and foundational lemmas.
+A **basic sequence** in a Banach space is a sequence that forms a Schauder basis for the closure of
+its linear span. Basic sequences are a central tool in the structural theory of Banach spaces:
+every infinite-dimensional Banach space contains a basic sequence (the Bessaga–Pełczyński theorem),
+and many constructions in the theory reduce to manipulations of basic sequences.
+
+The key criterion for recognizing basic sequences is the **Grünblum condition**: a sequence `(eₙ)`
+is basic if and only if all partial sums `∑_{i<m} aᵢeᵢ` are bounded by a constant `K` times the
+full sum `∑_{i<n} aᵢeᵢ` whenever `m ≤ n`. The analogous condition for unconditional basic
+sequences, where subsets replace initial segments, is called the **Nikolskii condition**.
 
 ## Main Definitions
 
-* `GeneralBasicSequence`: A bundled sequence that forms a generalized Schauder basis for its span.
 * `BasicSequence`: A bundled ℕ-indexed sequence that forms a Schauder basis for its closed span.
+* `UnconditionalBasicSequence`: A bundled sequence forming an unconditional Schauder basis.
 * `IsBasicSequence`: Predicate for a sequence being a basic sequence.
-* `IsGeneralBasicSequence`: Predicate for a general basic sequence.
+* `IsUnconditionalBasicSequence`: Predicate for an unconditional basic sequence.
+* `SatisfiesGrunblumCondition`: The Grünblum condition with constant `K`.
+* `SatisfiesNikolskiiCondition`: The Nikolskii condition with constant `K`.
 
 ## Main Results
 
+* `isBasicSequence_of_Grunblum_with_bound`: A nonzero sequence satisfying the Grünblum condition
+  is a basic sequence, with an explicit bound on the basis constant.
+* `isUnconditionalBasicSequence_of_Nikolskii`: The analogous result for unconditional basic
+  sequences under the Nikolskii condition.
 * `functional_vanishes_on_set_of_bound`: A functional with a lower bound on a scaling-closed set
   containing 0 must vanish on that set.
 * `exists_functional_neg_one_and_vanishes_on_closed_submodule`: Hahn-Banach separation for
   a point outside a closed submodule.
+
+## References
+
+* [F. Albiac, N.J. Kalton, *Topics in Banach Space Theory*][albiac2016]
 -/
 
 @[expose] public section
@@ -124,7 +141,7 @@ theorem basicSequence_satisfiesGrunblum :
 /-- The Grünblum bound transfers through a norm-preserving map: if `b` is a basic sequence
     in `Y` and `J : X →L[𝕜] Y` satisfies `‖J y‖ = ‖y‖` with `J (x n) = b n`, then `x`
     satisfies the same Grünblum bound as `b`. -/
-theorem grunblum_bound_transfer {Y : Type*}
+theorem Grunblum_bound_transfer {Y : Type*}
     [NormedAddCommGroup Y] [NormedSpace 𝕜 Y]
     (b : BasicSequence 𝕜 Y) (x : ℕ → X) (J : X →L[𝕜] Y)
     (hJ_iso : ∀ y, ‖J y‖ = ‖y‖) (hx_J : ∀ n, J (x n) = b n)
@@ -147,7 +164,8 @@ lemma injective (b : BasicSequence 𝕜 X) : Function.Injective ⇑b := by
   exact b.basis.linearIndependent.injective
     (Subtype.ext ((b.basis_eq i).trans (hij.trans (b.basis_eq j).symm)))
 
-theorem grunblum_const_ge_1 {e : ℕ → X} {K : ℝ}
+/-- The Grünblum constant must be at least 1 for any nonzero sequence. -/
+theorem Grunblum_const_ge_1 {e : ℕ → X} {K : ℝ}
     (h : SatisfiesGrunblumCondition 𝕜 e K) (h_nz : ∀ n, e n ≠ 0) : 1 ≤ K := by
   have h0 := h 1 1 (fun _ => 1) le_rfl
   simp only [Finset.range_one, one_smul, sum_singleton] at h0
@@ -155,9 +173,10 @@ theorem grunblum_const_ge_1 {e : ℕ → X} {K : ℝ}
 
 /-- The basis constant of a basic sequence is at least 1. -/
 theorem basicSequenceConstant_ge_one : 1 ≤ bs.basicSequenceConstant :=
-  grunblum_const_ge_1 (basicSequence_satisfiesGrunblum bs) bs.ne_zero
+  Grunblum_const_ge_1 (basicSequence_satisfiesGrunblum bs) bs.ne_zero
 
-lemma linearIndependent_of_grunblum {e : ℕ → X} {K : ℝ}
+/-- A nonzero sequence satisfying the Grünblum condition is linearly independent. -/
+lemma linearIndependent_of_Grunblum {e : ℕ → X} {K : ℝ}
     (h_grunblum : SatisfiesGrunblumCondition 𝕜 e K)
     (h_nz : ∀ n, e n ≠ 0) : LinearIndependent 𝕜 e := by
   rw [linearIndependent_iff']
@@ -183,14 +202,14 @@ lemma linearIndependent_of_grunblum {e : ℕ → X} {K : ℝ}
   -- 5. Conclude g i = 0
   simpa [c, hi_s, h_nz i] using h_term
 
-/-- A version of `isBasicSequence_of_grunblum` that also provides an explicit bound
+/-- A version of `isBasicSequence_of_Grunblum` that also provides an explicit bound
     on the basis constant. If a sequence satisfies the Grünblum condition with constant K,
     the resulting basic sequence has basis constant at most K. -/
-theorem isBasicSequence_of_grunblum_with_bound [CompleteSpace X] {e : ℕ → X} {K : ℝ}
+theorem isBasicSequence_of_Grunblum_with_bound [CompleteSpace X] {e : ℕ → X} {K : ℝ}
     (h_grunblum : SatisfiesGrunblumCondition 𝕜 e K) (h_nz : ∀ n, e n ≠ 0) :
     ∃ (b : BasicSequence 𝕜 X), ⇑b = e ∧ b.basicSequenceConstant ≤ K := by
-  have h_indep := linearIndependent_of_grunblum h_grunblum h_nz
-  have hK : 0 ≤ K := zero_le_one.trans (grunblum_const_ge_1 h_grunblum h_nz)
+  have h_indep := linearIndependent_of_Grunblum h_grunblum h_nz
+  have hK : 0 ≤ K := zero_le_one.trans (Grunblum_const_ge_1 h_grunblum h_nz)
   let S := Submodule.span 𝕜 (Set.range e)
   let b_S := Module.Basis.span h_indep
   let e_Y : ℕ → S := b_S
@@ -309,9 +328,9 @@ theorem isBasicSequence_of_grunblum_with_bound [CompleteSpace X] {e : ℕ → X}
     (ENNReal.toReal_ofReal hK)
 
 /-- Convenience wrapper: the Grünblum criterion as a predicate. -/
-theorem isBasicSequence_of_grunblum [CompleteSpace X] {e : ℕ → X} {K : ℝ} (h_nz : ∀ n, e n ≠ 0)
+theorem isBasicSequence_of_Grunblum [CompleteSpace X] {e : ℕ → X} {K : ℝ} (h_nz : ∀ n, e n ≠ 0)
     (h : SatisfiesGrunblumCondition 𝕜 e K) : IsBasicSequence 𝕜 e := by
-  obtain ⟨b, hb_eq, _⟩ := isBasicSequence_of_grunblum_with_bound h h_nz
+  obtain ⟨b, hb_eq, _⟩ := isBasicSequence_of_Grunblum_with_bound h h_nz
   exact ⟨b, hb_eq⟩
 
 /-- The tail of a basic sequence (starting from index N) is also a basic sequence. -/
@@ -319,7 +338,7 @@ theorem tail_basic_sequence [CompleteSpace X] (bs : BasicSequence 𝕜 X) (N : �
     IsBasicSequence 𝕜 (fun n => bs (n + N)) := by
   have hK_bound := basicSequence_satisfiesGrunblum bs
   have h_nz : ∀ n, bs (n + N) ≠ 0 := fun n => bs.ne_zero (n + N)
-  refine isBasicSequence_of_grunblum (K := bs.basicSequenceConstant) h_nz ?_
+  refine isBasicSequence_of_Grunblum (K := bs.basicSequenceConstant) h_nz ?_
   intro n m a hnm
   let a' : ℕ → 𝕜 := fun i => if N ≤ i then a (i - N) else 0
   have h_sum_eq (k : ℕ) : ∑ i ∈ Finset.range k, a i • bs (i + N) =
@@ -354,8 +373,8 @@ lemma pullback [CompleteSpace X]
   have h_nz : ∀ n, seq n ≠ 0 := fun n h =>
     b.ne_zero n (by rw [← hseq_J n, h, map_zero])
   have h_grunblum : SatisfiesGrunblumCondition 𝕜 seq b.basicSequenceConstant :=
-    fun n m a hmn => b.grunblum_bound_transfer seq J hJ_iso hseq_J n m a hmn
-  obtain ⟨b', hb'_eq, hb'_bound⟩ := isBasicSequence_of_grunblum_with_bound h_grunblum h_nz
+    fun n m a hmn => b.Grunblum_bound_transfer seq J hJ_iso hseq_J n m a hmn
+  obtain ⟨b', hb'_eq, hb'_bound⟩ := isBasicSequence_of_Grunblum_with_bound h_grunblum h_nz
   exact ⟨b', fun n => (congrFun hb'_eq n).symm ▸ hseq_S n, hb'_bound⟩
 
 /-- Pull back through a norm-preserving linear map (predicate version). -/
@@ -394,6 +413,7 @@ namespace UnconditionalBasicSequence
 
 variable (ubs : UnconditionalBasicSequence ℕ 𝕜 X)
 
+/-- Convert an ℕ-indexed unconditional basic sequence to a (conditional) basic sequence. -/
 def toBasicSequence : BasicSequence 𝕜 X := {
   toFun := ubs.toFun,
   basis := ubs.basis.toSchauderBasis,
@@ -465,6 +485,7 @@ theorem unconditional_satisfiesNikolskii :
 
 variable {e : β → X} {K : ℝ}
 
+/-- A nonzero sequence satisfying the Nikolskii condition is linearly independent. -/
 lemma linearIndependent_of_Nikolskii (hN : SatisfiesNikolskiiCondition 𝕜 e K)
     (h_nz : ∀ n, e n ≠ 0) : LinearIndependent 𝕜 e := by
   rw [linearIndependent_iff']
@@ -564,6 +585,14 @@ theorem SatisfiesNikolskiiCondition.toSatisfiesGrunblumCondition {e : ℕ → X}
 
 end UnconditionalBasicSequence
 
+end -- public section
+
+/-! ### Hahn-Banach separation lemmas -/
+
+noncomputable section
+
+variable {𝕜 : Type*} [RCLike 𝕜]
+
 namespace BasicSequence
 
 /-- A continuous linear functional with a lower bound on a set closed under 𝕜-scaling and
@@ -603,7 +632,7 @@ lemma functional_vanishes_on_set_of_bound {E : Type*} [NormedAddCommGroup E] [No
   have h_bound' := hg_bound ((t : 𝕜) • (c • y)) htcy_mem
   rw [h_gtc, h_re_t] at h_bound'
   have : t * (-‖gy‖) = -(|u| + 1 + ‖gy‖) := by
-    change ((|u| + 1) / ‖gy‖ + 1) * (-‖gy‖) = -(|u| + 1 + ‖gy‖); field_simp
+    simp only [t]; field_simp
   linarith [neg_abs_le u]
 
 /-- Given a point outside a closed submodule over 𝕜, there exists a continuous linear functional
@@ -616,20 +645,7 @@ lemma exists_functional_neg_one_and_vanishes_on_closed_submodule
     ∃ f : E →L[𝕜] 𝕜, f u = -1 ∧ ∀ m ∈ (M : Set E), f m = 0 := by
   -- Set up real scalar structure
   haveI : NormedSpace ℝ E := NormedSpace.restrictScalars ℝ 𝕜 E
-  -- M is convex (it's a submodule)
-  have hM_convex : Convex ℝ (M : Set E) := by
-    intro x hx y hy a c ha hc hac
-    have hax : (a : 𝕜) • x ∈ M := M.smul_mem _ hx
-    have hcy : (c : 𝕜) • y ∈ M := M.smul_mem _ hy
-    have h_add := M.add_mem hax hcy
-    convert h_add using 1
-    simp only [RCLike.real_smul_eq_coe_smul (K := 𝕜)]
-  -- LocallyConvexSpace instance for Hahn-Banach
-  haveI : LocallyConvexSpace ℝ E := by
-    refine LocallyConvexSpace.ofBasisZero ℝ E
-      (fun r => Metric.closedBall 0 r) (fun r => 0 < r) ?_ ?_
-    · exact @Metric.nhds_basis_closedBall E _ 0
-    · intro r _; exact @convex_closedBall E _ _ 0 r
+  have hM_convex : Convex ℝ (M : Set E) := Submodule.convex (M.restrictScalars ℝ)
   -- Apply Hahn-Banach separation
   obtain ⟨g, s, hg_u, hg_M⟩ := @RCLike.geometric_hahn_banach_point_closed 𝕜 E _ _ _
     (M : Set E) u _ _ _ _ _ _ hM_convex hM_closed hu

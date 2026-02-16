@@ -225,7 +225,7 @@ theorem basic_sequence_selection_dual {S : Set (StrongDual 𝕜 X)}
     apply h_norm
     rw [← hfn]
     exact subset_closure (hf_spec n).1
-  obtain ⟨b, hb, hbound⟩ := isBasicSequence_of_grunblum_with_bound h_grunblum_bound h_nz
+  obtain ⟨b, hb, hbound⟩ := isBasicSequence_of_Grunblum_with_bound h_grunblum_bound h_nz
   refine ⟨b, ?_, hbound⟩
   intro n
   rw [show b n = f n from congrFun hb n]

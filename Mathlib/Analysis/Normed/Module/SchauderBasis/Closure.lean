@@ -71,7 +71,6 @@ namespace BasicSequence
 
 /- -/
 lemma perturbBasicSequence [CompleteSpace X] (b : BasicSequence 𝕜 X)
-    (h_bound : b.basis.enormProjBound < ⊤)
     (u : X) (g : StrongDual 𝕜 X)
     (hf : ∀ n, g (b n) = 1) (hu : g u = -1)
     (hunin : u ∉ closure (Submodule.span 𝕜 (Set.range b) : Set X)) :
@@ -100,7 +99,7 @@ lemma perturbBasicSequence [CompleteSpace X] (b : BasicSequence 𝕜 X)
   let K := b.basicSequenceConstant
   let C := 1 + ‖f‖ * ‖u‖
   have hC : 0 ≤ C := add_nonneg zero_le_one (mul_nonneg (norm_nonneg f) (norm_nonneg u))
-  refine isBasicSequence_of_grunblum (K := K * C ^ 2) h_nz fun n m a hnm ↦ ?_
+  refine isBasicSequence_of_Grunblum (K := K * C ^ 2) h_nz fun n m a hnm ↦ ?_
   let Y k := ∑ i ∈ Finset.range k, a i • y i
   let E k := ∑ i ∈ Finset.range k, a i • b i
   have h_rel (k) : Y k = E k + f (Y k) • u := by
