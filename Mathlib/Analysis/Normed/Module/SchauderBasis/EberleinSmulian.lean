@@ -336,7 +336,7 @@ theorem Eberlein_Smulian [CompleteSpace X] (A : Set (WeakSpace 𝕜 X))
   obtain ⟨e, he_mem, he_basic⟩ : ∃ (e : ℕ → X), (∀ n, e n ∈ A₀) ∧ IsBasicSequence 𝕜 e := by
     by_contra h_no; push_neg at h_no
     exact h_not_compact
-      (no_basic_sequence_implies_relatively_weakly_compact hA₀_ne hA₀_bounded h_no)
+      (no_basic_sequence_implies_relatively_weakly_compact hA₀_bounded h_no)
   obtain ⟨a, _, ha_cluster⟩ := hA (fun n => (toWeakSpace 𝕜 X) (e n))
     (fun n => (h_mem_iff (e n)).mp (he_mem n).1)
   have ha_eq_0 : a = 0 :=

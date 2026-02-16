@@ -10,9 +10,25 @@ public import Mathlib.Topology.Constructions
 public import Mathlib.Topology.Algebra.Module.WeakDual
 public import Mathlib.Topology.Maps.Basic
 
-
 /-!
-# Basic Sequences in Banach Spaces
+# Relative Weak Compactness via Basic Sequences
+
+A bounded set in a Banach space that contains no basic sequence has relatively weakly compact
+closure. This is one direction of the Eberlein–Šmulian characterization: if a bounded set fails
+to be relatively weakly compact, then it must contain a basic sequence (via the selection
+principle from `Selection.lean`).
+
+## Main Results
+
+* `no_basic_sequence_implies_relatively_weakly_compact`: A bounded set with no basic sequence
+  has weakly compact closure.
+* `WeakSpace.instT2Space`: The weak topology on a normed space is T2.
+* `compactness_transfer_from_bidual`: Transfer compactness from the weak-star bidual back
+  to the weak topology on `X`.
+
+## References
+
+* [F. Albiac, N.J. Kalton, *Topics in Banach Space Theory*][albiac2016]
 -/
 @[expose] public section
 
@@ -69,7 +85,7 @@ private lemma coord_vanish_on_tail_span {E : Type*} [NormedAddCommGroup E] [Norm
     tail spans. This is because some Schauder coordinate must be nonzero, but that coordinate
     vanishes on sufficiently late tails. Extracted to reduce elaboration overhead. -/
 private lemma nonzero_not_in_all_tail_closures {E : Type*} [NormedAddCommGroup E] [NormedSpace 𝕜 E]
-    [CompleteSpace E] (b : BasicSequence 𝕜 E) (h_bound : b.basis.enormProjBound < ⊤)
+    [CompleteSpace E] (b : BasicSequence 𝕜 E)
     (w : E) (hw_in : w ∈ (Submodule.span 𝕜 (Set.range b.toFun)).topologicalClosure)
     (hw_ne : w ≠ 0) :
     ∃ N, w ∉ closure (Submodule.span 𝕜 (Set.range (fun n => b (n + N))) : Set E) := by
@@ -80,7 +96,7 @@ private lemma nonzero_not_in_all_tail_closures {E : Type*} [NormedAddCommGroup E
   have hw_Z_ne : w_Z ≠ 0 := fun h => hw_ne (congrArg Subtype.val h)
   -- Build Schauder basis for Z from b
   let basis_Z : SchauderBasis 𝕜 Z :=
-    schauderBasisOfClosure (Y := Y) b.basis h_bound
+    schauderBasisOfClosure (Y := Y) b.basis b.basisConstant_lt_top
   have h_basis_coe : ∀ n, (basis_Z n : E) = b.toFun n := fun n => by
     rw [schauderBasisOfClosure_apply]
     exact b.basis_eq n
@@ -123,6 +139,7 @@ noncomputable def NormedSpace.inclusionInDoubleDual_homeomorph_weak
   -- The embedding induces the topology, so e is a homeomorphism
   exact e.toHomeomorphOfIsInducing (IsInducing.subtypeVal.of_comp_iff.mp emb.toIsInducing)
 
+/-- The weak topology on a normed space is T2 (Hausdorff). -/
 instance WeakSpace.instT2Space (𝕜 : Type*) [RCLike 𝕜] (X : Type*) [NormedAddCommGroup X]
     [NormedSpace 𝕜 X] : T2Space (WeakSpace 𝕜 X) :=
   (NormedSpace.inclusionInDoubleDual_homeomorph_weak 𝕜 X).isEmbedding.t2Space
@@ -159,7 +176,7 @@ private lemma translated_tail_is_basic {E : Type*} [NormedAddCommGroup E] [Norme
   have he_basic : IsBasicSequence 𝕜 (fun n => b (n + N)) := tail_basic_sequence b N
   let b_tail := he_basic.toBasicSequence
   have hb_tail_eq : ⇑b_tail = fun n => b (n + N) := he_basic.coe_toBasicSequence
-  convert perturbBasicSequence b_tail b_tail.basisConstant_lt_top w' f ?_ hf_w ?_ using 1
+  convert perturbBasicSequence b_tail w' f ?_ hf_w ?_ using 1
   · funext n; exact congrArg (· + w') (congrFun hb_tail_eq n).symm
   · intro n; rw [congrFun hb_tail_eq n]; exact hf_e n
   · rw [congrArg Set.range hb_tail_eq]; exact h_w_notin_span
@@ -214,12 +231,10 @@ lemma compactness_transfer_from_bidual
   exact ⟨⟨ι x, x, rfl⟩, h_in_K, by rw [← h_homeo, Homeomorph.symm_apply_apply]⟩
 
 set_option maxHeartbeats 250000 in
--- TODO contrapose the statement
-/-- Main theorem: in a Banach space, a set S that is bounded
-    and does not contain any basic sequence, has relatively weakly compact closure in the weak
-    topology. -/
+/-- A bounded set in a Banach space that contains no basic sequence has relatively weakly compact
+    closure. This is one direction of the Eberlein–Šmulian theorem. -/
 theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
-    {S : Set X} (_hS_ne : S.Nonempty) (h_bounded : Bornology.IsBounded S)
+    {S : Set X} (h_bounded : Bornology.IsBounded S)
     (h_no_basic : ∀ (e : ℕ → X), (∀ n, e n ∈ S) → ¬ IsBasicSequence 𝕜 e) :
     IsCompact (closure (toWeakSpace 𝕜 X '' S)) :=
     let Xbidual : Type _ := StrongDual 𝕜 (StrongDual 𝕜 X)
@@ -292,7 +307,7 @@ theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
             WeakDual.toStrongDual.injective (h.trans (map_zero _).symm), image_univ]
           exact ⟨J 0, mem_range_self 0, by simp only [map_zero]⟩
         by_contra h_contra; push_neg at h_contra
-        exact (nonzero_not_in_all_tail_closures b b.basisConstant_lt_top w'
+        exact (nonzero_not_in_all_tail_closures b w'
           (by simpa using h_contra 0) hw_ne).elim (fun N hN => hN (h_contra N))
       obtain ⟨N, h_w_notin_span⟩ := h_w_span
       let e : ℕ → Xbidual := fun n => b (n + N)
