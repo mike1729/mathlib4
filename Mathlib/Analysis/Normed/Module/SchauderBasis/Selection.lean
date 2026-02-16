@@ -10,23 +10,34 @@ public import Mathlib.Topology.MetricSpace.HausdorffDistance
 public import Mathlib.Topology.MetricSpace.ProperSpace
 public import Mathlib.Topology.Neighborhoods
 
-
 /-!
 # Selection Principle for Basic Sequences
 
-This file contains the selection principle for basic sequences in dual spaces,
-as well as the existence theorem for basic sequences in infinite-dimensional spaces.
+The **selection principle** extracts basic sequences from sets that are weak*-dense near the
+origin but norm-separated from it. This gap between the weak and norm topologies is the
+mechanism behind many structural results in Banach space theory.
+
+The key technical ingredient is a perturbation lemma: given a finite-dimensional subspace and a
+weak*-dense set, one can find an element of the set that is almost orthogonal to the subspace.
+Iterating this produces a sequence satisfying the Grünblum condition, hence a basic sequence.
+
+As a corollary, every infinite-dimensional Banach space contains a basic sequence with basis
+constant arbitrarily close to 1 (the Bessaga–Pełczyński theorem).
 
 ## Main Results
 
 * `perturbation_finite_dimensional`: Given a weak*-dense set and a finite-dimensional subspace,
   there exists a perturbation element almost orthogonal to the subspace.
-* `basic_sequence_selection_dual`: The dual selection principle - extracts a basic sequence
+* `basic_sequence_selection_dual`: The dual selection principle — extracts a basic sequence
   from a set that is weak*-dense near 0 but norm-separated from 0.
 * `weak_closure_sphere_contains_zero`: In an infinite-dimensional space, 0 is in the weak*
   closure of the unit sphere's image in the bidual.
-* `exists_basic_sequence`: Every infinite-dimensional Banach space contains a basic sequence
+* `exists_basicSequence`: Every infinite-dimensional Banach space contains a basic sequence
   with basis constant arbitrarily close to 1.
+
+## References
+
+* [F. Albiac, N.J. Kalton, *Topics in Banach Space Theory*][albiac2016]
 -/
 
 @[expose] public section
@@ -40,6 +51,9 @@ variable {X : Type*} [NormedAddCommGroup X] [NormedSpace 𝕜 X]
 
 namespace BasicSequence
 
+/-- Given a weak*-dense set `S` norm-separated from 0 and a finite-dimensional subspace `E`,
+    there exists `x ∈ S` that is almost orthogonal to `E`: for all `e ∈ E` and scalars `c`,
+    `‖e + c • x‖ ≥ (1 - ε) * ‖e‖`. -/
 lemma perturbation_finite_dimensional {S : Set (StrongDual 𝕜 X)}
     (h_weak_star : (0 : WeakDual 𝕜 X) ∈ closure (StrongDual.toWeakDual '' S))
     (h_norm : (0 : StrongDual 𝕜 X) ∉ closure S)
@@ -231,9 +245,8 @@ theorem basic_sequence_selection_dual {S : Set (StrongDual 𝕜 X)}
   rw [show b n = f n from congrFun hb n]
   exact (hf_spec n).1
 
-/- TODO this may be turned into a more general result about the weak* closure
-  of the unit sphere in the bidual (that it's whole unit ball), but for now we
-  just need this specific case until Goldstine theorem is proved. -/
+/-- In an infinite-dimensional normed space, `0` is in the weak* closure of the image of the
+    unit sphere under the canonical embedding into the bidual. -/
 lemma weak_closure_sphere_contains_zero (hinf : ¬ FiniteDimensional 𝕜 X) :
     (0 : WeakDual 𝕜 (StrongDual 𝕜 X)) ∈ closure (
       StrongDual.toWeakDual '' (NormedSpace.inclusionInDoubleDual 𝕜 X '' Metric.sphere 0 1)) := by
@@ -298,9 +311,9 @@ lemma weak_closure_sphere_contains_zero (hinf : ¬ FiniteDimensional 𝕜 X) :
     exact (ht_cond f hf).2
   exact ⟨StrongDual.toWeakDual (J x), hJx_U, hJx_S⟩
 
-/-- Corollary 1.5.3: Every infinite-dimensional Banach space contains a basic sequence
-    with basis constant arbitrarily close to 1. -/
-theorem exists_basic_sequence [CompleteSpace X] (hinf : ¬ FiniteDimensional 𝕜 X) {ε : ℝ}
+/-- Every infinite-dimensional Banach space contains a basic sequence with basis constant
+    arbitrarily close to 1 (the Bessaga–Pełczyński theorem, [albiac2016, Corollary 1.5.3]). -/
+theorem exists_basicSequence [CompleteSpace X] (hinf : ¬ FiniteDimensional 𝕜 X) {ε : ℝ}
     (hε : 0 < ε) : ∃ (b : BasicSequence 𝕜 X), b.basicSequenceConstant ≤ 1 + ε := by
   -- 1. Setup the Embedding J : X → X**
   let J := NormedSpace.inclusionInDoubleDual 𝕜 X
@@ -325,6 +338,5 @@ theorem exists_basic_sequence [CompleteSpace X] (hinf : ¬ FiniteDimensional �
   obtain ⟨b, _, hb_bound⟩ := b_bidual.pullback J
     (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).norm_map hb_mem
   exact ⟨b, hb_bound.trans hb_const⟩
-
 
 end BasicSequence
