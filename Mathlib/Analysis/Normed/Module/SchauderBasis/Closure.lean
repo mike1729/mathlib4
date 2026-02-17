@@ -5,7 +5,7 @@ Authors: Michał Świętek
 -/
 module
 
-public import Mathlib.Analysis.Normed.Module.SchauderBasis.Selection
+public import Mathlib.Analysis.Normed.Module.SchauderBasis.BasicSequenceSelection
 public import Mathlib.Analysis.Normed.Module.SchauderBasis.CountablyCompact
 public import Mathlib.Analysis.Normed.Operator.Extend
 public import Mathlib.Analysis.Normed.Module.HahnBanach

@@ -5,7 +5,7 @@ Authors: Michał Świętek
 -/
 module
 
-public import Mathlib.Analysis.Normed.Module.SchauderBasis.Existence
+public import Mathlib.Analysis.Normed.Module.SchauderBasis.NoBasicSequence
 public import Mathlib.Analysis.Normed.Module.SchauderBasis.CountablyCompact
 public import Mathlib.Topology.Maps.Basic
 
@@ -13,11 +13,32 @@ public import Mathlib.Topology.Maps.Basic
 # Eberlein–Šmulian Theorem
 
 The Eberlein–Šmulian theorem states that in a Banach space, a weakly countably compact set
-is weakly compact.
+is weakly compact. This is a deep result in functional analysis connecting three notions of
+compactness in the weak topology: countable compactness, sequential compactness, and compactness.
+
+## Main Definitions
+
+* `IsCountablyTight`: A set `A` is countably tight if every point in the closure of `A` lies
+  in the closure of some countable subset of `A`.
+* `CountablyTight`: A topological space has countable tightness if every set is countably tight.
 
 ## Main Results
 
-* `Eberlein_Smulian`: A weakly countably compact set in a Banach space is weakly compact.
+* `IsCountablyCompact.isVonNBounded`: A countably compact set in a topological vector space
+  is von Neumann bounded.
+* `IsCountablyCompact.isBounded`: A weakly countably compact set in a normed space is
+  norm-bounded (via Banach–Steinhaus).
+* `eberlein_smulian_isSeqCompact`: A weakly countably compact set in a Banach space is
+  weakly sequentially compact.
+* `eberlein_smulian`: **Eberlein–Šmulian theorem.** A weakly countably compact set in a
+  Banach space is weakly compact.
+* `IsCompact.frechetUrysohnSpace`: Weakly compact subsets of a Banach space are
+  Fréchet–Urysohn in the subspace topology.
+* `IsCompact.countablyTight`: Weakly compact subsets of a Banach space are countably tight.
+
+## References
+
+* Albiac, F., & Kalton, N. J. (2016). *Topics in Banach Space Theory*.
 -/
 
 @[expose] public section
@@ -55,7 +76,23 @@ end BasicSequence
 
 open BasicSequence
 
+/-- If `x₀` is not in the norm closure of `S`, then `0` is not in the norm closure of
+the translated set `(· - x₀) '' S`. -/
+private lemma zero_not_mem_closure_sub_image
+    {S : Set X} {x₀ : X} (h : x₀ ∉ closure S) :
+    (0 : X) ∉ closure ((· - x₀) '' S) := by
+  rw [show (· - x₀) '' S = Homeomorph.addRight (-x₀) '' S from by ext y; simp [sub_eq_add_neg],
+    ← (Homeomorph.addRight (-x₀)).image_closure]
+  rintro ⟨z, hz, hze⟩
+  exact h ((add_neg_eq_zero.mp hze) ▸ hz)
+
+/-! ### Von Neumann boundedness of countably compact sets -/
+
 open scoped Pointwise in
+/-- A countably compact set in a topological vector space is von Neumann bounded. This is proved
+by contradiction: if the set is not absorbed by some balanced neighbourhood of zero, we extract
+a sequence whose scalar multiples leave the neighbourhood, then use countable compactness and
+continuity of scalar multiplication to reach a contradiction. -/
 theorem IsCountablyCompact.isVonNBounded
     {𝕜 : Type*} [NontriviallyNormedField 𝕜]
     {E : Type*} [AddCommGroup E] [Module 𝕜 E] [TopologicalSpace E]
@@ -99,8 +136,11 @@ theorem IsCountablyCompact.isVonNBounded
   exact hinv_not n (hUS (Set.mk_mem_prod haU hxS))
 
 open scoped Pointwise in
-theorem IsCountablyCompact_IsBounded
-    (A : Set (WeakSpace 𝕜 X))
+/-- A weakly countably compact set in a normed space is norm-bounded. This follows from
+von Neumann boundedness (which holds for any countably compact set in a TVS) combined with
+the Banach–Steinhaus theorem applied to the double dual embedding. -/
+theorem IsCountablyCompact.isBounded
+    {A : Set (WeakSpace 𝕜 X)}
     (hA : IsCountablyCompact A) : Bornology.IsBounded ((toWeakSpace 𝕜 X).symm '' A) := by
   rw [isBounded_iff_forall_norm_le]
   have hVNB := hA.isVonNBounded (𝕜 := 𝕜)
@@ -132,7 +172,14 @@ theorem IsCountablyCompact_IsBounded
     (((NormedSpace.inclusionInDoubleDual 𝕜 X) x).le_opNorm f).trans
       (mul_le_mul_of_nonneg_right h (norm_nonneg f))
 
-theorem Eberlein_Smulian' [CompleteSpace X] (A : Set (WeakSpace 𝕜 X))
+/-! ### The Eberlein–Šmulian theorem -/
+
+/-- **Eberlein–Šmulian (sequential compactness).** A weakly countably compact set in a Banach
+space is weakly sequentially compact. The proof splits into two cases: if the weak cluster point
+is also a norm cluster point, we extract a norm-convergent (hence weakly convergent) subsequence;
+otherwise, we use the basic sequence selection principle to construct a subsequence that converges
+weakly via uniqueness of cluster points. -/
+theorem eberlein_smulian_isSeqCompact [CompleteSpace X] (A : Set (WeakSpace 𝕜 X))
     (hA : IsCountablyCompact A) : IsSeqCompact A := by
   intro xn h_mem
   obtain ⟨x, hxA, hx_cluster⟩ := hA xn h_mem
@@ -198,15 +245,14 @@ theorem Eberlein_Smulian' [CompleteSpace X] (A : Set (WeakSpace 𝕜 X))
     exact ⟨x, hxA, ψ, hψ_mono,
       (toWeakSpaceCLM 𝕜 X).continuous.continuousAt.tendsto.comp hψ_tendsto⟩
 
--- TODO add consequeces eg: Freshet-Uryshon, reflexivity of weak compactness, etc.
+-- TODO add consequences eg: Fréchet–Urysohn, reflexivity of weak compactness, etc.
 /-- **Eberlein–Šmulian theorem**: In a Banach space, a weakly countably compact set
 is weakly compact. -/
-theorem Eberlein_Smulian [CompleteSpace X] (A : Set (WeakSpace 𝕜 X))
+theorem eberlein_smulian [CompleteSpace X] (A : Set (WeakSpace 𝕜 X))
     (hA : IsCountablyCompact A) : IsCompact A := by
-  by_cases hA_ne : A.Nonempty
-  swap
-  · rw [Set.not_nonempty_iff_eq_empty.mp hA_ne]; exact isCompact_empty
-  have h_bounded := IsCountablyCompact_IsBounded A hA
+  rcases A.eq_empty_or_nonempty with rfl | hA_ne
+  · exact isCompact_empty
+  have h_bounded := hA.isBounded
   let A_X : Set X := (toWeakSpace 𝕜 X).symm '' A
   have hA_X_eq : toWeakSpace 𝕜 X '' A_X = A := by
     change toWeakSpace 𝕜 X '' ((toWeakSpace 𝕜 X).symm '' A) = A
@@ -261,11 +307,7 @@ theorem Eberlein_Smulian [CompleteSpace X] (A : Set (WeakSpace 𝕜 X))
     · -- Case 2: x₀ NOT in norm closure → basic sequence argument
       let S : Set X := (· - x₀_X) '' A_X
       have hS_ne : S.Nonempty := hA_X_ne.image _
-      have h_norm_0 : (0 : X) ∉ closure S := by
-        rw [show S = Homeomorph.addRight (-x₀_X) '' A_X from by ext y; simp [S, sub_eq_add_neg],
-          ← (Homeomorph.addRight (-x₀_X)).image_closure]
-        rintro ⟨z, hz, hze⟩
-        exact h_norm_x ((add_neg_eq_zero.mp hze) ▸ hz)
+      have h_norm_0 : (0 : X) ∉ closure S := zero_not_mem_closure_sub_image h_norm_x
       have h_weak_0 : (0 : X) ∈ closure (toWeakSpace 𝕜 X '' S) := by
         have h_eq : toWeakSpace 𝕜 X '' S =
             (Homeomorph.addRight (-x₀) : WeakSpace 𝕜 X ≃ₜ WeakSpace 𝕜 X) '' A := by
@@ -348,7 +390,9 @@ theorem Eberlein_Smulian [CompleteSpace X] (A : Set (WeakSpace 𝕜 X))
   obtain ⟨n, hn⟩ := (h_cluster_f.frequently (ball_mem_nhds 0 one_pos)).exists
   exact absurd (dist_zero_right (f (e n)) ▸ hn) (not_lt.mpr (le_of_lt (he_mem n).2))
 
-/-- Weakly compact subsets of a Banach space are Fréchet-Urysohn in the subspace topology.
+/-! ### Consequences of the Eberlein–Šmulian theorem -/
+
+/-- Weakly compact subsets of a Banach space are Fréchet–Urysohn in the subspace topology.
 This is the "angelic" property of weakly compact sets: in a weakly compact set, closure
 equals sequential closure. -/
 theorem IsCompact.frechetUrysohnSpace [CompleteSpace X]
@@ -388,11 +432,7 @@ theorem IsCompact.frechetUrysohnSpace [CompleteSpace X]
   · -- Case 2: x₀ not in norm closure → basic sequence argument
     let S' : Set X := (· - x₀) '' S_X
     have hS'_ne : S'.Nonempty := hS_ne.image _
-    have h_norm_0 : (0 : X) ∉ closure S' := by
-      rw [show S' = Homeomorph.addRight (-x₀) '' S_X from by ext y; simp [S', sub_eq_add_neg],
-        ← (Homeomorph.addRight (-x₀)).image_closure]
-      rintro ⟨z, hz, hze⟩
-      exact h_norm ((add_neg_eq_zero.mp hze) ▸ hz)
+    have h_norm_0 : (0 : X) ∉ closure S' := zero_not_mem_closure_sub_image h_norm
     have h_weak_0 : (0 : X) ∈ closure (toWeakSpace 𝕜 X '' S') := by
       have h_eq : toWeakSpace 𝕜 X '' S' =
           (Homeomorph.addRight (-(↑a : WeakSpace 𝕜 X)) :
@@ -426,22 +466,3 @@ theorem IsCompact.frechetUrysohnSpace [CompleteSpace X]
       unique_clusterPt_limit K hK_cc a_w (fun n => ↑(t n))
         (fun n => (t n).property) h_unique
     exact ⟨t, ht_mem, Topology.IsInducing.subtypeVal.tendsto_nhds_iff.mpr h_tendsto⟩
-
-theorem Reflexive_iff_ball_seqCompact [CompleteSpace X] :
-    Module.IsReflexive 𝕜 X ↔ IsSeqCompact (Metric.closedBall (0 : X) 1) := sorry
-
-def IsCountablyTight {E : Type*} [TopologicalSpace E] (A : Set E) : Prop :=
-  ∀ x ∈ closure A, ∃ S ⊆ A, S.Countable ∧ x ∈ closure S
-
-class CountablyTight (E : Type*) [TopologicalSpace E] : Prop where
-  isCountablyTight : ∀ A : Set E, IsCountablyTight A
-
-theorem Compact.CountablyTight [CompleteSpace X] {K : Set (WeakSpace 𝕜 X)} (hK : IsCompact K) :
-    CountablyTight K := by
-  have : FrechetUrysohnSpace K := hK.frechetUrysohnSpace
-  constructor
-  intro A x hx
-  rw [mem_closure_iff_seq_limit] at hx
-  obtain ⟨u, hu_mem, hu_lim⟩ := hx
-  exact ⟨Set.range u, Set.range_subset_iff.mpr hu_mem, Set.countable_range u,
-    mem_closure_of_tendsto hu_lim (Filter.eventually_of_forall Set.mem_range_self)⟩

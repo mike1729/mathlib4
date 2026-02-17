@@ -237,99 +237,101 @@ theorem no_basic_sequence_implies_relatively_weakly_compact [CompleteSpace X]
     {S : Set X} (h_bounded : Bornology.IsBounded S)
     (h_no_basic : ∀ (e : ℕ → X), (∀ n, e n ∈ S) → ¬ IsBasicSequence 𝕜 e) :
     IsCompact (closure (toWeakSpace 𝕜 X '' S)) :=
-    let Xbidual : Type _ := StrongDual 𝕜 (StrongDual 𝕜 X)
-    -- Cache expensive instances for dual and bidual to avoid repeated synthesis
-    letI : NormedAddCommGroup (StrongDual 𝕜 X) := inferInstance
-    letI : NormedSpace 𝕜 (StrongDual 𝕜 X) := inferInstance
-    letI : NormedAddCommGroup (StrongDual 𝕜 (StrongDual 𝕜 X)) := inferInstance
-    letI : NormedSpace 𝕜 (StrongDual 𝕜 (StrongDual 𝕜 X)) := inferInstance
-    letI : CompleteSpace (StrongDual 𝕜 (StrongDual 𝕜 X)) := inferInstance
-    let J : X →L[𝕜] Xbidual := NormedSpace.inclusionInDoubleDual 𝕜 X
-    have hJ_iso : ∀ y, ‖J y‖ = ‖y‖ := fun y =>
-      (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).norm_map y
-    let S_bidual : Set Xbidual := J '' S
-    have h_S_bidual_bounded : Bornology.IsBounded S_bidual := by
-      obtain ⟨R, hR⟩ := Metric.isBounded_iff_subset_closedBall 0 |>.mp h_bounded
-      exact Metric.isBounded_iff_subset_closedBall 0 |>.mpr ⟨R, fun z hz => by
-        obtain ⟨x, hxS, rfl⟩ := hz
-        rw [mem_closedBall_zero_iff, hJ_iso]
-        exact mem_closedBall_zero_iff.mp (hR hxS)⟩
-    let K : Set (WeakDual 𝕜 (StrongDual 𝕜 X)) := closure (StrongDual.toWeakDual '' S_bidual)
-    have hK_subset :  K ⊆ StrongDual.toWeakDual '' (J '' (Set.univ)) := by
-      by_contra! ⟨w, hwK, hw_not_JX⟩
-      -- Define S' in StrongDual (Xbidual) space as translation of S_bidual by -w'
-      let w' : Xbidual := WeakDual.toStrongDual w
-      let S' : Set Xbidual := (fun y => y - w') '' S_bidual
-      have h_weak_starS' : (0 : WeakDual 𝕜 (StrongDual 𝕜 X)) ∈
-          closure (StrongDual.toWeakDual '' S') := by
-        let Tw : WeakDual 𝕜 (StrongDual 𝕜 X) ≃ₜ _ := Homeomorph.addRight (-w)
-        rw [show StrongDual.toWeakDual '' S' = Tw '' (StrongDual.toWeakDual '' S_bidual) from by
-          simp only [S', image_image]
-          exact image_congr fun x _ => by simp [Tw, sub_eq_add_neg, w']]
-        rw [← Tw.image_closure,
-          show (0 : WeakDual 𝕜 _) = Tw w from by
-            simp only [Tw, Homeomorph.coe_addRight, add_neg_cancel]]
-        exact mem_image_of_mem _ hwK
-      -- The range of J is closed (isometry from complete space)
-      have hJ_closed : IsClosed (range J) := by
-        have : IsClosedEmbedding (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)) := by
-          let li := NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)
-          have : @Isometry X (StrongDual 𝕜 (StrongDual 𝕜 X))
-              EMetricSpace.toPseudoEMetricSpace EMetricSpace.toPseudoEMetricSpace li :=
-            fun x y => li.isometry.edist_eq x y
-          exact this.isClosedEmbedding
-        exact this.isClosed_range
-      have h_normS' : (0 : Xbidual) ∉ closure S' := by
-        intro h0
-        -- 0 ∈ closure (S_bidual - w') implies w' ∈ closure S_bidual ⊆ range J
-        have hw_in_closure : w' ∈ closure (S_bidual : Set Xbidual) := by
-          let T : Xbidual ≃ₜ Xbidual := Homeomorph.addRight (-w')
-          rw [show S' = T '' S_bidual from by
-            ext x; simp [S', T, sub_eq_add_neg], ← T.image_closure] at h0
-          obtain ⟨y, hy_mem, hy_eq⟩ := h0
-          have hTw : T w' = (0 : Xbidual) := by
-            simp only [T, Homeomorph.coe_addRight]; exact add_neg_cancel w'
-          rwa [← T.injective (hy_eq.trans hTw.symm)]
-        have hw_in_JX : w' ∈ range J :=
-          closure_minimal (image_subset_range J S) hJ_closed hw_in_closure
-        exact hw_not_JX <| by
-          rw [image_univ]; obtain ⟨x, hx⟩ := hw_in_JX
-          exact ⟨J x, mem_range_self x, by
-            simp only [w'] at hx; exact hx ▸ rfl⟩
-      have h_basicS' : ∃ e : ℕ → Xbidual, (∀ n, e n ∈ S') ∧ IsBasicSequence 𝕜 e := by
-        obtain ⟨b, hb_mem, -⟩ := basic_sequence_selection_dual h_weak_starS' h_normS' zero_lt_one
-        exact ⟨⇑b, hb_mem, ⟨b, rfl⟩⟩
-      obtain ⟨e, he_S', he_basic⟩ := h_basicS'
-      rcases he_basic with ⟨b, rfl⟩
-      have h_w_span : ∃ N : ℕ, w' ∉ closure (Submodule.span 𝕜 (Set.range (fun n => b (n+N)))) := by
-        have hw_ne : w' ≠ 0 := fun h => hw_not_JX <| by
-          rw [show w = 0 from
-            WeakDual.toStrongDual.injective (h.trans (map_zero _).symm), image_univ]
-          exact ⟨J 0, mem_range_self 0, by simp only [map_zero]⟩
-        by_contra h_contra; push_neg at h_contra
-        exact (nonzero_not_in_all_tail_closures b w'
-          (by simpa using h_contra 0) hw_ne).elim (fun N hN => hN (h_contra N))
-      obtain ⟨N, h_w_notin_span⟩ := h_w_span
-      let e : ℕ → Xbidual := fun n => b (n + N)
-      have h_sep : ∃ f : StrongDual 𝕜 Xbidual, (∀ n, f (e n) = 1) ∧ f w' = -1 := by
-        have hw'_not_in_range : w' ∉ range J := fun ⟨x, hx⟩ => by
-          apply hw_not_JX; rw [image_univ]
-          exact ⟨J x, mem_range_self x, by simp [w', hx]⟩
-        exact separation_functional_for_translated_sequence J hJ_closed w' hw'_not_in_range e
-          (fun n => by obtain ⟨t, ⟨x, _, rfl⟩, ht_eq⟩ := he_S' (n + N); exact ⟨x, ht_eq.symm⟩)
-      obtain ⟨f, hf_e⟩ := h_sep
-      -- Define the correct sequence that's in S_bidual
-      let s : ℕ → Xbidual := fun n => e n + w'
-      have hs_in_S_bidual : ∀ n, s n ∈ S_bidual := fun n => by
-        obtain ⟨t, ht_mem, ht_eq⟩ := he_S' (n + N)
-        simp only at ht_eq; rwa [show s n = t from by dsimp [s, e]; rw [← ht_eq, sub_add_cancel]]
-      -- s = e + w' is basic by the extracted helper lemma
-      have h_basicS : IsBasicSequence 𝕜 s :=
-        translated_tail_is_basic (E := Xbidual) b N w' f hf_e.1 hf_e.2 h_w_notin_span
-      -- Pull back the basic sequence from the bidual to X using the pullback lemma
-      obtain ⟨x, hx_S, hx_basic⟩ := h_basicS.pullback J hJ_iso hs_in_S_bidual
-      exact h_no_basic x hx_S hx_basic
-    -- Transfer compactness back to X via the extracted helper lemma
-    compactness_transfer_from_bidual S S_bidual rfl K rfl h_S_bidual_bounded hK_subset
+  let Xbidual : Type _ := StrongDual 𝕜 (StrongDual 𝕜 X)
+  -- Cache expensive instances for dual and bidual to avoid repeated synthesis
+  letI : NormedAddCommGroup (StrongDual 𝕜 X) := inferInstance
+  letI : NormedSpace 𝕜 (StrongDual 𝕜 X) := inferInstance
+  letI : NormedAddCommGroup (StrongDual 𝕜 (StrongDual 𝕜 X)) := inferInstance
+  letI : NormedSpace 𝕜 (StrongDual 𝕜 (StrongDual 𝕜 X)) := inferInstance
+  letI : CompleteSpace (StrongDual 𝕜 (StrongDual 𝕜 X)) := inferInstance
+  let J : X →L[𝕜] Xbidual := NormedSpace.inclusionInDoubleDual 𝕜 X
+  have hJ_iso : ∀ y, ‖J y‖ = ‖y‖ := fun y =>
+    (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).norm_map y
+  let S_bidual : Set Xbidual := J '' S
+  have h_S_bidual_bounded : Bornology.IsBounded S_bidual := by
+    obtain ⟨R, hR⟩ := Metric.isBounded_iff_subset_closedBall 0 |>.mp h_bounded
+    exact Metric.isBounded_iff_subset_closedBall 0 |>.mpr ⟨R, fun z hz => by
+      obtain ⟨x, hxS, rfl⟩ := hz
+      rw [mem_closedBall_zero_iff, hJ_iso]
+      exact mem_closedBall_zero_iff.mp (hR hxS)⟩
+  let K : Set (WeakDual 𝕜 (StrongDual 𝕜 X)) := closure (StrongDual.toWeakDual '' S_bidual)
+  have hK_subset :  K ⊆ StrongDual.toWeakDual '' (J '' (Set.univ)) := by
+    by_contra h_not
+    rw [Set.subset_def] at h_not; push_neg at h_not
+    obtain ⟨w, hwK, hw_not_JX⟩ := h_not
+    -- Define S' in StrongDual (Xbidual) space as translation of S_bidual by -w'
+    let w' : Xbidual := WeakDual.toStrongDual w
+    let S' : Set Xbidual := (fun y => y - w') '' S_bidual
+    have h_weak_starS' : (0 : WeakDual 𝕜 (StrongDual 𝕜 X)) ∈
+        closure (StrongDual.toWeakDual '' S') := by
+      let Tw : WeakDual 𝕜 (StrongDual 𝕜 X) ≃ₜ _ := Homeomorph.addRight (-w)
+      rw [show StrongDual.toWeakDual '' S' = Tw '' (StrongDual.toWeakDual '' S_bidual) from by
+        simp only [S', image_image]
+        exact image_congr fun x _ => by simp [Tw, sub_eq_add_neg, w']]
+      rw [← Tw.image_closure,
+        show (0 : WeakDual 𝕜 _) = Tw w from by
+          simp only [Tw, Homeomorph.coe_addRight, add_neg_cancel]]
+      exact mem_image_of_mem _ hwK
+    -- The range of J is closed (isometry from complete space)
+    have hJ_closed : IsClosed (range J) := by
+      have : IsClosedEmbedding (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)) := by
+        let li := NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)
+        have : @Isometry X (StrongDual 𝕜 (StrongDual 𝕜 X))
+            EMetricSpace.toPseudoEMetricSpace EMetricSpace.toPseudoEMetricSpace li :=
+          fun x y => li.isometry.edist_eq x y
+        exact this.isClosedEmbedding
+      exact this.isClosed_range
+    have h_normS' : (0 : Xbidual) ∉ closure S' := by
+      intro h0
+      -- 0 ∈ closure (S_bidual - w') implies w' ∈ closure S_bidual ⊆ range J
+      have hw_in_closure : w' ∈ closure (S_bidual : Set Xbidual) := by
+        let T : Xbidual ≃ₜ Xbidual := Homeomorph.addRight (-w')
+        rw [show S' = T '' S_bidual from by
+          ext x; simp [S', T, sub_eq_add_neg], ← T.image_closure] at h0
+        obtain ⟨y, hy_mem, hy_eq⟩ := h0
+        have hTw : T w' = (0 : Xbidual) := by
+          simp only [T, Homeomorph.coe_addRight]; exact add_neg_cancel w'
+        rwa [← T.injective (hy_eq.trans hTw.symm)]
+      have hw_in_JX : w' ∈ range J :=
+        closure_minimal (image_subset_range J S) hJ_closed hw_in_closure
+      exact hw_not_JX <| by
+        rw [image_univ]; obtain ⟨x, hx⟩ := hw_in_JX
+        exact ⟨J x, mem_range_self x, by
+          simp only [w'] at hx; exact hx ▸ rfl⟩
+    have h_basicS' : ∃ e : ℕ → Xbidual, (∀ n, e n ∈ S') ∧ IsBasicSequence 𝕜 e := by
+      obtain ⟨b, hb_mem, -⟩ := basic_sequence_selection_dual h_weak_starS' h_normS' zero_lt_one
+      exact ⟨⇑b, hb_mem, ⟨b, rfl⟩⟩
+    obtain ⟨e, he_S', he_basic⟩ := h_basicS'
+    rcases he_basic with ⟨b, rfl⟩
+    have h_w_span : ∃ N : ℕ, w' ∉ closure (Submodule.span 𝕜 (Set.range (fun n => b (n+N)))) := by
+      have hw_ne : w' ≠ 0 := fun h => hw_not_JX <| by
+        rw [show w = 0 from
+          WeakDual.toStrongDual.injective (h.trans (map_zero _).symm), image_univ]
+        exact ⟨J 0, mem_range_self 0, by simp only [map_zero]⟩
+      by_contra h_contra; push_neg at h_contra
+      exact (nonzero_not_in_all_tail_closures b w'
+        (by simpa using h_contra 0) hw_ne).elim (fun N hN => hN (h_contra N))
+    obtain ⟨N, h_w_notin_span⟩ := h_w_span
+    let e : ℕ → Xbidual := fun n => b (n + N)
+    have h_sep : ∃ f : StrongDual 𝕜 Xbidual, (∀ n, f (e n) = 1) ∧ f w' = -1 := by
+      have hw'_not_in_range : w' ∉ range J := fun ⟨x, hx⟩ => by
+        apply hw_not_JX; rw [image_univ]
+        exact ⟨J x, mem_range_self x, by simp [w', hx]⟩
+      exact separation_functional_for_translated_sequence J hJ_closed w' hw'_not_in_range e
+        (fun n => by obtain ⟨t, ⟨x, _, rfl⟩, ht_eq⟩ := he_S' (n + N); exact ⟨x, ht_eq.symm⟩)
+    obtain ⟨f, hf_e⟩ := h_sep
+    -- Define the correct sequence that's in S_bidual
+    let s : ℕ → Xbidual := fun n => e n + w'
+    have hs_in_S_bidual : ∀ n, s n ∈ S_bidual := fun n => by
+      obtain ⟨t, ht_mem, ht_eq⟩ := he_S' (n + N)
+      simp only at ht_eq; rwa [show s n = t from by dsimp [s, e]; rw [← ht_eq, sub_add_cancel]]
+    -- s = e + w' is basic by the extracted helper lemma
+    have h_basicS : IsBasicSequence 𝕜 s :=
+      translated_tail_is_basic (E := Xbidual) b N w' f hf_e.1 hf_e.2 h_w_notin_span
+    -- Pull back the basic sequence from the bidual to X using the pullback lemma
+    obtain ⟨x, hx_S, hx_basic⟩ := h_basicS.pullback J hJ_iso hs_in_S_bidual
+    exact h_no_basic x hx_S hx_basic
+  -- Transfer compactness back to X via the extracted helper lemma
+  compactness_transfer_from_bidual S S_bidual rfl K rfl h_S_bidual_bounded hK_subset
 
 end BasicSequence
