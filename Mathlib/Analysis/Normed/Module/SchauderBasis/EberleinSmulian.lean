@@ -95,8 +95,7 @@ a sequence whose scalar multiples leave the neighbourhood, then use countable co
 continuity of scalar multiplication to reach a contradiction. -/
 theorem IsCountablyCompact.isVonNBounded
     {𝕜 : Type*} [NontriviallyNormedField 𝕜]
-    {E : Type*} [AddCommGroup E] [Module 𝕜 E] [TopologicalSpace E]
-    [IsTopologicalAddGroup E] [ContinuousSMul 𝕜 E]
+    {E : Type*} [AddCommGroup E] [Module 𝕜 E] [TopologicalSpace E] [ContinuousSMul 𝕜 E]
     {A : Set E} (hA : IsCountablyCompact A) :
     Bornology.IsVonNBounded 𝕜 A := by
   by_contra h_not

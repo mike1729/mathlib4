@@ -60,9 +60,13 @@ variable {X : Type*} [NormedAddCommGroup X] [NormedSpace 𝕜 X]
     Schauder basis for its closed linear span, with finite projection bound. -/
 structure BasicSequence (𝕜 : Type*) (X : Type*) [RCLike 𝕜]
     [NormedAddCommGroup X] [NormedSpace 𝕜 X] where
+  /-- The underlying sequence. -/
   toFun : ℕ → X
+  /-- The Schauder basis for the closed span of the sequence. -/
   basis : SchauderBasis 𝕜 (Submodule.span 𝕜 (Set.range toFun))
+  /-- The basis vectors coincide with the sequence elements. -/
   basis_eq : ∀ i, (basis i : X) = toFun i
+  /-- The basis constant is finite. -/
   basisConstant_lt_top : basis.enormProjBound < ⊤
 
 instance : CoeFun (BasicSequence 𝕜 X) (fun _ ↦ ℕ → X) where
@@ -82,9 +86,6 @@ theorem SatisfiesGrunblumCondition.mono {e : ℕ → X} {K K' : ℝ}
   fun n m a hmn => (h n m a hmn).trans (mul_le_mul_of_nonneg_right hKK' (norm_nonneg _))
 
 namespace BasicSequence
-
-/-- The underlying function of a `BasicSequence` equals its coercion. -/
-@[simp] lemma coe_toFun (b : BasicSequence 𝕜 X) : b.toFun = ⇑b := rfl
 
 /-- A sequence `e` is a basic sequence if there exists a `BasicSequence` structure
     whose underlying sequence is equal to `e` and whose projection bound is finite. -/
@@ -205,7 +206,7 @@ lemma linearIndependent_of_Grunblum {e : ℕ → X} {K : ℝ}
 /-- A version of `isBasicSequence_of_Grunblum` that also provides an explicit bound
     on the basis constant. If a sequence satisfies the Grünblum condition with constant K,
     the resulting basic sequence has basis constant at most K. -/
-theorem isBasicSequence_of_Grunblum_with_bound [CompleteSpace X] {e : ℕ → X} {K : ℝ}
+theorem isBasicSequence_of_Grunblum_with_bound {e : ℕ → X} {K : ℝ}
     (h_grunblum : SatisfiesGrunblumCondition 𝕜 e K) (h_nz : ∀ n, e n ≠ 0) :
     ∃ (b : BasicSequence 𝕜 X), ⇑b = e ∧ b.basicSequenceConstant ≤ K := by
   have h_indep := linearIndependent_of_Grunblum h_grunblum h_nz
@@ -394,9 +395,13 @@ end BasicSequence
     bound. -/
 structure UnconditionalBasicSequence (β : Type*) (𝕜 : Type*) (X : Type*)
     [NontriviallyNormedField 𝕜] [NormedAddCommGroup X] [NormedSpace 𝕜 X] where
+  /-- The underlying sequence. -/
   toFun : β → X
+  /-- The unconditional Schauder basis for the closed span of the sequence. -/
   basis : UnconditionalSchauderBasis β 𝕜 (Submodule.span 𝕜 (Set.range toFun))
+  /-- The basis vectors coincide with the sequence elements. -/
   basis_eq : ∀ i, (basis i : X) = toFun i
+  /-- The basis constant is finite. -/
   basisConstant_lt_top : basis.enormProjBound < ⊤
 
 instance {β : Type*} : CoeFun (UnconditionalBasicSequence β 𝕜 X) (fun _ ↦ β → X) where
@@ -496,7 +501,7 @@ lemma linearIndependent_of_Nikolskii (hN : SatisfiesNikolskiiCondition 𝕜 e K)
   exact h1.resolve_right (h_nz i)
 
 open scoped Classical in
-theorem isUnconditionalBasicSequence_of_Nikolskii [CompleteSpace X] {e : β → X} {K : ℝ}
+theorem isUnconditionalBasicSequence_of_Nikolskii {e : β → X} {K : ℝ}
     (h : SatisfiesNikolskiiCondition 𝕜 e K) (h_nz : ∀ n, e n ≠ 0) :
     IsUnconditionalBasicSequence β 𝕜 e := by
   -- Use K' = max K 0 to ensure nonnegativity (needed for mkContinuous bounds)

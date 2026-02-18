@@ -168,6 +168,7 @@ theorem exists_basicSequence_of_weakClosure_not_normClosure [CompleteSpace X]
   exact hb_basic.pullback J
     (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).norm_map hb_mem
 
+/-- Construct a Schauder basis for the closure from a Schauder basis on a subspace, under a bound on the projection norms. -/
 def schauderBasisOfClosure [CompleteSpace X] {Y : Submodule 𝕜 X}
     (b : SchauderBasis 𝕜 Y) (h_bound : b.enormProjBound < ⊤) :
     SchauderBasis 𝕜 Y.topologicalClosure := by
