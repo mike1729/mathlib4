@@ -1993,6 +1993,12 @@ public import Mathlib.Analysis.Normed.Module.Ball.Homeomorph
 public import Mathlib.Analysis.Normed.Module.Ball.Pointwise
 public import Mathlib.Analysis.Normed.Module.Ball.RadialEquiv
 public import Mathlib.Analysis.Normed.Module.SchauderBasis.Basic
+public import Mathlib.Analysis.Normed.Module.SchauderBasis.BasicSequence
+public import Mathlib.Analysis.Normed.Module.SchauderBasis.BasicSeqenceSelection
+public import Mathlib.Analysis.Normed.Module.SchauderBasis.Closure
+public import Mathlib.Analysis.Normed.Module.SchauderBasis.CountablyCompact
+public import Mathlib.Analysis.Normed.Module.SchauderBasis.EberleinSmulian
+public import Mathlib.Analysis.Normed.Module.SchauderBasis.NoBasicSequence
 public import Mathlib.Analysis.Normed.Module.Basic
 public import Mathlib.Analysis.Normed.Module.Complemented
 public import Mathlib.Analysis.Normed.Module.Completion
