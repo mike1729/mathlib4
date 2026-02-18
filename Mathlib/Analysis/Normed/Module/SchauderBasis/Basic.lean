@@ -480,13 +480,13 @@ variable (b : UnconditionalSchauderBasis ℕ 𝕜 X)
 
 /-- Converts an unconditional Schauder basis to a Schauder basis. -/
 def toSchauderBasis : SchauderBasis 𝕜 X := {
-  /-- The underlying basis vectors. -/
+  -- The same basis vectors.
   basis := b.basis
-  /-- The coordinate functionals. -/
+  -- The coordinate functionals.
   coord := b.coord
-  /-- The orthogonality condition. -/
+  -- The orthogonality condition.
   ortho := b.ortho
-  /-- The expansion property. -/
+  -- The expansion property.
   expansion := fun x => (b.expansion x).mono_left SummationFilter.le_atTop
 }
 

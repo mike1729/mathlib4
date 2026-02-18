@@ -8,6 +8,19 @@ module
 public import Mathlib.Topology.Maps.Basic
 public import Mathlib.Topology.Defs.Sequences
 
+/-!
+# Countably compact sets
+
+A set is **countably compact** if every sequence in the set has a cluster point in the set.
+This is a weaker notion than compactness, but stronger than sequential compactness in general
+topological spaces. In metric spaces, countable compactness is equivalent to compactness,
+but in general topological spaces it is strictly weaker.
+
+This file defines countably compact sets and proves some basic properties, including the fact that
+compact sets and sequentially compact sets are countably compact.
+
+-/
+
 @[expose] public section
 
 noncomputable section
@@ -15,6 +28,8 @@ noncomputable section
 open Set Filter Topology
 
 variable {E : Type*} [TopologicalSpace E]
+
+/-- A set is countably compact if every sequence in the set has a cluster point in the set. -/
 def IsCountablyCompact (A : Set E) : Prop :=
   ∀ x : ℕ → E, (∀ n, x n ∈ A) → ∃ a ∈ A, MapClusterPt a atTop x
 
