@@ -116,7 +116,6 @@ theorem basicSequence_satisfiesGrunblum :
   let Y := Submodule.span 𝕜 (Set.range bs.toFun)
   have hsum_mem (k : ℕ) : ∑ i ∈ Finset.range k, a i • bs i ∈ Y :=
     Submodule.sum_mem _ (fun i _ => Submodule.smul_mem _ _ (Submodule.subset_span ⟨i, rfl⟩))
-  -- The projection bound: ‖P_m‖ ≤ basisConstant ≤ K
   have h_proj_bound : ‖bs.basis.proj m‖ ≤ bs.basicSequenceConstant := by
     have h := bs.basis.norm_proj_le_enormProjBound m
     rw [← ENNReal.toReal_le_toReal ENNReal.coe_ne_top hK_lt_top] at h
@@ -182,25 +181,20 @@ lemma linearIndependent_of_Grunblum {e : ℕ → X} {K : ℝ}
     (h_nz : ∀ n, e n ≠ 0) : LinearIndependent 𝕜 e := by
   rw [linearIndependent_iff']
   intros s g hg_sum i hi_s
-  -- 1. Define coefficients 'c' globally and pick a sufficiently large N
   let c := fun j ↦ if j ∈ s then g j else 0
   let N := s.sup id + 1
   have h_bound : ∀ j ∈ s, j < N := fun j hj ↦ Nat.lt_succ_of_le (Finset.le_sup hj (f := id))
-  -- 2. Show the sum over 'range N' is zero (because it matches 's' where c=g, and is 0 elsewhere)
   have h_total : ∑ j ∈ Finset.range N, c j • e j = 0 := by
     rw [← Finset.sum_subset (fun j hj ↦ Finset.mem_range.2 (h_bound j hj))
       (fun x _ hj ↦ by simp [c, hj])]
     convert hg_sum using 1
     exact Finset.sum_congr rfl (fun j hj ↦ by simp [c, hj])
-  -- 3. Use Grünblum to show ALL partial sums up to N are zero
   have h_partial : ∀ m ≤ N, ∑ j ∈ Finset.range m, c j • e j = 0 := fun m hm ↦
     norm_le_zero_iff.1 <| by simpa [h_total] using h_grunblum N m c hm
-  -- 4. The term at 'i' is the difference of two zero partial sums (S_{i+1} - S_i)
   have h_term : c i • e i = 0 := by
     rw [← Finset.sum_range_succ_sub_sum (fun j ↦ c j • e j),
         h_partial (i + 1) (h_bound i hi_s),
         h_partial i (le_of_lt (h_bound i hi_s)), sub_zero]
-  -- 5. Conclude g i = 0
   simpa [c, hi_s, h_nz i] using h_term
 
 /-- A version of `isBasicSequence_of_Grunblum` that also provides an explicit bound
@@ -335,7 +329,7 @@ theorem isBasicSequence_of_Grunblum {e : ℕ → X} {K : ℝ} (h_nz : ∀ n, e n
   exact ⟨b, hb_eq⟩
 
 /-- The tail of a basic sequence (starting from index N) is also a basic sequence. -/
-theorem tail_basic_sequence [CompleteSpace X] (bs : BasicSequence 𝕜 X) (N : ℕ) :
+theorem tail_basic_sequence (bs : BasicSequence 𝕜 X) (N : ℕ) :
     IsBasicSequence 𝕜 (fun n => bs (n + N)) := by
   have hK_bound := basicSequence_satisfiesGrunblum bs
   have h_nz : ∀ n, bs (n + N) ≠ 0 := fun n => bs.ne_zero (n + N)
@@ -379,7 +373,7 @@ lemma pullback
   exact ⟨b', fun n => (congrFun hb'_eq n).symm ▸ hseq_S n, hb'_bound⟩
 
 /-- Pull back through a norm-preserving linear map (predicate version). -/
-lemma IsBasicSequence.pullback [CompleteSpace X]
+lemma IsBasicSequence.pullback
     {Y : Type*} [NormedAddCommGroup Y] [NormedSpace 𝕜 Y]
     {e : ℕ → Y} (he : IsBasicSequence 𝕜 e) {S : Set X} (J : X →L[𝕜] Y)
     (hJ_iso : ∀ y : X, ‖J y‖ = ‖y‖) (he_mem : ∀ n, e n ∈ J '' S) :
@@ -459,7 +453,6 @@ theorem unconditional_satisfiesNikolskii :
   let Y := Submodule.span 𝕜 (Set.range ubs.toFun)
   have hsum_mem (S : Finset β) : ∑ i ∈ S, a i • ubs i ∈ Y :=
     Submodule.sum_mem _ (fun i _ => Submodule.smul_mem _ _ (Submodule.subset_span ⟨i, rfl⟩))
-  -- The projection bound: ‖P_A‖ ≤ unconditionalBasicSequenceConstant
   have h_proj_bound : ‖ubs.basis.proj A‖ ≤ ubs.unconditionalBasicSequenceConstant := by
     have h := ubs.basis.norm_proj_le_enormProjBound A
     rw [enorm_eq_nnnorm] at h
@@ -504,14 +497,11 @@ open scoped Classical in
 theorem isUnconditionalBasicSequence_of_Nikolskii {e : β → X} {K : ℝ}
     (h : SatisfiesNikolskiiCondition 𝕜 e K) (h_nz : ∀ n, e n ≠ 0) :
     IsUnconditionalBasicSequence β 𝕜 e := by
-  -- Use K' = max K 0 to ensure nonnegativity (needed for mkContinuous bounds)
   set K' := max K 0 with hK'_def
   have hK'_nonneg : 0 ≤ K' := le_max_right _ _
   have h' : SatisfiesNikolskiiCondition 𝕜 e K' := fun A B a hAB => by
     exact (h A B a hAB).trans (mul_le_mul_of_nonneg_right (le_max_left _ _) (norm_nonneg _))
-  -- Step 1: Linear independence
   have h_indep := linearIndependent_of_Nikolskii h h_nz
-  -- Step 2: Algebraic basis of span
   let S := Submodule.span 𝕜 (Set.range e)
   let b_S := Module.Basis.span h_indep
   have hbS : ∀ n, (b_S n : X) = e n := Module.Basis.span_apply h_indep
@@ -612,9 +602,7 @@ lemma functional_vanishes_on_set_of_bound {E : Type*} [NormedAddCommGroup E] [No
   let gy : 𝕜 := g y
   have hnorm_pos : 0 < ‖gy‖ := norm_pos_iff.mpr h_ne
   have hnorm_ne : ‖gy‖ ≠ 0 := ne_of_gt hnorm_pos
-  -- u < 0 since 0 ∈ S
   have hu_neg : u < 0 := by simpa using hg_bound 0 h0
-  -- Choose c such that c * gy is a negative real number
   let c : 𝕜 := -star gy / ‖gy‖
   have hcy_mem : c • y ∈ S := hS_smul c y hy
   have h_gc : g (c • y) = c * gy := by simp [gy, smul_eq_mul]
@@ -626,7 +614,6 @@ lemma functional_vanishes_on_set_of_bound {E : Type*} [NormedAddCommGroup E] [No
     rw [h_conj, sq]
     have h_simpl : (‖gy‖ : 𝕜) * ‖gy‖ / (‖gy‖ : 𝕜) = ‖gy‖ := by field_simp
     rw [h_simpl, RCLike.ofReal_re]
-  -- Scale further to make re(g(t • c • y)) < u
   let t : ℝ := (|u| + 1) / ‖gy‖ + 1
   have ht_pos : 0 < t := by positivity
   have htcy_mem : (t : 𝕜) • (c • y) ∈ S := hS_smul (t : 𝕜) (c • y) hcy_mem
@@ -648,22 +635,16 @@ lemma exists_functional_neg_one_and_vanishes_on_closed_submodule
     (M : Submodule 𝕜 E) (hM_closed : IsClosed (M : Set E))
     (u : E) (hu : u ∉ M) :
     ∃ f : E →L[𝕜] 𝕜, f u = -1 ∧ ∀ m ∈ (M : Set E), f m = 0 := by
-  -- Set up real scalar structure
   haveI : NormedSpace ℝ E := NormedSpace.restrictScalars ℝ 𝕜 E
   have hM_convex : Convex ℝ (M : Set E) := Submodule.convex (M.restrictScalars ℝ)
-  -- Apply Hahn-Banach separation
   obtain ⟨g, s, hg_u, hg_M⟩ := @RCLike.geometric_hahn_banach_point_closed 𝕜 E _ _ _
     (M : Set E) u _ _ _ _ _ _ hM_convex hM_closed hu
-  -- s < 0 since 0 ∈ M
   have h0_in_M : (0 : E) ∈ M := M.zero_mem
   have hs_neg : s < 0 := by simpa using hg_M 0 h0_in_M
-  -- g vanishes on M
   have hg_vanish : ∀ m ∈ (M : Set E), g m = 0 :=
     functional_vanishes_on_set_of_bound h0_in_M (fun c y hy => M.smul_mem c hy) g s hg_M
-  -- g u ≠ 0 (since re(g u) < s < 0)
   have hg_u_ne : g u ≠ 0 := by
     intro h; simp [h] at hg_u; linarith
-  -- Scale g to get f with f u = -1
   use (-(g u)⁻¹) • g
   constructor
   · simp only [ContinuousLinearMap.smul_apply, smul_eq_mul, neg_mul, inv_mul_cancel₀ hg_u_ne]

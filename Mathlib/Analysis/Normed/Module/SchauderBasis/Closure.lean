@@ -47,19 +47,14 @@ theorem NormedSpace.inclusionInDoubleDual_isEmbedding_weak
       StrongDual.toWeakDual (NormedSpace.inclusionInDoubleDual 𝕜 X x)) := by
   let J := NormedSpace.inclusionInDoubleDual 𝕜 X
   let ι := fun x : WeakSpace 𝕜 X => StrongDual.toWeakDual (J x)
-  -- Both topologies are induced by the same family of maps: x ↦ (fun f => f x)
-  -- WeakSpace 𝕜 X: induced by topDualPairing.flip; WeakDual 𝕜 X**: induced by eval
-  -- Composition: (ι x)(f) = (J x)(f) = f(x), so evalWeakDual ∘ ι = evalWeakSpace
   let evalWeakSpace : WeakSpace 𝕜 X → (StrongDual 𝕜 X → 𝕜) := fun x f => f x
   let evalWeakDual : WeakDual 𝕜 (StrongDual 𝕜 X) → (StrongDual 𝕜 X → 𝕜) := fun φ f => φ f
   have h_commute : evalWeakDual ∘ ι = evalWeakSpace := by ext x f; rfl
-  -- Injectivity: J is injective (isometry) and toWeakDual is injective
   have h_inj : Function.Injective ι := by
     intro x y hxy
     simp only [ι] at hxy
     have h1 : J x = J y := StrongDual.toWeakDual.injective hxy
     exact (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).injective h1
-  -- Inducing: both topologies are induced from Pi, and evalWeakDual ∘ ι = evalWeakSpace
   have h_ind : IsInducing ι := by
     constructor; symm
     calc TopologicalSpace.induced ι (TopologicalSpace.induced evalWeakDual Pi.topologicalSpace)
@@ -69,8 +64,8 @@ theorem NormedSpace.inclusionInDoubleDual_isEmbedding_weak
 
 namespace BasicSequence
 
-/- -/
-lemma perturbBasicSequence [CompleteSpace X] (b : BasicSequence 𝕜 X)
+/-- A perturbation of a basic sequence by a fixed vector is still a basic sequence. -/
+lemma perturbBasicSequence (b : BasicSequence 𝕜 X)
     (u : X) (g : StrongDual 𝕜 X)
     (hf : ∀ n, g (b n) = 1) (hu : g u = -1)
     (hunin : u ∉ closure (Submodule.span 𝕜 (Set.range b) : Set X)) :
@@ -131,11 +126,8 @@ theorem exists_basicSequence_of_weakClosure_not_normClosure [CompleteSpace X]
     {S : Set X} (h_norm : (0 : X) ∉ closure S)
     (h_weak : (0 : X) ∈ closure (toWeakSpace 𝕜 X '' S)) :
     ∃ e : ℕ → X, (∀ n, e n ∈ S) ∧ IsBasicSequence 𝕜 e := by
-  -- 1. Setup the Bidual embedding J : X → X**
   let J := NormedSpace.inclusionInDoubleDual 𝕜 X
   let S' := J '' S
-  -- 2. Translate the weak closure hypothesis to the bidual's weak* topology.
-  -- The embedding φ : WeakSpace X → WeakDual X** satisfies closure s = φ⁻¹' closure (φ '' s).
   have h_weak_star : (0 : WeakDual 𝕜 (StrongDual 𝕜 X)) ∈ closure (StrongDual.toWeakDual '' S') := by
     let φ := fun x : WeakSpace 𝕜 X => StrongDual.toWeakDual (J x)
     have hemb := NormedSpace.inclusionInDoubleDual_isEmbedding_weak 𝕜 X
@@ -145,8 +137,6 @@ theorem exists_basicSequence_of_weakClosure_not_normClosure [CompleteSpace X]
     have h0 : φ (toWeakSpace 𝕜 X 0) = 0 := by simp [φ, map_zero]
     rw [hemb.closure_eq_preimage_closure_image] at h_weak
     exact h0 ▸ (Set.mem_preimage.mp h_weak)
-  -- 3. Show 0 is not in the norm closure of S' in the bidual.
-  -- Since J is an isometry from a complete space, it is a closed embedding.
   have h_norm_S' : (0 : StrongDual 𝕜 (StrongDual 𝕜 X)) ∉ closure S' := by
     have hce : IsClosedEmbedding (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)) := by
       let li := NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)
@@ -160,15 +150,14 @@ theorem exists_basicSequence_of_weakClosure_not_normClosure [CompleteSpace X]
       map_zero (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).toContinuousLinearMap
     exact fun ⟨x, hx, hJx⟩ =>
       h_norm (hce.injective (hJx.trans hJ0.symm) ▸ hx)
-  -- 4. Apply the Selection Principle for Dual Spaces with ε = 1.
   obtain ⟨b_bidual, hb_mem, -⟩ :=
     basic_sequence_selection_dual h_weak_star h_norm_S' zero_lt_one
-  -- 5. Pull the basic sequence back to X using the pullback lemma.
   have hb_basic : IsBasicSequence 𝕜 ⇑b_bidual := ⟨b_bidual, rfl⟩
   exact hb_basic.pullback J
     (NormedSpace.inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).norm_map hb_mem
 
-/-- Construct a Schauder basis for the closure from a Schauder basis on a subspace, under a bound on the projection norms. -/
+/-- Construct a Schauder basis for the closure from a Schauder basis on a subspace,
+    under a bound on the projection norms. -/
 def schauderBasisOfClosure [CompleteSpace X] {Y : Submodule 𝕜 X}
     (b : SchauderBasis 𝕜 Y) (h_bound : b.enormProjBound < ⊤) :
     SchauderBasis 𝕜 Y.topologicalClosure := by
@@ -269,26 +258,19 @@ variable (bs : BasicSequence 𝕜 X)
 
 theorem cluster_point_of_basicSequence [CompleteSpace X] (x : X)
     (hx : MapClusterPt (X := WeakSpace 𝕜 X) x atTop bs) : x = 0 := by
-  -- Setup: Y = span, Z = closure of span
   set Y := Submodule.span 𝕜 (Set.range bs.toFun) with hY_def
   set Z := Y.topologicalClosure with hZ_def
-  -- Step 1: Show x ∈ Z
-  -- Every bs n is in Z
   have h_range_Z : ∀ n, bs.toFun n ∈ (Z : Set X) :=
     fun n => Y.le_topologicalClosure (Submodule.subset_span (Set.mem_range_self n))
-  -- x is in the weak closure of Z, and Z is weakly closed by Mazur
   haveI : NormedSpace ℝ X := NormedSpace.restrictScalars ℝ 𝕜 X
   have h_convex_Z : Convex ℝ (Z : Set X) :=
     (Submodule.convex (Y.restrictScalars ℝ)).closure
   have h_norm_closed : closure (Z : Set X) = (Z : Set X) :=
     IsClosed.closure_eq (Submodule.isClosed_topologicalClosure Y)
-  -- Mazur: toWeakSpace '' closure Z = closure (toWeakSpace '' Z)
   have h_mazur := h_convex_Z.toWeakSpace_closure (𝕜 := 𝕜)
   rw [h_norm_closed] at h_mazur
-  -- So toWeakSpace '' Z is weakly closed
   have h_wcl_eq : closure (toWeakSpace 𝕜 X '' (Z : Set X)) = toWeakSpace 𝕜 X '' (Z : Set X) :=
     h_mazur.symm
-  -- x ∈ weak closure of Z
   have h_in_wcl : (toWeakSpace 𝕜 X x) ∈ closure (toWeakSpace 𝕜 X '' (Z : Set X)) := by
     apply clusterPt_iff_forall_mem_closure.mp hx.clusterPt
     rw [Filter.mem_map]
@@ -298,11 +280,8 @@ theorem cluster_point_of_basicSequence [CompleteSpace X] (x : X)
   have h_mem_Z : x ∈ (Z : Set X) := by
     have : z = x := (toWeakSpace 𝕜 X).injective hzx
     rwa [this] at hz
-  -- Step 2: Construct closure basis
   set b_cl := schauderBasisOfClosure bs.basis bs.basisConstant_lt_top
-  -- Step 3: Show all coordinates vanish
   suffices h_coord : ∀ n, b_cl.coord n ⟨x, h_mem_Z⟩ = 0 by
-    -- Step 4: Conclude x = 0 from expansion uniqueness
     have h_exp := b_cl.expansion ⟨x, h_mem_Z⟩
     have h_zero_exp : HasSum (fun _ : ℕ => (0 : ↥Z)) 0 (SummationFilter.conditional ℕ) := by
       convert hasSum_zero using 1
@@ -311,41 +290,31 @@ theorem cluster_point_of_basicSequence [CompleteSpace X] (x : X)
       convert h_zero_exp using 1; ext n; simp [h_coord n]
     have h_x_eq_0 : (⟨x, h_mem_Z⟩ : ↥Z) = 0 := h_exp.unique h_eq
     exact congr_arg Subtype.val h_x_eq_0
-  -- Prove each coordinate vanishes
   intro n
-  -- Extend b_cl.coord n : Z →L[𝕜] 𝕜 to g : X →L[𝕜] 𝕜 via Hahn-Banach
   obtain ⟨g, hg_ext, -⟩ := exists_extension_norm_eq Z (b_cl.coord n)
-  -- g(bs m) = b_cl.coord n (b_cl m) = δ_{nm}
   have h_g_bs : ∀ m, g (bs.toFun m) = (Pi.single m (1 : 𝕜) : ℕ → 𝕜) n := by
     intro m
     change g ↑(⟨bs.toFun m, h_range_Z m⟩ : ↥Z) = _; rw [hg_ext]
-    -- Show ⟨bs m, _⟩ = b_cl m via schauderBasisOfClosure_apply
     have h_basis : (⟨bs.toFun m, h_range_Z m⟩ : ↥Z) = b_cl m :=
       Subtype.ext (by
         change bs.toFun m = ↑(schauderBasisOfClosure bs.basis bs.basisConstant_lt_top m)
         rw [schauderBasisOfClosure_apply]; exact (bs.basis_eq m).symm)
     rw [h_basis]
     convert b_cl.ortho n m
-  -- g ∘ bs is eventually 0 (for m > n, Pi.single m 1 n = 0)
   have h_eventually_zero : ∀ᶠ m in Filter.atTop, g (bs.toFun m) = 0 := by
     filter_upwards [Filter.eventually_ge_atTop (n + 1)] with m hm
     rw [h_g_bs m, Pi.single_apply, if_neg (by omega)]
-  -- g ∘ bs converges to 0
   have h_tendsto : Filter.Tendsto (g ∘ bs.toFun) Filter.atTop (𝓝 0) :=
     Filter.Tendsto.congr' (Filter.Eventually.mono h_eventually_zero
       (fun m hm => hm.symm)) tendsto_const_nhds
-  -- g is weakly continuous (evaluation by a functional is continuous in weak topology)
   have h_g_weak_cont : Continuous (fun y : WeakSpace 𝕜 X => g y) :=
     WeakBilin.eval_continuous (topDualPairing 𝕜 X).flip g
-  -- g x is a cluster point of g ∘ bs (avoid topology mismatch by using frequently)
   have h_cluster_g : MapClusterPt (g x) Filter.atTop (g ∘ bs.toFun) := by
     rw [mapClusterPt_iff_frequently]
     intro s hs
     exact mapClusterPt_iff_frequently.mp hx _ (h_g_weak_cont.continuousAt hs)
-  -- In a T2 space, cluster point of convergent net equals limit
   have h_gx_eq_0 : g x = 0 :=
     t2_iff_nhds.mp inferInstance (h_cluster_g.clusterPt.mono h_tendsto)
-  -- Transfer: b_cl.coord n ⟨x, h_mem_Z⟩ = g ↑⟨x, h_mem_Z⟩ = g x = 0
   rw [← hg_ext ⟨x, h_mem_Z⟩]
   exact h_gx_eq_0
 

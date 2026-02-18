@@ -64,7 +64,6 @@ lemma exists_strictMono_comp_strictMono (σ : ℕ → ℕ) (hσ : Function.Injec
   let next (n : ℕ) : ℕ := (h_exists n).choose
   have h_next_gt (n : ℕ) : n < next n := (h_exists n).choose_spec.1
   have h_next_σ (n : ℕ) : σ n < σ (next n) := (h_exists n).choose_spec.2
-  -- ψ(k) = next^k(0)
   let ψ : ℕ → ℕ := fun k => next^[k] 0
   exact ⟨ψ,
     strictMono_nat_of_lt_succ fun n => by
@@ -117,12 +116,10 @@ theorem IsCountablyCompact.isVonNBounded
   have hinv_not : ∀ n, (a n)⁻¹ • x n ∉ W := fun n => by
     rw [← Set.mem_smul_set_iff_inv_smul_mem₀ (ha_ne n)]; exact hx_not n
   obtain ⟨p, _, hp_cluster⟩ := hA x hx_mem
-  -- By continuity of smul at (0, p): since 0 • p = 0 ∈ W
   have hcont : Filter.Tendsto (fun (cx : 𝕜 × E) => cx.1 • cx.2) (𝓝 0 ×ˢ 𝓝 p) (𝓝 0) := by
     have := (continuous_smul (M := 𝕜) (X := E)).continuousAt (x := (0, p))
     rwa [ContinuousAt, zero_smul, nhds_prod_eq] at this
   obtain ⟨U, hU_mem, S, hS_mem, hUS⟩ := Filter.mem_prod_iff.mp (hcont hW_nhds)
-  -- (a n)⁻¹ → 0 since ‖a n‖ → ∞
   have h_inv_tendsto : Filter.Tendsto (fun n => (a n)⁻¹) Filter.atTop (𝓝 (0 : 𝕜)) := by
     rw [tendsto_zero_iff_norm_tendsto_zero]
     exact squeeze_zero (fun n => norm_nonneg _)
@@ -162,7 +159,6 @@ theorem IsCountablyCompact.isBounded
       LinearMap.smul_apply, norm_smul, norm_inv] at hy_mem
     change ‖((topDualPairing 𝕜 X).flip y) f‖ ≤ ‖c‖
     linarith [inv_mul_lt_iff₀ (norm_pos_iff.mpr hc_ne) |>.mp hy_mem]
-  -- Apply Banach-Steinhaus (uniform boundedness principle)
   obtain ⟨C, hC⟩ := banach_steinhaus h_ptwise
   refine ⟨C, fun x hx => ?_⟩
   have h := hC ⟨x, hx⟩
@@ -185,8 +181,7 @@ theorem eberlein_smulian_isSeqCompact [CompleteSpace X] (A : Set (WeakSpace 𝕜
   let xnX : ℕ → X := xn
   let xX : X := x
   by_cases h_sep : ∃ ε > 0, ∀ᶠ n in atTop, ε ≤ ‖xnX n - xX‖
-  · -- Case B: x is NOT a norm cluster point (tail is ε-separated)
-    obtain ⟨ε, hε, hev⟩ := h_sep
+  · obtain ⟨ε, hε, hev⟩ := h_sep
     obtain ⟨N, hN⟩ := hev.exists_forall_of_atTop
     let xn'X : ℕ → X := fun n => xnX (n + N)
     let S : Set X := Set.range (fun n => xn'X n - xX)
@@ -211,7 +206,6 @@ theorem eberlein_smulian_isSeqCompact [CompleteSpace X] (A : Set (WeakSpace 𝕜
       exact clusterPt_iff_forall_mem_closure.mp h_sub_cluster.clusterPt
         (toWeakSpace 𝕜 X '' S) (Filter.mem_map.mpr (Filter.Eventually.of_forall
           fun n => ⟨xn'X n - xX, Set.mem_range_self n, rfl⟩))
-    -- Extract a basic sequence from S via weak/norm closure gap
     obtain ⟨e, he_mem, he_basic⟩ :=
       exists_basicSequence_of_weakClosure_not_normClosure h_norm_0 h_weak_0
     choose σ hσ using he_mem
@@ -231,8 +225,7 @@ theorem eberlein_smulian_isSeqCompact [CompleteSpace X] (A : Set (WeakSpace 𝕜
     let φ : ℕ → ℕ := fun k => σ (ψ k) + N
     exact ⟨x, hxA, φ, fun _ _ hab => Nat.add_lt_add_right (hσψ_mono hab) N,
       h_yn_tendsto.comp hψ_mono.tendsto_atTop⟩
-  · -- Case A: x IS a norm cluster point
-    push_neg at h_sep
+  · push_neg at h_sep
     have h_norm_cluster : MapClusterPt xX atTop xnX := by
       rw [mapClusterPt_iff_frequently]
       intro s hs
@@ -257,7 +250,6 @@ theorem eberlein_smulian [CompleteSpace X] (A : Set (WeakSpace 𝕜 X))
     change toWeakSpace 𝕜 X '' ((toWeakSpace 𝕜 X).symm '' A) = A
     rw [Set.image_image]; simp
   have hA_X_ne : A_X.Nonempty := hA_ne.image _
-  -- needed for TC synthesis performance
   letI : NormedAddCommGroup (StrongDual 𝕜 X) := inferInstance
   letI : NormedSpace 𝕜 (StrongDual 𝕜 X) := inferInstance
   letI : NormedAddCommGroup (StrongDual 𝕜 (StrongDual 𝕜 X)) := inferInstance
@@ -295,16 +287,14 @@ theorem eberlein_smulian [CompleteSpace X] (A : Set (WeakSpace 𝕜 X))
     let x₀_X : X := (toWeakSpace 𝕜 X).symm x₀
     have hx₀_eq : toWeakSpace 𝕜 X x₀_X = x₀ := (toWeakSpace 𝕜 X).apply_symm_apply x₀
     by_cases h_norm_x : x₀_X ∈ closure A_X
-    · -- Case 1: x₀ in norm closure → extract norm-convergent sequence
-      haveI : FrechetUrysohnSpace X := FirstCountableTopology.frechetUrysohnSpace
+    · haveI : FrechetUrysohnSpace X := FirstCountableTopology.frechetUrysohnSpace
       obtain ⟨a, ha_mem, ha_lim⟩ := mem_closure_iff_seq_limit.mp h_norm_x
       have h_weak_lim : Filter.Tendsto (fun n => toWeakSpace 𝕜 X (a n)) atTop (𝓝 x₀) := by
         rw [← hx₀_eq]
         exact (toWeakSpaceCLM 𝕜 X).continuous.continuousAt.tendsto.comp ha_lim
       obtain ⟨y, hyA, hy_cp⟩ := hA _ (fun n => (h_mem_iff (a n)).mp (ha_mem n))
       exact (t2_iff_nhds.mp inferInstance (hy_cp.clusterPt.mono h_weak_lim)) ▸ hyA
-    · -- Case 2: x₀ NOT in norm closure → basic sequence argument
-      let S : Set X := (· - x₀_X) '' A_X
+    · let S : Set X := (· - x₀_X) '' A_X
       have hS_ne : S.Nonempty := hA_X_ne.image _
       have h_norm_0 : (0 : X) ∉ closure S := zero_not_mem_closure_sub_image h_norm_x
       have h_weak_0 : (0 : X) ∈ closure (toWeakSpace 𝕜 X '' S) := by
@@ -416,8 +406,7 @@ theorem IsCompact.frechetUrysohnSpace [CompleteSpace X]
   have h_img_eq : toWeakSpace 𝕜 X '' S_X = S_W := by simp [S_X, Set.image_image]
   have h_S_W_sub_K : S_W ⊆ K := fun _ ⟨k, _, hk⟩ => hk ▸ k.property
   by_cases h_norm : x₀ ∈ closure S_X
-  · -- Case 1: x₀ in norm closure → norm-convergent sequence
-    haveI : FrechetUrysohnSpace X := FirstCountableTopology.frechetUrysohnSpace
+  · haveI : FrechetUrysohnSpace X := FirstCountableTopology.frechetUrysohnSpace
     obtain ⟨σ, hσ_mem, hσ_lim⟩ := mem_closure_iff_seq_limit.mp h_norm
     have h_weak_lim : Tendsto (fun n => toWeakSpace 𝕜 X (σ n)) atTop
         (𝓝 (↑a : WeakSpace 𝕜 X)) := by
@@ -428,8 +417,7 @@ theorem IsCompact.frechetUrysohnSpace [CompleteSpace X]
     choose t ht_mem ht_val using h_in_S_W
     exact ⟨t, ht_mem, Topology.IsInducing.subtypeVal.tendsto_nhds_iff.mpr
       (h_weak_lim.congr fun n => (ht_val n).symm)⟩
-  · -- Case 2: x₀ not in norm closure → basic sequence argument
-    let S' : Set X := (· - x₀) '' S_X
+  · let S' : Set X := (· - x₀) '' S_X
     have hS'_ne : S'.Nonempty := hS_ne.image _
     have h_norm_0 : (0 : X) ∉ closure S' := zero_not_mem_closure_sub_image h_norm
     have h_weak_0 : (0 : X) ∈ closure (toWeakSpace 𝕜 X '' S') := by
