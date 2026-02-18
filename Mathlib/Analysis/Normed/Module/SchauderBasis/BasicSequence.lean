@@ -329,7 +329,7 @@ theorem isBasicSequence_of_Grunblum_with_bound {e : ℕ → X} {K : ℝ}
     (ENNReal.toReal_ofReal hK)
 
 /-- Convenience wrapper: the Grünblum criterion as a predicate. -/
-theorem isBasicSequence_of_Grunblum [CompleteSpace X] {e : ℕ → X} {K : ℝ} (h_nz : ∀ n, e n ≠ 0)
+theorem isBasicSequence_of_Grunblum {e : ℕ → X} {K : ℝ} (h_nz : ∀ n, e n ≠ 0)
     (h : SatisfiesGrunblumCondition 𝕜 e K) : IsBasicSequence 𝕜 e := by
   obtain ⟨b, hb_eq, _⟩ := isBasicSequence_of_Grunblum_with_bound h h_nz
   exact ⟨b, hb_eq⟩
@@ -364,7 +364,7 @@ theorem tail_basic_sequence [CompleteSpace X] (bs : BasicSequence 𝕜 X) (N : �
     If every element of `b` in `Y` lies in `J '' S` for some set `S ⊆ X`
     and norm-preserving `J`, then `S` contains a basic sequence with
     the same basis constant bound. -/
-lemma pullback [CompleteSpace X]
+lemma pullback
     {Y : Type*} [NormedAddCommGroup Y] [NormedSpace 𝕜 Y]
     (b : BasicSequence 𝕜 Y) {S : Set X} (J : X →L[𝕜] Y)
     (hJ_iso : ∀ y : X, ‖J y‖ = ‖y‖) (hb_mem : ∀ n, b n ∈ J '' S) :
