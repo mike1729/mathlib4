@@ -1994,7 +1994,7 @@ public import Mathlib.Analysis.Normed.Module.Ball.Pointwise
 public import Mathlib.Analysis.Normed.Module.Ball.RadialEquiv
 public import Mathlib.Analysis.Normed.Module.SchauderBasis.Basic
 public import Mathlib.Analysis.Normed.Module.SchauderBasis.BasicSequence
-public import Mathlib.Analysis.Normed.Module.SchauderBasis.BasicSeqenceSelection
+public import Mathlib.Analysis.Normed.Module.SchauderBasis.BasicSequenceSelection
 public import Mathlib.Analysis.Normed.Module.SchauderBasis.Closure
 public import Mathlib.Analysis.Normed.Module.SchauderBasis.CountablyCompact
 public import Mathlib.Analysis.Normed.Module.SchauderBasis.EberleinSmulian
