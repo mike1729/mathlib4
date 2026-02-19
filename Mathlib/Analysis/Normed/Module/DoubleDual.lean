@@ -22,6 +22,8 @@ basic properties.
   `𝕜 = ℂ`).
 * `NormedSpace.inclusionInDoubleDual_isEmbedding_weak` shows that the inclusion is an embedding
   from the weak topology to the weak-star topology.
+* `NormedSpace.inclusionInDoubleDual_homeomorph_weak` is the same map as a homeomorphism onto
+  its range.
 
 ## References
 
@@ -110,5 +112,39 @@ theorem eq_iff_forall_dual_eq {x y : E} : x = y ↔ ∀ g : StrongDual 𝕜 E, g
   simp [sub_eq_zero]
 
 end BidualIsometry
+
+section Embedding
+
+variable (𝕜 : Type*) [RCLike 𝕜] (X : Type*) [NormedAddCommGroup X] [NormedSpace 𝕜 X]
+
+/-- The map `WeakSpace 𝕜 X → WeakDual 𝕜 (StrongDual 𝕜 X)` induced by `inclusionInDoubleDual`
+is a topological embedding. That is, the canonical inclusion of a normed space into its double dual
+is an embedding when the domain carries the weak topology and the codomain the weak-star topology.
+
+The proof shows that both topologies on the domain are the topology of pointwise convergence
+against `StrongDual 𝕜 X`. -/
+theorem inclusionInDoubleDual_isEmbedding_weak :
+    IsEmbedding (fun x : WeakSpace 𝕜 X => StrongDual.toWeakDual (inclusionInDoubleDual 𝕜 X x)) := by
+  let ι := fun x : WeakSpace 𝕜 X => StrongDual.toWeakDual (inclusionInDoubleDual 𝕜 X x)
+  let evalWeakSpace : WeakSpace 𝕜 X → (StrongDual 𝕜 X → 𝕜) := fun x f => f x
+  let evalWeakDual : WeakDual 𝕜 (StrongDual 𝕜 X) → (StrongDual 𝕜 X → 𝕜) := fun φ f => φ f
+  have h_commute : evalWeakDual ∘ ι = evalWeakSpace := by ext x f; rfl
+  have h_inj : Function.Injective ι :=
+    StrongDual.toWeakDual.injective.comp (inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).injective
+  have h_ind : IsInducing ι := by
+    constructor; symm
+    calc TopologicalSpace.induced ι (TopologicalSpace.induced evalWeakDual Pi.topologicalSpace)
+        = TopologicalSpace.induced (evalWeakDual ∘ ι) Pi.topologicalSpace := induced_compose
+      _ = TopologicalSpace.induced evalWeakSpace Pi.topologicalSpace := by rw [h_commute]
+  exact ⟨h_ind, h_inj⟩
+
+/-- The inclusion of a normed space into its double dual, as a homeomorphism onto its range,
+where the domain carries the weak topology and the codomain the weak-star topology. -/
+def inclusionInDoubleDual_homeomorph_weak :
+    WeakSpace 𝕜 X ≃ₜ Set.range (fun x : WeakSpace 𝕜 X =>
+      StrongDual.toWeakDual (inclusionInDoubleDual 𝕜 X x)) :=
+  (inclusionInDoubleDual_isEmbedding_weak 𝕜 X).toHomeomorph
+
+end Embedding
 
 end NormedSpace
