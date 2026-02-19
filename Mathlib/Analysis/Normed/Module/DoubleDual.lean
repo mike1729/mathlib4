@@ -5,8 +5,7 @@ Authors: Heather Macbeth
 -/
 module
 
-public import Mathlib.Analysis.Normed.Module.WeakDual
-public import Mathlib.Analysis.Normed.Module.HahnBanach
+public import Mathlib.Analysis.Normed.Module.WeakSpace
 
 /-!
 # The double dual of a normed space
@@ -26,10 +25,8 @@ basic properties.
   a topological embedding.
 * `NormedSpace.inclusionInDoubleDual_homeomorph_weak` is the same map as a homeomorphism onto
   its range.
-* `NormedSpace.instT2SpaceWeakSpace` shows the weak topology is Hausdorff (via Hahn–Banach).
-* `NormedSpace.instBornologyWeakSpace` equips `WeakSpace` with the norm bornology from `X`.
-* `NormedSpace.isCompact_closure` transfers compactness from the weak-star topology on the bidual
-  back to the weak topology on `X` via Banach–Alaoglu.
+* `NormedSpace.isCompact_closure_of_bounded` transfers compactness from the weak-star topology
+  on the bidual back to the weak topology on `X` via Banach–Alaoglu.
 
 ## References
 
@@ -157,16 +154,6 @@ where the domain carries the weak topology and the codomain the weak-star topolo
 def inclusionInDoubleDual_homeomorph_weak :
     WeakSpace 𝕜 X ≃ₜ Set.range (inclusionInDoubleDualWeak 𝕜 X) :=
   (inclusionInDoubleDual_isEmbedding_weak 𝕜 X).toHomeomorph
-
-/-- The weak topology on a normed space over `RCLike` is T2 (Hausdorff). This follows from
-Hahn–Banach: the continuous linear functionals separate points. -/
-instance instT2SpaceWeakSpace : T2Space (WeakSpace 𝕜 X) :=
-  (WeakBilin.isEmbedding (B := (topDualPairing 𝕜 X).flip) fun _ _ h =>
-    (eq_iff_forall_dual_eq 𝕜).mpr fun g => LinearMap.ext_iff.mp h g).t2Space
-
-/-- The norm bornology on `WeakSpace 𝕜 X`, inherited from `X`. -/
-instance instBornologyWeakSpace : Bornology (WeakSpace 𝕜 X) :=
-  inferInstanceAs (Bornology X)
 
 /-- If `S` is bounded and the weak-star closure of its image under the canonical embedding into the
 double dual lies in the range of that embedding, then `closure S` is compact in the weak topology.
