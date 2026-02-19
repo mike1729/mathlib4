@@ -134,20 +134,17 @@ The proof shows that both topologies on the domain are the topology of pointwise
 against `StrongDual 𝕜 X`. -/
 theorem inclusionInDoubleDualWeak_isEmbedding :
     IsEmbedding (inclusionInDoubleDualWeak 𝕜 X) := by
-  let evalWeakSpace : WeakSpace 𝕜 X → (StrongDual 𝕜 X → 𝕜) := fun x f => f x
-  let evalWeakDual : WeakDual 𝕜 (StrongDual 𝕜 X) → (StrongDual 𝕜 X → 𝕜) := fun φ f => φ f
-  have h_commute : evalWeakDual ∘ inclusionInDoubleDualWeak 𝕜 X = evalWeakSpace := by
-    ext x f; rfl
-  have h_inj : Function.Injective (inclusionInDoubleDualWeak 𝕜 X) :=
-    StrongDual.toWeakDual.injective.comp (inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).injective
-  have h_ind : IsInducing (inclusionInDoubleDualWeak 𝕜 X) := by
-    constructor; symm
-    calc TopologicalSpace.induced (inclusionInDoubleDualWeak 𝕜 X)
-          (TopologicalSpace.induced evalWeakDual Pi.topologicalSpace)
-        = TopologicalSpace.induced (evalWeakDual ∘ inclusionInDoubleDualWeak 𝕜 X)
-            Pi.topologicalSpace := induced_compose
-      _ = TopologicalSpace.induced evalWeakSpace Pi.topologicalSpace := by rw [h_commute]
-  exact ⟨h_ind, h_inj⟩
+  -- The WeakDual evaluation fun φ f => φ f is inducing by definition of the WeakBilin topology
+  have h_eval : IsInducing
+      (fun (φ : WeakDual 𝕜 (StrongDual 𝕜 X)) f => φ f) := ⟨rfl⟩
+  refine ⟨h_eval.of_comp_iff.mp ⟨?_⟩, StrongDual.toWeakDual.injective.comp
+    (inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).injective⟩
+  -- The composition is the WeakSpace evaluation fun x f => f x, inducing by definition
+  change TopologicalSpace.induced
+      ((fun (φ : WeakDual 𝕜 (StrongDual 𝕜 X)) f => φ f) ∘
+        inclusionInDoubleDualWeak 𝕜 X)
+      Pi.topologicalSpace = _
+  simp only [Function.comp_def, inclusionInDoubleDualWeak, StrongDual.coe_toWeakDual]
 
 /-- The inclusion of a normed space into its double dual, as a homeomorphism onto its range,
 where the domain carries the weak topology and the codomain the weak-star topology. -/
