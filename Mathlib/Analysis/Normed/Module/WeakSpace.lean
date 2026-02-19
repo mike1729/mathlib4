@@ -1,7 +1,7 @@
 /-
-Copyright (c) 2025 Heather Macbeth. All rights reserved.
+Copyright (c) 2026 Michał Świętek. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Heather Macbeth
+Authors: Michał Świętek
 -/
 module
 
@@ -32,8 +32,7 @@ variable {𝕜 : Type*} [NontriviallyNormedField 𝕜]
 variable {E : Type*} [SeminormedAddCommGroup E] [NormedSpace 𝕜 E]
 
 /-- The norm bornology on `WeakSpace 𝕜 E`, inherited from `E`. -/
-instance instBornology : Bornology (WeakSpace 𝕜 E) :=
-  inferInstanceAs (Bornology E)
+instance instBornology : Bornology (WeakSpace 𝕜 E) := inferInstanceAs (Bornology E)
 
 variable (𝕜) [RCLike 𝕜] {F : Type*} [NormedAddCommGroup F] [NormedSpace 𝕜 F]
 

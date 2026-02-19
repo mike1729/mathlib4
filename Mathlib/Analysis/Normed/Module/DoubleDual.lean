@@ -1,7 +1,7 @@
 /-
 Copyright (c) 2020 Heather Macbeth. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Heather Macbeth
+Authors: Heather Macbeth, Michał Świętek
 -/
 module
 
@@ -21,11 +21,11 @@ basic properties.
   `𝕜 = ℂ`).
 * `NormedSpace.inclusionInDoubleDualWeak` is the canonical map from the weak space into the
   weak-star bidual.
-* `NormedSpace.inclusionInDoubleDual_isEmbedding_weak` shows that `inclusionInDoubleDualWeak` is
+* `NormedSpace.inclusionInDoubleDualWeak_isEmbedding` shows that `inclusionInDoubleDualWeak` is
   a topological embedding.
-* `NormedSpace.inclusionInDoubleDual_homeomorph_weak` is the same map as a homeomorphism onto
+* `NormedSpace.inclusionInDoubleDualWeak_homeomorph` is the same map as a homeomorphism onto
   its range.
-* `NormedSpace.isCompact_closure_of_bounded` transfers compactness from the weak-star topology
+* `NormedSpace.isCompact_closure_of_isBounded` transfers compactness from the weak-star topology
   on the bidual back to the weak topology on `X` via Banach–Alaoglu.
 
 ## References
@@ -132,7 +132,7 @@ when the domain carries the weak topology and the codomain the weak-star topolog
 
 The proof shows that both topologies on the domain are the topology of pointwise convergence
 against `StrongDual 𝕜 X`. -/
-theorem inclusionInDoubleDual_isEmbedding_weak :
+theorem inclusionInDoubleDualWeak_isEmbedding :
     IsEmbedding (inclusionInDoubleDualWeak 𝕜 X) := by
   let evalWeakSpace : WeakSpace 𝕜 X → (StrongDual 𝕜 X → 𝕜) := fun x f => f x
   let evalWeakDual : WeakDual 𝕜 (StrongDual 𝕜 X) → (StrongDual 𝕜 X → 𝕜) := fun φ f => φ f
@@ -151,21 +151,21 @@ theorem inclusionInDoubleDual_isEmbedding_weak :
 
 /-- The inclusion of a normed space into its double dual, as a homeomorphism onto its range,
 where the domain carries the weak topology and the codomain the weak-star topology. -/
-def inclusionInDoubleDual_homeomorph_weak :
+def inclusionInDoubleDualWeak_homeomorph :
     WeakSpace 𝕜 X ≃ₜ Set.range (inclusionInDoubleDualWeak 𝕜 X) :=
-  (inclusionInDoubleDual_isEmbedding_weak 𝕜 X).toHomeomorph
+  (inclusionInDoubleDualWeak_isEmbedding 𝕜 X).toHomeomorph
 
 /-- If `S` is bounded and the weak-star closure of its image under the canonical embedding into the
 double dual lies in the range of that embedding, then `closure S` is compact in the weak topology.
 
 This combines Banach–Alaoglu (compactness of bounded weak-star–closed sets) with the topological
-embedding `inclusionInDoubleDual_isEmbedding_weak` to transfer compactness back to the weak
+embedding `inclusionInDoubleDualWeak_isEmbedding` to transfer compactness back to the weak
 topology on `X`. -/
-theorem isCompact_closure_of_bounded {S : Set (WeakSpace 𝕜 X)} (hb : IsBounded S)
+theorem isCompact_closure_of_isBounded {S : Set (WeakSpace 𝕜 X)} (hb : IsBounded S)
     (hrange : closure (inclusionInDoubleDualWeak 𝕜 X '' S) ⊆
       Set.range (inclusionInDoubleDualWeak 𝕜 X)) :
     IsCompact (closure S) := by
-  let homeo := inclusionInDoubleDual_homeomorph_weak 𝕜 X
+  let homeo := inclusionInDoubleDualWeak_homeomorph 𝕜 X
   set K := closure (inclusionInDoubleDualWeak 𝕜 X '' S) with hK_def
   -- K is norm-bounded (weak-star closure of a bounded set stays bounded)
   have hK_bounded : IsBounded (StrongDual.toWeakDual ⁻¹' K) := by
@@ -197,7 +197,7 @@ theorem isCompact_closure_of_bounded {S : Set (WeakSpace 𝕜 X)} (hb : IsBounde
   intro z hz
   exact ⟨⟨inclusionInDoubleDualWeak 𝕜 X z, z, rfl⟩,
     subset_closure ⟨z, hz, rfl⟩,
-    (inclusionInDoubleDual_isEmbedding_weak 𝕜 X).toHomeomorph_symm_apply _⟩
+    (inclusionInDoubleDualWeak_isEmbedding 𝕜 X).toHomeomorph_symm_apply _⟩
 
 end Embedding
 
