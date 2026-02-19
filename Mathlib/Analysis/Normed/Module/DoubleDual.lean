@@ -133,18 +133,15 @@ when the domain carries the weak topology and the codomain the weak-star topolog
 The proof shows that both topologies on the domain are the topology of pointwise convergence
 against `StrongDual 𝕜 X`. -/
 theorem inclusionInDoubleDualWeak_isEmbedding :
-    IsEmbedding (inclusionInDoubleDualWeak 𝕜 X) := by
-  -- The WeakDual evaluation fun φ f => φ f is inducing by definition of the WeakBilin topology
-  have h_eval : IsInducing
-      (fun (φ : WeakDual 𝕜 (StrongDual 𝕜 X)) f => φ f) := ⟨rfl⟩
-  refine ⟨h_eval.of_comp_iff.mp ⟨?_⟩, StrongDual.toWeakDual.injective.comp
-    (inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).injective⟩
-  -- The composition is the WeakSpace evaluation fun x f => f x, inducing by definition
-  change TopologicalSpace.induced
-      ((fun (φ : WeakDual 𝕜 (StrongDual 𝕜 X)) f => φ f) ∘
-        inclusionInDoubleDualWeak 𝕜 X)
-      Pi.topologicalSpace = _
-  simp only [Function.comp_def, inclusionInDoubleDualWeak, StrongDual.coe_toWeakDual]
+    IsEmbedding (inclusionInDoubleDualWeak 𝕜 X) where
+  injective := StrongDual.toWeakDual.injective.comp
+    (inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).injective
+  eq_induced := by
+    change _ = TopologicalSpace.induced (inclusionInDoubleDualWeak 𝕜 X)
+      (TopologicalSpace.induced
+        (fun (φ : WeakDual 𝕜 (StrongDual 𝕜 X)) f => φ f) Pi.topologicalSpace)
+    rw [induced_compose]
+    rfl
 
 /-- The inclusion of a normed space into its double dual, as a homeomorphism onto its range,
 where the domain carries the weak topology and the codomain the weak-star topology. -/
