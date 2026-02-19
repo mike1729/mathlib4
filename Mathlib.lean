@@ -7256,6 +7256,7 @@ public import Mathlib.Topology.Compactness.Bases
 public import Mathlib.Topology.Compactness.Compact
 public import Mathlib.Topology.Compactness.CompactlyCoherentSpace
 public import Mathlib.Topology.Compactness.CompactlyGeneratedSpace
+public import Mathlib.Topology.Compactness.CountablyCompact
 public import Mathlib.Topology.Compactness.DeltaGeneratedSpace
 public import Mathlib.Topology.Compactness.Exterior
 public import Mathlib.Topology.Compactness.HilbertCubeEmbedding
