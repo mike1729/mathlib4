@@ -126,22 +126,31 @@ change on both sides. -/
 def inclusionInDoubleDualWeak (x : WeakSpace 𝕜 X) : WeakDual 𝕜 (StrongDual 𝕜 X) :=
   StrongDual.toWeakDual (inclusionInDoubleDual 𝕜 X x)
 
-/-- `inclusionInDoubleDualWeak` is a topological embedding from the weak topology to the weak-star
-topology. That is, the canonical inclusion of a normed space into its double dual is an embedding
-when the domain carries the weak topology and the codomain the weak-star topology.
+/-- The canonical embedding into the weak-star bidual evaluates to `f x`. -/
+@[simp]
+theorem inclusionInDoubleDualWeak_apply (x : WeakSpace 𝕜 X) (f : StrongDual 𝕜 X) :
+    (inclusionInDoubleDualWeak 𝕜 X x) f = f x :=
+  rfl
 
-The proof shows that both topologies on the domain are the topology of pointwise convergence
-against `StrongDual 𝕜 X`. -/
-theorem inclusionInDoubleDualWeak_isEmbedding :
-    IsEmbedding (inclusionInDoubleDualWeak 𝕜 X) where
-  injective := StrongDual.toWeakDual.injective.comp
-    (inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).injective
+/-- `inclusionInDoubleDualWeak` is inducing: the weak topology on `X` coincides with the topology
+pulled back from the weak-star topology on the bidual. Both are the topology of pointwise
+convergence against `StrongDual 𝕜 X`. -/
+theorem inclusionInDoubleDualWeak_isInducing :
+    IsInducing (inclusionInDoubleDualWeak 𝕜 X) where
   eq_induced := by
     change _ = TopologicalSpace.induced (inclusionInDoubleDualWeak 𝕜 X)
       (TopologicalSpace.induced
         (fun (φ : WeakDual 𝕜 (StrongDual 𝕜 X)) f => φ f) Pi.topologicalSpace)
     rw [induced_compose]
     rfl
+
+/-- `inclusionInDoubleDualWeak` is a topological embedding from the weak topology to the weak-star
+topology. -/
+theorem inclusionInDoubleDualWeak_isEmbedding :
+    IsEmbedding (inclusionInDoubleDualWeak 𝕜 X) where
+  toIsInducing := inclusionInDoubleDualWeak_isInducing 𝕜 X
+  injective := StrongDual.toWeakDual.injective.comp
+    (inclusionInDoubleDualLi (𝕜 := 𝕜) (E := X)).injective
 
 /-- The inclusion of a normed space into its double dual, as a homeomorphism onto its range,
 where the domain carries the weak topology and the codomain the weak-star topology. -/
@@ -159,39 +168,14 @@ theorem isCompact_closure_of_isBounded {S : Set (WeakSpace 𝕜 X)} (hb : IsBoun
     (hrange : closure (inclusionInDoubleDualWeak 𝕜 X '' S) ⊆
       Set.range (inclusionInDoubleDualWeak 𝕜 X)) :
     IsCompact (closure S) := by
-  let homeo := inclusionInDoubleDualWeak_homeomorph 𝕜 X
-  set K := closure (inclusionInDoubleDualWeak 𝕜 X '' S) with hK_def
-  -- K is norm-bounded (weak-star closure of a bounded set stays bounded)
-  have hK_bounded : IsBounded (StrongDual.toWeakDual ⁻¹' K) := by
-    obtain ⟨R, hR⟩ := (Metric.isBounded_iff_subset_closedBall 0).mp
-      ((inclusionInDoubleDual 𝕜 X).lipschitz.isBounded_image hb)
-    refine (Metric.isBounded_iff_subset_closedBall 0).mpr ⟨R, fun x hx => ?_⟩
-    have : inclusionInDoubleDualWeak 𝕜 X '' S ⊆
-        WeakDual.toStrongDual ⁻¹' Metric.closedBall 0 R := by
-      rintro _ ⟨z, hz, rfl⟩
-      simpa [inclusionInDoubleDualWeak, Metric.mem_closedBall, dist_zero_right] using
-        hR ⟨z, hz, rfl⟩
-    exact closure_minimal this (WeakDual.isClosed_closedBall 0 R) hx
-  -- K is compact by Banach–Alaoglu
-  have hK_compact : IsCompact K :=
-    WeakDual.isCompact_of_bounded_of_closed hK_bounded isClosed_closure
-  -- K lies in the range of the embedding, so pull back to a compact subset
-  have hK_in_range : K ⊆ Set.range (inclusionInDoubleDualWeak 𝕜 X) := hrange
-  have hK_pre_compact : IsCompact
-      (Subtype.val ⁻¹' K : Set (Set.range (inclusionInDoubleDualWeak 𝕜 X))) := by
-    rwa [Subtype.isCompact_iff, Set.image_preimage_eq_inter_range, Subtype.range_coe,
-      Set.inter_eq_left.mpr hK_in_range]
-  -- Transfer through the homeomorphism to WeakSpace
-  have hW_compact : IsCompact (homeo.symm ''
-      (Subtype.val ⁻¹' K : Set (Set.range (inclusionInDoubleDualWeak 𝕜 X)))) :=
-    hK_pre_compact.image homeo.symm.continuous
-  refine hW_compact.of_isClosed_subset isClosed_closure
-    (closure_minimal ?_ hW_compact.isClosed)
-  -- S maps into homeo.symm '' (Subtype.val ⁻¹' K)
-  intro z hz
-  exact ⟨⟨inclusionInDoubleDualWeak 𝕜 X z, z, rfl⟩,
-    subset_closure ⟨z, hz, rfl⟩,
-    (inclusionInDoubleDualWeak_isEmbedding 𝕜 X).toHomeomorph_symm_apply _⟩
+  rw [(inclusionInDoubleDualWeak_isInducing 𝕜 X).closure_eq_preimage_closure_image]
+  apply (inclusionInDoubleDualWeak_isInducing 𝕜 X).isCompact_preimage' _ hrange
+  obtain ⟨R, hR⟩ := (Metric.isBounded_iff_subset_closedBall 0).mp
+    ((inclusionInDoubleDual 𝕜 X).lipschitz.isBounded_image hb)
+  refine (WeakDual.isCompact_closedBall (𝕜 := 𝕜) (E := StrongDual 𝕜 X) 0 R).of_isClosed_subset
+    isClosed_closure (closure_minimal ?_ (WeakDual.isClosed_closedBall 0 R))
+  rintro _ ⟨z, hz, rfl⟩
+  exact hR ⟨z, hz, rfl⟩
 
 end Embedding
 
