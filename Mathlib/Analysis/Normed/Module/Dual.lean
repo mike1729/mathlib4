@@ -6,6 +6,7 @@ Authors: Heather Macbeth, Michał Świętek
 module
 
 public import Mathlib.Analysis.LocallyConvex.Polar
+public import Mathlib.Analysis.Normed.Module.HahnBanach
 public import Mathlib.Analysis.Normed.Module.RCLike.Basic
 public import Mathlib.Data.Set.Finite.Lemmas
 public import Mathlib.Analysis.LocallyConvex.AbsConvex
@@ -151,6 +152,25 @@ theorem sInter_polar_eq_closedBall {𝕜 E : Type*} [RCLike 𝕜] [NormedAddComm
     (topDualPairing 𝕜 E).flip.sInter_polar_finite_subset_eq_polar (closedBall (0 : E) r⁻¹)]
 
 end PolarSets
+
+section DualSeparation
+
+variable (𝕜 : Type*) [RCLike 𝕜] {E : Type*} [NormedAddCommGroup E] [NormedSpace 𝕜 E]
+
+theorem eq_zero_of_forall_dual_eq_zero {x : E} (h : ∀ f : StrongDual 𝕜 E, f x = (0 : 𝕜)) :
+    x = 0 := by
+  obtain ⟨g, -, hgx⟩ := exists_dual_vector'' 𝕜 x
+  exact norm_eq_zero.mp (RCLike.ofReal_eq_zero.mp (hgx ▸ h g))
+
+theorem eq_zero_iff_forall_dual_eq_zero (x : E) : x = 0 ↔ ∀ g : StrongDual 𝕜 E, g x = 0 :=
+  ⟨fun hx => by simp [hx], fun h => eq_zero_of_forall_dual_eq_zero 𝕜 h⟩
+
+/-- See also `geometric_hahn_banach_point_point`. -/
+theorem eq_iff_forall_dual_eq {x y : E} : x = y ↔ ∀ g : StrongDual 𝕜 E, g x = g y := by
+  rw [← sub_eq_zero, eq_zero_iff_forall_dual_eq_zero 𝕜 (x - y)]
+  simp [sub_eq_zero]
+
+end DualSeparation
 
 end NormedSpace
 
