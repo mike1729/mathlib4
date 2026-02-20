@@ -157,12 +157,9 @@ theorem isCompact_closure_of_isBounded {S : Set (WeakSpace 𝕜 X)} (hb : IsBoun
     IsCompact (closure S) := by
   rw [(inclusionInDoubleDualWeak_isInducing 𝕜 X).closure_eq_preimage_closure_image]
   apply (inclusionInDoubleDualWeak_isInducing 𝕜 X).isCompact_preimage' _ hrange
-  obtain ⟨R, hR⟩ := (Metric.isBounded_iff_subset_closedBall 0).mp
-    ((inclusionInDoubleDual 𝕜 X).lipschitz.isBounded_image hb)
-  refine (WeakDual.isCompact_closedBall (𝕜 := 𝕜) (E := StrongDual 𝕜 X) 0 R).of_isClosed_subset
-    isClosed_closure (closure_minimal ?_ (WeakDual.isClosed_closedBall 0 R))
-  rintro _ ⟨z, hz, rfl⟩
-  exact hR ⟨z, hz, rfl⟩
+  exact WeakDual.isCompact_of_bounded_of_closed
+    (WeakDual.isBounded_closure ((inclusionInDoubleDual 𝕜 X).lipschitz.isBounded_image hb))
+    isClosed_closure
 
 end Embedding
 

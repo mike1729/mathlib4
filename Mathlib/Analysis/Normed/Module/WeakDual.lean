@@ -203,9 +203,23 @@ namespace WeakDual
 
 open NormedSpace
 
+/-- The norm bornology on `WeakDual 𝕜 E`, inherited from `StrongDual 𝕜 E`. -/
+instance instBornology : Bornology (WeakDual 𝕜 E) := inferInstanceAs (Bornology (StrongDual 𝕜 E))
+
 theorem isClosed_closedBall (x' : StrongDual 𝕜 E) (r : ℝ) :
     IsClosed (toStrongDual ⁻¹' closedBall x' r) :=
   isClosed_induced_iff'.2 (ContinuousLinearMap.is_weak_closed_closedBall x' r)
+
+/-- The weak-* closure of a norm-bounded set is norm-bounded, because norm-closed balls
+are weak-* closed. -/
+theorem isBounded_closure {s : Set (WeakDual 𝕜 E)} (hb : IsBounded s) :
+    IsBounded (closure s) := by
+  have hb' : IsBounded (StrongDual.toWeakDual ⁻¹' s) := hb
+  obtain ⟨R, hR⟩ := (Metric.isBounded_iff_subset_closedBall (0 : StrongDual 𝕜 E)).mp hb'
+  have hbd : IsBounded (Metric.closedBall (0 : StrongDual 𝕜 E) R) := Metric.isBounded_closedBall
+  exact (show IsBounded (toStrongDual ⁻¹' Metric.closedBall 0 R) from hbd).subset
+    (closure_minimal (show s ⊆ toStrongDual ⁻¹' Metric.closedBall 0 R from hR)
+      (isClosed_closedBall 0 R))
 
 /-!
 ### Polar sets in the weak dual space
@@ -214,12 +228,12 @@ theorem isClosed_closedBall (x' : StrongDual 𝕜 E) (r : ℝ) :
 /-- While the coercion `↑ : WeakDual 𝕜 E → (E → 𝕜)` is not a closed map, it sends *bounded*
 closed sets to closed sets. -/
 theorem isClosed_image_coe_of_bounded_of_closed {s : Set (WeakDual 𝕜 E)}
-    (hb : IsBounded (StrongDual.toWeakDual ⁻¹' s)) (hc : IsClosed s) :
+    (hb : IsBounded s) (hc : IsClosed s) :
     IsClosed (((↑) : WeakDual 𝕜 E → E → 𝕜) '' s) :=
   ContinuousLinearMap.isClosed_image_coe_of_bounded_of_weak_closed hb (isClosed_induced_iff'.1 hc)
 
 theorem isCompact_of_bounded_of_closed [ProperSpace 𝕜] {s : Set (WeakDual 𝕜 E)}
-    (hb : IsBounded (StrongDual.toWeakDual ⁻¹' s)) (hc : IsClosed s) : IsCompact s :=
+    (hb : IsBounded s) (hc : IsClosed s) : IsCompact s :=
   DFunLike.coe_injective.isEmbedding_induced.isCompact_iff.mpr <|
     ContinuousLinearMap.isCompact_image_coe_of_bounded_of_closed_image hb <|
       isClosed_image_coe_of_bounded_of_closed hb hc
@@ -249,8 +263,10 @@ theorem isCompact_polar [ProperSpace 𝕜] {s : Set E} (s_nhds : s ∈ 𝓝 (0 :
 /-- The **Banach-Alaoglu theorem**: closed balls of the dual of a normed space `E` are compact in
 the weak-star topology. -/
 theorem isCompact_closedBall [ProperSpace 𝕜] (x' : StrongDual 𝕜 E) (r : ℝ) :
-    IsCompact (toStrongDual ⁻¹' closedBall x' r) :=
-  isCompact_of_bounded_of_closed isBounded_closedBall (isClosed_closedBall x' r)
+    IsCompact (toStrongDual ⁻¹' closedBall x' r) := by
+  apply isCompact_of_bounded_of_closed _ (isClosed_closedBall x' r)
+  change IsBounded (Metric.closedBall x' r)
+  exact Metric.isBounded_closedBall
 
 open TopologicalSpace
 
@@ -280,7 +296,7 @@ lemma metrizable_of_isCompact (K_cpt : IsCompact K) : TopologicalSpace.Metrizabl
 variable [ProperSpace 𝕜] (K_cpt : IsCompact K)
 
 theorem isSeqCompact_of_isBounded_of_isClosed {s : Set (WeakDual 𝕜 V)}
-    (hb : Bornology.IsBounded (StrongDual.toWeakDual ⁻¹' s)) (hc : IsClosed s) :
+    (hb : IsBounded s) (hc : IsClosed s) :
     IsSeqCompact s := by
   have b_isCompact' : CompactSpace s :=
     isCompact_iff_compactSpace.mp <| isCompact_of_bounded_of_closed hb hc
@@ -300,8 +316,9 @@ theorem isSeqCompact_polar {s : Set V} (s_nhd : s ∈ 𝓝 (0 : V)) :
 /-- The **Sequential Banach-Alaoglu theorem**: closed balls of the dual of a separable
 normed space `V` are sequentially compact in the weak-* topology. -/
 theorem isSeqCompact_closedBall (x' : StrongDual 𝕜 V) (r : ℝ) :
-    IsSeqCompact (toStrongDual ⁻¹' Metric.closedBall x' r) :=
-  isSeqCompact_of_isBounded_of_isClosed 𝕜 V Metric.isBounded_closedBall
-    (isClosed_closedBall x' r)
+    IsSeqCompact (toStrongDual ⁻¹' Metric.closedBall x' r) := by
+  apply isSeqCompact_of_isBounded_of_isClosed 𝕜 V _ (isClosed_closedBall x' r)
+  change IsBounded (Metric.closedBall x' r)
+  exact Metric.isBounded_closedBall
 
 end WeakDual
