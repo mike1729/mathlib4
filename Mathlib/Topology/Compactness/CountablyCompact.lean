@@ -48,8 +48,8 @@ theorem isCountablyCompact_singleton {x : E} : IsCountablyCompact ({x} : Set E) 
   fun _ hu => ⟨x, mem_singleton x,
     (tendsto_const_nhds.congr fun n => (mem_singleton_iff.mp (hu n)).symm).mapClusterPt⟩
 
-theorem IsCountablyCompact.mono {A B : Set E} (hA : IsCountablyCompact A) (hB : IsClosed B)
-    (hBA : B ⊆ A) : IsCountablyCompact B := fun x hx =>
+theorem IsCountablyCompact.of_isClosed_subset {A B : Set E} (hA : IsCountablyCompact A)
+    (hB : IsClosed B) (hBA : B ⊆ A) : IsCountablyCompact B := fun x hx =>
   let ⟨a, _, hac⟩ := hA x (fun n => hBA (hx n))
   ⟨a, hB.mem_of_mapClusterPt hac (Eventually.of_forall hx), hac⟩
 
@@ -216,9 +216,5 @@ theorem IsCountablyCompact.isCompact [SecondCountableTopology E] {A : Set E}
   rw [Set.biUnion_eq_iUnion] at hAT
   obtain ⟨t, ht⟩ := hA.elim_finite_subcover (fun i => hUo _) hAT
   exact ⟨t.image Subtype.val, by rwa [Finset.set_biUnion_finset_image]⟩
-
-
--- IsCountablyCompact.of_isClosed_subset
-
 
 end
