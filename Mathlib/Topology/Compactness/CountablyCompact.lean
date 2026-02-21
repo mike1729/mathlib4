@@ -136,6 +136,11 @@ theorem IsSeqCompact.IsCountablyCompact {A : Set E} (hA : IsSeqCompact A) :
   obtain ⟨a, ha_mem, φ, hφ_mono, hφ_tendsto⟩ := hA h_mem
   exact ⟨a, ha_mem, (hφ_tendsto.mapClusterPt).of_comp hφ_mono.tendsto_atTop⟩
 
+theorem IsCountablyCompact.isSeqCompact [FirstCountableTopology E] {A : Set E}
+    (hA : IsCountablyCompact A) : IsSeqCompact A := by
+  intro x hx
+  obtain ⟨a, haA, hac⟩ := hA x hx
+  exact ⟨a, haA, TopologicalSpace.FirstCountableTopology.tendsto_subseq hac⟩
 
 theorem IsCountablyCompact.exists_accPt_of_infinite {A : Set E}
     (hA : IsCountablyCompact A) {B : Set E} (hBA : B ⊆ A) (hB : B.Infinite) :
@@ -213,7 +218,6 @@ theorem IsCountablyCompact.isCompact [SecondCountableTopology E] {A : Set E}
   exact ⟨t.image Subtype.val, by rwa [Finset.set_biUnion_finset_image]⟩
 
 
--- [FirstCountableTopology E] IsCountablyCompact.isSeqCompact
 -- IsCountablyCompact.of_isClosed_subset
 
 
