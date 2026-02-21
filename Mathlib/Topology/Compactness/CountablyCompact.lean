@@ -68,6 +68,49 @@ theorem isCountablyCompact_iff_clusterPt_countably_generated_filter {A : Set E} 
     obtain ⟨a, ha, hac⟩ := h (map x atTop) this
     exact ⟨a, ha, hac⟩
 
+/-- A point `a` is a cluster point of the sequence `x` if and only if `a` belongs to the closure
+of every tail `x '' {n | i ≤ n}`. -/
+theorem mapClusterPt_atTop_iff_forall_mem_closure {ι : Type*} [Preorder ι] [IsDirectedOrder ι]
+    [Nonempty ι] {x : ι → E} {a : E} :
+    MapClusterPt a atTop x ↔ ∀ i, a ∈ closure (x '' Ici i) :=
+  show ClusterPt a (map x atTop) ↔ _ by
+    simp only [(atTop_basis.map x).clusterPt_iff_forall_mem_closure, true_implies]
+
+theorem isCountablyCompact_iff_countable_open_cover {A : Set E} :
+    IsCountablyCompact A ↔
+      ∀ (U : ℕ → Set E), (∀ i, IsOpen (U i)) → A ⊆ ⋃ i, U i →
+        ∃ t : Finset ℕ, A ⊆ ⋃ i ∈ t, U i := by
+  constructor
+  · intro hA U hUo hAU
+    by_contra h
+    push_neg at h
+    choose x hxA hxU using fun n => Set.not_subset.mp (h (Finset.range (n + 1)))
+    obtain ⟨a, haA, hac⟩ := hA x hxA
+    obtain ⟨k, hk⟩ := mem_iUnion.mp (hAU haA)
+    have : ∀ᶠ n in atTop, x n ∉ U k :=
+      Eventually.mono (Ici_mem_atTop k) fun n hn hxn =>
+        hxU n (mem_biUnion (Finset.mem_range.mpr (Nat.lt_succ_of_le hn)) hxn)
+    exact hac.frequently ((hUo k).mem_nhds hk) this
+  · intro h x hx
+    by_contra hac
+    push_neg at hac
+    let V : ℕ → Set E := fun n => (closure (x '' Ici n))ᶜ
+    have hVmono : Monotone V := fun m n hmn =>
+      compl_subset_compl.mpr (closure_mono (image_mono (Ici_subset_Ici.mpr hmn)))
+    have hAV : A ⊆ ⋃ n, V n := by
+      intro a haA
+      simp only [mapClusterPt_atTop_iff_forall_mem_closure, not_forall] at hac
+      obtain ⟨n, hna⟩ := hac a haA
+      exact mem_iUnion.mpr ⟨n, mem_compl hna⟩
+    obtain ⟨t, ht⟩ := h V (fun n => isClosed_closure.isOpen_compl) hAV
+    have : ∀ᶠ n in atTop, ∀ j ∈ t, x n ∉ V j :=
+      (eventually_all_finset t).mpr fun j _ =>
+        Eventually.mono (Ici_mem_atTop j) fun n hn hxn =>
+          hVmono hn hxn (subset_closure ⟨n, mem_Ici.mpr le_rfl, rfl⟩)
+    obtain ⟨n, hn⟩ := this.exists
+    obtain ⟨j, hjt, hjV⟩ := mem_iUnion₂.mp (ht (hx n))
+    exact hn j hjt hjV
+
 theorem IsCompact.IsCountablyCompact {A : Set E} (hA : IsCompact A) : IsCountablyCompact A :=
   fun _ h_mem => hA (le_principal_iff.2 (mem_map.2 (Eventually.of_forall h_mem)))
 
