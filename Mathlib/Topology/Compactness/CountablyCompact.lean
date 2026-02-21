@@ -171,25 +171,15 @@ theorem isCountablyCompact_iff_infinite_subset_has_accPt [T1Space E] {A : Set E}
       rw [Set.infinite_coe_iff] at ha_inf
       simp only [Set.preimage, Set.mem_singleton_iff, Set.rangeFactorization,
         Subtype.mk.injEq] at ha_inf
-      refine ⟨a, range_subset_iff.mpr hx ha_range, ?_⟩
-      rw [mapClusterPt_atTop_iff_forall_mem_closure]
-      intro i
-      obtain ⟨n, hxn, hin⟩ :=
-        ((Nat.frequently_atTop_iff_infinite.mpr ha_inf).and_eventually (Ici_mem_atTop i)).exists
-      exact subset_closure ⟨n, hin, hxn⟩
+      refine ⟨a, range_subset_iff.mpr hx ha_range,
+        mapClusterPt_iff_frequently.mpr fun U hU => ?_⟩
+      exact (Nat.frequently_atTop_iff_infinite.mpr ha_inf).mono fun n hn => by
+        rw [hn]; exact mem_of_mem_nhds hU
     · -- Infinite range: use hypothesis and T1 to get cluster point
       rw [Set.not_finite] at hfin
       obtain ⟨a, haA, hacc⟩ := h (Set.range x) (range_subset_iff.mpr hx) hfin
-      refine ⟨a, haA, ?_⟩
-      rw [mapClusterPt_atTop_iff_forall_mem_closure]
-      intro i
-      rw [mem_closure_iff_nhds]
-      intro U hU
-      suffices h_inf : {n | x n ∈ U}.Infinite by
-        obtain ⟨n, hn, hni⟩ :=
-          ((Nat.frequently_atTop_iff_infinite.mpr h_inf).and_eventually
-            (Ici_mem_atTop i)).exists
-        exact ⟨x n, ⟨hn, n, hni, rfl⟩⟩
+      refine ⟨a, haA, mapClusterPt_iff_frequently.mpr fun U hU =>
+        Nat.frequently_atTop_iff_infinite.mpr ?_⟩
       suffices h_inf_inter : (U ∩ Set.range x).Infinite by
         exact (h_inf_inter.preimage (inter_subset_right)).mono
           (preimage_mono inter_subset_left)
