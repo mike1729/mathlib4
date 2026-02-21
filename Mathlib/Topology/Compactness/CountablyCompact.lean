@@ -10,6 +10,7 @@ public import Mathlib.Topology.Defs.Sequences
 public import Mathlib.Order.Filter.AtTopBot.CountablyGenerated
 public import Mathlib.Topology.Separation.Basic
 import Mathlib.Data.Fintype.Pigeonhole
+import Mathlib.Topology.Bases
 
 /-!
 # Countably compact sets
@@ -199,10 +200,21 @@ theorem isCountablyCompact_iff_infinite_subset_has_accPt [T1Space E] {A : Set E}
           (Filter.inter_mem hU (hF_closed.isOpen_compl.mem_nhds (mem_compl haF)))).exists
       exact hyFc ⟨⟨hyU, hyr⟩, hya⟩
 
--- [SecondCountableTopology E] IsCountablyCompact.isCompact
+theorem IsCountablyCompact.isCompact [SecondCountableTopology E] {A : Set E}
+    (hA : IsCountablyCompact A) : IsCompact A := by
+  classical
+  apply isCompact_of_finite_subcover
+  intro ι U hUo hAU
+  obtain ⟨T, hTc, hTeq⟩ := TopologicalSpace.isOpen_iUnion_countable U hUo
+  haveI : Countable ↥T := hTc.to_subtype
+  have hAT : A ⊆ ⋃ i ∈ T, U i := by rw [hTeq]; exact hAU
+  rw [Set.biUnion_eq_iUnion] at hAT
+  obtain ⟨t, ht⟩ := hA.elim_finite_subcover (fun i => hUo _) hAT
+  exact ⟨t.image Subtype.val, by rwa [Finset.set_biUnion_finset_image]⟩
+
+
 -- [FirstCountableTopology E] IsCountablyCompact.isSeqCompact
 -- IsCountablyCompact.of_isClosed_subset
--- If A is countably compact, B⊆A, and B is closed, then B is countably compact
 
 
 end
