@@ -6,7 +6,10 @@ Authors: Michal Swietek
 import Mathlib.Analysis.Convex.MedialAxisInflation
 import Mathlib.Analysis.Convex.Topology
 import Mathlib.Analysis.InnerProductSpace.Continuous
+import Mathlib.Analysis.InnerProductSpace.Dual
 import Mathlib.Analysis.InnerProductSpace.Projection.Minimal
+import Mathlib.Analysis.LocallyConvex.Separation
+import Mathlib.Analysis.Normed.Affine.AddTorsorBases
 import Mathlib.Analysis.Normed.Module.FiniteDimension
 
 /-!
@@ -97,33 +100,26 @@ theorem Metric.isReconstructiblePt_of_mem_convexHull [FiniteDimensional ℝ E] (
     exact hpX (by rw [hp4]; exact hx₀.1)
   · exact (isReconstructiblePt_iff_exists_centralSet hX).2 ⟨c, hc, mem_ball.1 hpc⟩
 
-/-- **Unified Propositions 3 and 4 of Białożyt**: if the hyperplane `{x | ⟪η, x⟫_ℝ = c}` bounds
-`X` from above and carries a *defect witness* — a point `w` of the closed convex hull of `X` on
-the hyperplane but not in `X` — then every point `p` strictly beyond the hyperplane is
-reconstructible.
+/-- The engine behind Propositions 3/4 and Corollary 5 of Białożyt: suppose the hyperplane
+`{x | ⟪η, x⟫_ℝ = c}` bounds `X` from above and carries a *defect witness* — a point `w` of the
+closed convex hull of `X` on the hyperplane but not in `X`. If `p` lies (weakly) beyond the
+hyperplane and the lift parameter `t > 0` satisfies `‖p - w‖ ^ 2 ≤ 2 * t * (⟪η, p⟫ - c)`, then
+`p` is reconstructible.
 
-The proof lifts `w` to `w + t • η` for one explicit value of `t` (no limits are needed), takes a
-nearest point `xt` of the lifted point, and runs the inflation dichotomy from `xt` towards the
-lifted point: the half-space branch would force `xt = w ∉ X`, and the maximal-ball branch
-produces a central-set ball that swallows `p`. -/
-theorem Metric.isReconstructiblePt_of_inner_lt [FiniteDimensional ℝ E] (hX : IsClosed X)
+The proof lifts `w` to `w + t • η`, takes a nearest point `xt` of the lifted point, and runs the
+inflation dichotomy from `xt` towards the lifted point: the half-space branch would force
+`xt = w ∉ X`, and the maximal-ball branch produces a central-set ball that swallows `p` (no
+limits are needed). -/
+theorem Metric.isReconstructiblePt_of_inner_le [FiniteDimensional ℝ E] (hX : IsClosed X)
     {η : E} (hη : ‖η‖ = 1) {c : ℝ} (hsupp : ∀ y ∈ X, ⟪η, y⟫ ≤ c) {w : E}
     (hwC : w ∈ closedConvexHull ℝ X) (hwL : ⟪η, w⟫ = c) (hwX : w ∉ X) {p : E}
-    (hp : c < ⟪η, p⟫) : IsReconstructiblePt X p := by
+    (hp : c ≤ ⟪η, p⟫) {t : ℝ} (ht0 : 0 < t)
+    (hnum : ‖p - w‖ ^ 2 ≤ 2 * t * (⟪η, p⟫ - c)) : IsReconstructiblePt X p := by
   have hne : X.Nonempty := by
     rcases X.eq_empty_or_nonempty with rfl | h
     · rw [closedConvexHull_eq_closure_convexHull, convexHull_empty, closure_empty] at hwC
       exact absurd hwC (notMem_empty w)
     · exact h
-  have hγ0 : 0 < ⟪η, p⟫ - c := by linarith
-  set t := ‖p - w‖ ^ 2 / (⟪η, p⟫ - c) + 1 with htdef
-  have ht0 : 0 < t := by
-    have := div_nonneg (sq_nonneg ‖p - w‖) hγ0.le
-    simp only [htdef]
-    linarith
-  have htγ : ‖p - w‖ ^ 2 = (t - 1) * (⟪η, p⟫ - c) := by
-    simp only [htdef, add_sub_cancel_right]
-    rw [div_mul_cancel₀ _ hγ0.ne']
   -- the lifted point is outside `X`
   have hwtX : w + t • η ∉ X := fun hmem => by
     have hle := hsupp _ hmem
@@ -146,6 +142,8 @@ theorem Metric.isReconstructiblePt_of_inner_lt [FiniteDimensional ℝ E] (hX : I
     rw [hxtv, hxtd]
     exact ball_infDist_subset_compl
   have hβ : (0 : ℝ) ≤ c - ⟪η, xt⟫ := sub_nonneg.2 (hsupp xt hxtX)
+  have hwxt : w ≠ xt := fun hh => hwX (hh ▸ hxtX)
+  have hSpos : 0 < ‖w - xt‖ ^ 2 := pow_pos (norm_pos_iff.2 (sub_ne_zero.2 hwxt)) 2
   -- the exact expansion of the key inner product
   have hN : ⟪w + t • η - xt, p - xt⟫ = t * (⟪η, p⟫ - c) + t * (c - ⟪η, xt⟫) +
       ⟪w - xt, p - w⟫ + ‖w - xt‖ ^ 2 := by
@@ -183,8 +181,6 @@ theorem Metric.isReconstructiblePt_of_inner_lt [FiniteDimensional ℝ E] (hX : I
       rw [show w + t • η - xt = t • η + (w - xt) from by abel, inner_add_left,
         real_inner_smul_left, real_inner_self_eq_norm_sq,
         show ⟪η, w - xt⟫ = c - ⟪η, xt⟫ from by rw [inner_sub_right, hwL]]
-    have hwxt : w ≠ xt := fun hh => hwX (hh ▸ hxtX)
-    have hSpos : 0 < ‖w - xt‖ ^ 2 := pow_pos (norm_pos_iff.2 (sub_ne_zero.2 hwxt)) 2
     have hprod : 0 ≤ t * (c - ⟪η, xt⟫) := mul_nonneg ht0.le hβ
     rw [hcompute] at hle
     linarith
@@ -197,24 +193,113 @@ theorem Metric.isReconstructiblePt_of_inner_lt [FiniteDimensional ℝ E] (hX : I
         real_inner_comm (p - w) (w - xt)]
     have hCS : -(‖w - xt‖ * ‖p - w‖) ≤ ⟪w - xt, p - w⟫ :=
       (abs_le.1 (abs_real_inner_le_norm _ _)).1
-    have hNpos : 0 < ⟪w + t • η - xt, p - xt⟫ := by
+    have hγge : (0 : ℝ) ≤ ⟪η, p⟫ - c := sub_nonneg.2 hp
+    have hNnonneg : 0 ≤ ⟪w + t • η - xt, p - xt⟫ := by
       rw [hN]
-      nlinarith [mul_nonneg ht0.le hβ, sq_nonneg (‖w - xt‖ - ‖p - w‖ / 2), sq_nonneg ‖w - xt‖]
-    have hvpos : 0 < ⟪v, p - xt⟫ := by
+      nlinarith [mul_nonneg ht0.le hβ, sq_nonneg (‖w - xt‖ - ‖p - w‖ / 2),
+        mul_nonneg ht0.le hγge]
+    have hvnonneg : 0 ≤ ⟪v, p - xt⟫ := by
       rw [hvinner]
-      exact mul_pos (inv_pos.2 hD0) hNpos
+      exact mul_nonneg (inv_pos.2 hD0).le hNnonneg
     have hDvi : D * ⟪v, p - xt⟫ = ⟪w + t • η - xt, p - xt⟫ := by
       rw [hvinner, ← mul_assoc, mul_inv_cancel₀ hD0.ne', one_mul]
     have hfinal : ‖p - xt‖ ^ 2 < 2 * D * ⟪v, p - xt⟫ := by
       rw [mul_assoc, hDvi, hN, hPS]
-      nlinarith [mul_nonneg ht0.le hβ, sq_nonneg ‖w - xt‖, mul_pos ht0 hγ0]
+      nlinarith [mul_nonneg ht0.le hβ, hSpos]
     have hball : p ∈ ball (xt + T • v) T := by
       rw [mem_ball_add_smul_iff hv (hD0.trans_le hT)]
       have h2T : 2 * D * ⟪v, p - xt⟫ ≤ 2 * T * ⟪v, p - xt⟫ := by
-        nlinarith [mul_le_mul_of_nonneg_right hT hvpos.le]
+        nlinarith [mul_le_mul_of_nonneg_right hT hvnonneg]
       linarith
     rw [hdeq]
     exact mem_ball.1 hball
+
+/-- **Unified Propositions 3 and 4 of Białożyt**: if a hyperplane `{x | ⟪η, x⟫_ℝ = c}` bounds
+`X` from above and carries a defect witness `w` (a point of the closed convex hull on the
+hyperplane but not in `X`), then every point strictly beyond the hyperplane is reconstructible.
+(Proposition 3 of the paper, where `X ∩ L` is non-convex, is a special case: non-convexity of
+the section forces a defect witness.) -/
+theorem Metric.isReconstructiblePt_of_inner_lt [FiniteDimensional ℝ E] (hX : IsClosed X)
+    {η : E} (hη : ‖η‖ = 1) {c : ℝ} (hsupp : ∀ y ∈ X, ⟪η, y⟫ ≤ c) {w : E}
+    (hwC : w ∈ closedConvexHull ℝ X) (hwL : ⟪η, w⟫ = c) (hwX : w ∉ X) {p : E}
+    (hp : c < ⟪η, p⟫) : IsReconstructiblePt X p := by
+  have hγ0 : 0 < ⟪η, p⟫ - c := by linarith
+  have h2γ : (0 : ℝ) < 2 * (⟪η, p⟫ - c) := by linarith
+  refine isReconstructiblePt_of_inner_le hX hη hsupp hwC hwL hwX hp.le
+    (t := ‖p - w‖ ^ 2 / (2 * (⟪η, p⟫ - c)) + 1) ?_ ?_
+  · have := div_nonneg (sq_nonneg ‖p - w‖) h2γ.le
+    linarith
+  · have hcancel : ‖p - w‖ ^ 2 / (2 * (⟪η, p⟫ - c)) * (2 * (⟪η, p⟫ - c)) = ‖p - w‖ ^ 2 :=
+      div_mul_cancel₀ _ h2γ.ne'
+    nlinarith [hγ0]
+
+/-- Every point of the closed convex hull of `X` outside the convex hull admits a supporting
+unit normal for the closed convex hull. -/
+theorem exists_unit_forall_inner_le [FiniteDimensional ℝ E] {p : E}
+    (hp : p ∈ closedConvexHull ℝ X) (hpc : p ∉ convexHull ℝ X) :
+    ∃ η : E, ‖η‖ = 1 ∧ ∀ y ∈ closedConvexHull ℝ X, ⟪η, y⟫ ≤ ⟪η, p⟫ := by
+  have hXne : X.Nonempty := by
+    rcases X.eq_empty_or_nonempty with rfl | h
+    · rw [closedConvexHull_eq_closure_convexHull, convexHull_empty, closure_empty] at hp
+      exact absurd hp (notMem_empty p)
+    · exact h
+  by_cases htop : affineSpan ℝ X = ⊤
+  · -- the hull has nonempty interior: separate `p` from it
+    have hconvex : Convex ℝ (convexHull ℝ X) := convex_convexHull ℝ X
+    have hint : (interior (convexHull ℝ X)).Nonempty := by
+      rw [hconvex.interior_nonempty_iff_affineSpan_eq_top, affineSpan_convexHull]
+      exact htop
+    have hic : interior (closedConvexHull ℝ X) = interior (convexHull ℝ X) := by
+      rw [closedConvexHull_eq_closure_convexHull]
+      exact hconvex.interior_closure_eq_interior_of_nonempty_interior hint
+    have hpi : p ∉ interior (closedConvexHull ℝ X) := fun hmem =>
+      hpc (interior_subset (hic ▸ hmem))
+    obtain ⟨f, hf0, hfle⟩ := geometric_hahn_banach_of_nonempty_interior_point
+      convex_closedConvexHull hpi (by rw [hic]; exact hint)
+    have hη₀ne : (InnerProductSpace.toDual ℝ E).symm f ≠ 0 := fun h =>
+      hf0 ((InnerProductSpace.toDual ℝ E).symm.map_eq_zero_iff.1 h)
+    refine ⟨‖(InnerProductSpace.toDual ℝ E).symm f‖⁻¹ • (InnerProductSpace.toDual ℝ E).symm f,
+      ?_, fun y hy => ?_⟩
+    · rw [norm_smul, norm_inv, norm_norm, inv_mul_cancel₀ (norm_ne_zero_iff.2 hη₀ne)]
+    · rw [real_inner_smul_left, real_inner_smul_left]
+      have h1 : ⟪(InnerProductSpace.toDual ℝ E).symm f, y⟫ ≤
+          ⟪(InnerProductSpace.toDual ℝ E).symm f, p⟫ := by
+        rw [InnerProductSpace.toDual_symm_apply, InnerProductSpace.toDual_symm_apply]
+        exact hfle y hy
+      exact mul_le_mul_of_nonneg_left h1 (inv_nonneg.2 (norm_nonneg _))
+  · -- the hull lies in a proper affine subspace: any orthogonal unit normal works
+    have hAcl : IsClosed (affineSpan ℝ X : Set E) :=
+      (affineSpan ℝ X).closed_of_finiteDimensional
+    have hCA : closedConvexHull ℝ X ⊆ (affineSpan ℝ X : Set E) := by
+      rw [closedConvexHull_eq_closure_convexHull]
+      exact closure_minimal (convexHull_subset_affineSpan X) hAcl
+    have hAne : ((affineSpan ℝ X : Set E)).Nonempty := hXne.mono (subset_affineSpan ℝ X)
+    have hdir : (affineSpan ℝ X).direction ≠ ⊤ := fun h =>
+      htop ((AffineSubspace.direction_eq_top_iff_of_nonempty hAne).1 h)
+    have horth : ((affineSpan ℝ X).direction)ᗮ ≠ ⊥ := fun h =>
+      hdir (Submodule.orthogonal_eq_bot_iff.1 h)
+    obtain ⟨η₀, hη₀mem, hη₀ne⟩ := Submodule.exists_mem_ne_zero_of_ne_bot horth
+    refine ⟨‖η₀‖⁻¹ • η₀, ?_, fun y hy => ?_⟩
+    · rw [norm_smul, norm_inv, norm_norm, inv_mul_cancel₀ (norm_ne_zero_iff.2 hη₀ne)]
+    · have hyp : y - p ∈ (affineSpan ℝ X).direction :=
+        AffineSubspace.vsub_mem_direction (hCA hy) (hCA hp)
+      have h0 : ⟪η₀, y - p⟫ = 0 := by
+        rw [real_inner_comm]
+        exact (Submodule.mem_orthogonal _ η₀).1 hη₀mem _ hyp
+      rw [inner_sub_right] at h0
+      have heq : ⟪η₀, y⟫ = ⟪η₀, p⟫ := by linarith
+      rw [real_inner_smul_left, real_inner_smul_left, heq]
+
+/-- **Corollary 5 of Białożyt**: every point of the closed convex hull of `X` outside `X` is
+reconstructible. -/
+theorem Metric.isReconstructiblePt_of_mem_closedConvexHull [FiniteDimensional ℝ E]
+    (hX : IsClosed X) {p : E} (hp : p ∈ closedConvexHull ℝ X) (hpX : p ∉ X) :
+    IsReconstructiblePt X p := by
+  by_cases hconv : p ∈ convexHull ℝ X
+  · exact isReconstructiblePt_of_mem_convexHull hX hconv hpX
+  · obtain ⟨η, hη, hsupp⟩ := exists_unit_forall_inner_le hp hconv
+    exact isReconstructiblePt_of_inner_le hX hη
+      (fun y hy => hsupp y (subset_closedConvexHull hy)) hp rfl hpX le_rfl one_pos (by simp)
 
 variable [CompleteSpace E]
 
@@ -345,3 +430,36 @@ theorem Metric.Reconstructible.compl_subset (hX : IsClosed X) (h : Reconstructib
   by_cases hpc : p ∈ closedConvexHull ℝ X
   · exact Or.inl hpc
   · exact Or.inr ((h p hp).exists_isSupportingHyperplane hX hpc)
+
+/-- **Białożyt's reconstruction theorem (Theorem 6)**: for a nonempty closed set `X` in a
+finite-dimensional real inner product space, the complement of `X` is reconstructible from the
+medial axis if and only if it is contained in the union of the closed convex hull of `X` and
+the open half-spaces strictly beyond the *defective* supporting hyperplanes of the hull (the
+supporting hyperplanes `L` with `X ∩ L ≠ closedConvexHull ℝ X ∩ L`). -/
+theorem Metric.reconstructible_iff [FiniteDimensional ℝ E] (hX : IsClosed X) :
+    Reconstructible X ↔ Xᶜ ⊆ closedConvexHull ℝ X ∪
+      {p | ∃ v c, IsSupportingHyperplane (closedConvexHull ℝ X) v c ∧
+        X ∩ {x | ⟪v, x⟫ = c} ≠ closedConvexHull ℝ X ∩ {x | ⟪v, x⟫ = c} ∧ c < ⟪v, p⟫} := by
+  constructor
+  · exact fun h => h.compl_subset hX
+  · intro hsub p hpX
+    rcases hsub hpX with hp | ⟨v, c, ⟨hv0, -, hvle⟩, hdef, hvp⟩
+    · exact isReconstructiblePt_of_mem_closedConvexHull hX hp hpX
+    · obtain ⟨w, hw1, hw2⟩ : ((closedConvexHull ℝ X ∩ {x | ⟪v, x⟫ = c}) \
+          (X ∩ {x | ⟪v, x⟫ = c})).Nonempty := by
+        rw [Set.sdiff_nonempty]
+        intro hcon
+        exact hdef (Subset.antisymm
+          (inter_subset_inter_left _ subset_closedConvexHull) hcon)
+      have hwX : w ∉ X := fun h => hw2 ⟨h, hw1.2⟩
+      have hv0' : 0 < ‖v‖ := norm_pos_iff.2 hv0
+      have hη : ‖(‖v‖⁻¹ • v)‖ = 1 := by
+        rw [norm_smul, norm_inv, norm_norm, inv_mul_cancel₀ hv0'.ne']
+      refine isReconstructiblePt_of_inner_lt hX hη (c := ‖v‖⁻¹ * c)
+        (fun y hy => ?_) hw1.1 ?_ hwX ?_
+      · rw [real_inner_smul_left]
+        exact mul_le_mul_of_nonneg_left (hvle y (subset_closedConvexHull hy))
+          (inv_nonneg.2 hv0'.le)
+      · rw [real_inner_smul_left, hw1.2]
+      · rw [real_inner_smul_left]
+        exact mul_lt_mul_of_pos_left hvp (inv_pos.2 hv0')
