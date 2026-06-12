@@ -5,6 +5,7 @@ Authors: Michal Swietek
 -/
 import Mathlib.Analysis.Convex.MedialAxisInflation
 import Mathlib.Analysis.Convex.Topology
+import Mathlib.Analysis.InnerProductSpace.Continuous
 import Mathlib.Analysis.InnerProductSpace.Projection.Minimal
 import Mathlib.Analysis.Normed.Module.FiniteDimension
 
@@ -95,6 +96,125 @@ theorem Metric.isReconstructiblePt_of_mem_convexHull [FiniteDimensional ℝ E] (
     have hp4 : p = x₀ := sub_eq_zero.1 (real_inner_self_nonpos.1 hp3)
     exact hpX (by rw [hp4]; exact hx₀.1)
   · exact (isReconstructiblePt_iff_exists_centralSet hX).2 ⟨c, hc, mem_ball.1 hpc⟩
+
+/-- **Unified Propositions 3 and 4 of Białożyt**: if the hyperplane `{x | ⟪η, x⟫_ℝ = c}` bounds
+`X` from above and carries a *defect witness* — a point `w` of the closed convex hull of `X` on
+the hyperplane but not in `X` — then every point `p` strictly beyond the hyperplane is
+reconstructible.
+
+The proof lifts `w` to `w + t • η` for one explicit value of `t` (no limits are needed), takes a
+nearest point `xt` of the lifted point, and runs the inflation dichotomy from `xt` towards the
+lifted point: the half-space branch would force `xt = w ∉ X`, and the maximal-ball branch
+produces a central-set ball that swallows `p`. -/
+theorem Metric.isReconstructiblePt_of_inner_lt [FiniteDimensional ℝ E] (hX : IsClosed X)
+    {η : E} (hη : ‖η‖ = 1) {c : ℝ} (hsupp : ∀ y ∈ X, ⟪η, y⟫ ≤ c) {w : E}
+    (hwC : w ∈ closedConvexHull ℝ X) (hwL : ⟪η, w⟫ = c) (hwX : w ∉ X) {p : E}
+    (hp : c < ⟪η, p⟫) : IsReconstructiblePt X p := by
+  have hne : X.Nonempty := by
+    rcases X.eq_empty_or_nonempty with rfl | h
+    · rw [closedConvexHull_eq_closure_convexHull, convexHull_empty, closure_empty] at hwC
+      exact absurd hwC (notMem_empty w)
+    · exact h
+  have hγ0 : 0 < ⟪η, p⟫ - c := by linarith
+  set t := ‖p - w‖ ^ 2 / (⟪η, p⟫ - c) + 1 with htdef
+  have ht0 : 0 < t := by
+    have := div_nonneg (sq_nonneg ‖p - w‖) hγ0.le
+    simp only [htdef]
+    linarith
+  have htγ : ‖p - w‖ ^ 2 = (t - 1) * (⟪η, p⟫ - c) := by
+    simp only [htdef, add_sub_cancel_right]
+    rw [div_mul_cancel₀ _ hγ0.ne']
+  -- the lifted point is outside `X`
+  have hwtX : w + t • η ∉ X := fun hmem => by
+    have hle := hsupp _ hmem
+    rw [inner_add_right, real_inner_smul_right, hwL, real_inner_self_eq_norm_sq, hη] at hle
+    norm_num at hle
+    linarith
+  obtain ⟨xt, hxtX, hxtd⟩ := nearestPoints_nonempty hX hne (w + t • η)
+  have hD0 : 0 < dist (w + t • η) xt :=
+    dist_pos.2 fun h => hwtX (h ▸ hxtX)
+  set D := dist (w + t • η) xt with hDdef
+  set v := D⁻¹ • (w + t • η - xt) with hvdef
+  have hnormwx : ‖w + t • η - xt‖ = D := by rw [hDdef, dist_eq_norm]
+  have hv : ‖v‖ = 1 := by
+    rw [hvdef, norm_smul, norm_inv, Real.norm_eq_abs, abs_of_pos hD0, hnormwx,
+      inv_mul_cancel₀ hD0.ne']
+  have hxtv : xt + D • v = w + t • η := by
+    rw [hvdef, smul_smul, mul_inv_cancel₀ hD0.ne', one_smul]
+    abel
+  have hdisj : ball (xt + D • v) D ⊆ Xᶜ := by
+    rw [hxtv, hxtd]
+    exact ball_infDist_subset_compl
+  have hβ : (0 : ℝ) ≤ c - ⟪η, xt⟫ := sub_nonneg.2 (hsupp xt hxtX)
+  -- the exact expansion of the key inner product
+  have hN : ⟪w + t • η - xt, p - xt⟫ = t * (⟪η, p⟫ - c) + t * (c - ⟪η, xt⟫) +
+      ⟪w - xt, p - w⟫ + ‖w - xt‖ ^ 2 := by
+    have e1 : ⟪η, p - w⟫ = ⟪η, p⟫ - c := by rw [inner_sub_right, hwL]
+    have e2 : ⟪η, w - xt⟫ = c - ⟪η, xt⟫ := by rw [inner_sub_right, hwL]
+    calc ⟪w + t • η - xt, p - xt⟫
+        = t * ⟪η, p - w⟫ + t * ⟪η, w - xt⟫ + ⟪w - xt, p - w⟫ + ⟪w - xt, w - xt⟫ := by
+          rw [show w + t • η - xt = t • η + (w - xt) from by abel,
+            show p - xt = (p - w) + (w - xt) from by abel, inner_add_left, inner_add_right,
+            inner_add_right, real_inner_smul_left, real_inner_smul_left]
+          ring
+      _ = _ := by rw [e1, e2, real_inner_self_eq_norm_sq]
+  rcases inflation_dichotomy hv hxtX hD0 hdisj with h | ⟨T, hT, hdeq, hcs, -⟩
+  · -- half-space branch: impossible, it would force `xt = w ∉ X`
+    exfalso
+    have hlin : IsLinearMap ℝ fun y : E => ⟪w + t • η - xt, y⟫ :=
+      ⟨fun a b => inner_add_right _ _ _, fun r a => real_inner_smul_right _ _ _⟩
+    have hXK : X ⊆ {y : E | ⟪w + t • η - xt, y⟫ ≤ ⟪w + t • η - xt, xt⟫} := fun y hy => by
+      have hy' := h y hy
+      rw [hvdef, real_inner_smul_left] at hy'
+      have h2 : ⟪w + t • η - xt, y - xt⟫ ≤ 0 := by
+        by_contra hgt
+        nlinarith [mul_pos (inv_pos.2 hD0) (not_le.1 hgt)]
+      rw [inner_sub_right] at h2
+      simpa using sub_nonpos.1 h2
+    have hwK : w ∈ {y : E | ⟪w + t • η - xt, y⟫ ≤ ⟪w + t • η - xt, xt⟫} := by
+      refine closure_minimal (convexHull_min hXK (convex_halfSpace_le hlin _))
+        (isClosed_le (Continuous.inner continuous_const continuous_id) continuous_const) ?_
+      rwa [← closedConvexHull_eq_closure_convexHull]
+    have hle : ⟪w + t • η - xt, w - xt⟫ ≤ 0 := by
+      simp only [mem_setOf_eq] at hwK
+      rw [inner_sub_right]
+      linarith
+    have hcompute : ⟪w + t • η - xt, w - xt⟫ = t * (c - ⟪η, xt⟫) + ‖w - xt‖ ^ 2 := by
+      rw [show w + t • η - xt = t • η + (w - xt) from by abel, inner_add_left,
+        real_inner_smul_left, real_inner_self_eq_norm_sq,
+        show ⟪η, w - xt⟫ = c - ⟪η, xt⟫ from by rw [inner_sub_right, hwL]]
+    have hwxt : w ≠ xt := fun hh => hwX (hh ▸ hxtX)
+    have hSpos : 0 < ‖w - xt‖ ^ 2 := pow_pos (norm_pos_iff.2 (sub_ne_zero.2 hwxt)) 2
+    have hprod : 0 ≤ t * (c - ⟪η, xt⟫) := mul_nonneg ht0.le hβ
+    rw [hcompute] at hle
+    linarith
+  · -- maximal-ball branch: the central-set ball swallows `p`
+    refine (isReconstructiblePt_iff_exists_centralSet hX).2 ⟨xt + T • v, hcs, ?_⟩
+    have hvinner : ⟪v, p - xt⟫ = D⁻¹ * ⟪w + t • η - xt, p - xt⟫ := by
+      rw [hvdef, real_inner_smul_left]
+    have hPS : ‖p - xt‖ ^ 2 = ‖p - w‖ ^ 2 + 2 * ⟪w - xt, p - w⟫ + ‖w - xt‖ ^ 2 := by
+      rw [show p - xt = (p - w) + (w - xt) from by abel, norm_add_sq_real,
+        real_inner_comm (p - w) (w - xt)]
+    have hCS : -(‖w - xt‖ * ‖p - w‖) ≤ ⟪w - xt, p - w⟫ :=
+      (abs_le.1 (abs_real_inner_le_norm _ _)).1
+    have hNpos : 0 < ⟪w + t • η - xt, p - xt⟫ := by
+      rw [hN]
+      nlinarith [mul_nonneg ht0.le hβ, sq_nonneg (‖w - xt‖ - ‖p - w‖ / 2), sq_nonneg ‖w - xt‖]
+    have hvpos : 0 < ⟪v, p - xt⟫ := by
+      rw [hvinner]
+      exact mul_pos (inv_pos.2 hD0) hNpos
+    have hDvi : D * ⟪v, p - xt⟫ = ⟪w + t • η - xt, p - xt⟫ := by
+      rw [hvinner, ← mul_assoc, mul_inv_cancel₀ hD0.ne', one_mul]
+    have hfinal : ‖p - xt‖ ^ 2 < 2 * D * ⟪v, p - xt⟫ := by
+      rw [mul_assoc, hDvi, hN, hPS]
+      nlinarith [mul_nonneg ht0.le hβ, sq_nonneg ‖w - xt‖, mul_pos ht0 hγ0]
+    have hball : p ∈ ball (xt + T • v) T := by
+      rw [mem_ball_add_smul_iff hv (hD0.trans_le hT)]
+      have h2T : 2 * D * ⟪v, p - xt⟫ ≤ 2 * T * ⟪v, p - xt⟫ := by
+        nlinarith [mul_le_mul_of_nonneg_right hT hvpos.le]
+      linarith
+    rw [hdeq]
+    exact mem_ball.1 hball
 
 variable [CompleteSpace E]
 
