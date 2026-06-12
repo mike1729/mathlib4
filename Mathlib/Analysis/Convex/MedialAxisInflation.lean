@@ -240,4 +240,39 @@ theorem inflation_dichotomy_nearestPoints (hp : p ∉ X) (hx₀ : x₀ ∈ neare
     rw [hvp]
     nlinarith
 
+/-!
+### Assumed classical result (to be proved in a later stage)
+
+The inclusion `centralSet X ⊆ closure (medialAxis X)` is the Motzkin–Fremlin theorem (Motzkin;
+Fremlin, *Skeletons and central sets*, Prop. 2B): every centre of a maximal ball in `Xᶜ` is a
+limit of points with at least two nearest points in `X`. It is the single classical input of
+this development that is currently assumed; an elementary, Brouwer-free proof via an Euler
+polygon inflation is planned (see the project notes). Everything downstream is proved in full,
+and `#print axioms` transparently reports the dependency through `sorryAx`.
+-/
+
+variable [FiniteDimensional ℝ E]
+
+/-- **Motzkin–Fremlin theorem** (assumed for now): the central set is contained in the closure
+of the medial axis. -/
+theorem centralSet_subset_closure_medialAxis (hX : IsClosed X) :
+    centralSet X ⊆ closure (medialAxis X) := sorry
+
+/-- **Lemma 1 of Białożyt**: a point is reconstructible from the medial axis if and only if it
+lies in a ball `ball c (infDist c X)` centred at a point `c` of the central set. -/
+theorem isReconstructiblePt_iff_exists_centralSet (hX : IsClosed X) {p : E} :
+    IsReconstructiblePt X p ↔ ∃ c ∈ centralSet X, dist p c < infDist c X := by
+  constructor
+  · rintro ⟨a, ha, hd⟩
+    exact ⟨a, medialAxis_subset_centralSet hX ha, hd⟩
+  · rintro ⟨c, hc, hd⟩
+    have hcc : c ∈ closure (medialAxis X) := centralSet_subset_closure_medialAxis hX hc
+    set ε := (infDist c X - dist p c) / 3 with hεdef
+    have hε0 : 0 < ε := by simp only [hεdef]; linarith
+    obtain ⟨a, haM, hca⟩ := Metric.mem_closure_iff.1 hcc ε hε0
+    refine ⟨a, haM, ?_⟩
+    have h1 : dist p a ≤ dist p c + dist c a := dist_triangle p c a
+    have h2 : infDist c X ≤ infDist a X + dist c a := infDist_le_infDist_add_dist
+    linarith
+
 end Metric

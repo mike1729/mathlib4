@@ -3,10 +3,10 @@ Copyright (c) 2026 Michal Swietek. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Michal Swietek
 -/
-import Mathlib.Analysis.Convex.MedialAxis
+import Mathlib.Analysis.Convex.MedialAxisInflation
 import Mathlib.Analysis.Convex.Topology
-import Mathlib.Analysis.InnerProductSpace.Convex
 import Mathlib.Analysis.InnerProductSpace.Projection.Minimal
+import Mathlib.Analysis.Normed.Module.FiniteDimension
 
 /-!
 # Reconstruction of a set complement from the medial axis
@@ -67,6 +67,34 @@ theorem Convex.medialAxis_eq_empty (hX : Convex ℝ X) : medialAxis X = ∅ := b
     ring
   have hq0 : ‖q - q'‖ = 0 := by nlinarith [norm_nonneg (q - q')]
   exact hqq' (sub_eq_zero.1 (norm_eq_zero.1 hq0))
+
+/-- **Proposition 2 of Białożyt**: every point of the convex hull of `X` outside `X` is
+reconstructible. The proof runs the inflation dichotomy from a nearest point of `p`: the
+half-space branch is impossible because the half-space behind the tangent hyperplane is convex
+and would contain `p` itself. -/
+theorem Metric.isReconstructiblePt_of_mem_convexHull [FiniteDimensional ℝ E] (hX : IsClosed X)
+    {p : E} (hp : p ∈ convexHull ℝ X) (hpX : p ∉ X) : IsReconstructiblePt X p := by
+  have hne : X.Nonempty := by
+    rcases X.eq_empty_or_nonempty with rfl | h
+    · simp at hp
+    · exact h
+  obtain ⟨x₀, hx₀⟩ := nearestPoints_nonempty hX hne p
+  rcases inflation_dichotomy_nearestPoints hpX hx₀ with h | ⟨c, hc, hpc, -⟩
+  · exfalso
+    have hlin : IsLinearMap ℝ fun y : E => ⟪p - x₀, y⟫ :=
+      ⟨fun y z => inner_add_right _ _ _, fun c y => real_inner_smul_right _ _ _⟩
+    have hXK : X ⊆ {y : E | ⟪p - x₀, y⟫ ≤ ⟪p - x₀, x₀⟫} := fun y hy => by
+      have hy' := h y hy
+      rw [inner_sub_right] at hy'
+      simpa using sub_nonpos.1 hy'
+    have hp2 := convexHull_min hXK (convex_halfSpace_le hlin _) hp
+    have hp3 : ⟪p - x₀, p - x₀⟫ ≤ 0 := by
+      rw [inner_sub_right]
+      simp only [mem_setOf_eq] at hp2
+      linarith
+    have hp4 : p = x₀ := sub_eq_zero.1 (real_inner_self_nonpos.1 hp3)
+    exact hpX (by rw [hp4]; exact hx₀.1)
+  · exact (isReconstructiblePt_iff_exists_centralSet hX).2 ⟨c, hc, mem_ball.1 hpc⟩
 
 variable [CompleteSpace E]
 
