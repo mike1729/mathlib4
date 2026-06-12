@@ -1946,6 +1946,7 @@ public import Mathlib.Analysis.Convex.KreinMilman
 public import Mathlib.Analysis.Convex.LinearIsometry
 public import Mathlib.Analysis.Convex.Measure
 public import Mathlib.Analysis.Convex.MedialAxis
+public import Mathlib.Analysis.Convex.MedialAxisInflation
 public import Mathlib.Analysis.Convex.MedialAxisReconstruction
 public import Mathlib.Analysis.Convex.MetricSpace
 public import Mathlib.Analysis.Convex.Mul
