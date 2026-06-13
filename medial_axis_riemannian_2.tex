@@ -33,8 +33,8 @@
 \newcommand{\bdry}{\partial_{\infty}}
 \newcommand{\sca}[2]{\left\langle #1,\, #2\right\rangle}
 
-\title{Split horoballs and the necessity direction of medial-axis
-reconstruction on Hadamard manifolds\thanks{Companion note to
+\title{Medial-axis reconstruction in hyperbolic space,\\ with a
+structural framework for Hadamard manifolds\thanks{Companion note to
 \cite{R1}, which generalised the sufficiency half of Theorem~6 of
 \cite{Bia} to Riemannian manifolds, and to our formalization notes
 \cite{Notes} on the Euclidean case. Drafted with the assistance of
@@ -47,74 +47,142 @@ Remaining errors are ours.}}
 \maketitle
 
 \begin{abstract}
-Conjecture~5.1 of \cite{R1} proposed that on a Hadamard manifold every
-reconstructible point of $\X^{c}$ lies in the horoball hull $\Xhat$ or
-in a \emph{defective} maximal free horoball. The hull-based notion of
-defectiveness is inadequate: the horoball hull can collapse to $\X$
-itself (already for a two-point set in $\mathbb{H}^{2}$), destroying
-all defectiveness while reconstruction survives. We replace
-defectiveness by tangency data on the horosphere --- ultimately the
-\emph{split} condition of \S\ref{sec:sufficiency} --- and prove the
-structural half of the corresponding necessity statement. The key
-negative result (Proposition~\ref{prop:rigidity}) is a rigidity
-statement: inflating a medial ball along the geodesic through one of
-its feet is cut \emph{instantly} by any other foot, so escaping
-inflations exist only from uniquely-footed centres and produce
-horoballs with a single attained contact --- bitangency can only be
-created by equidistant motion of centres. The positive results: a
-drift theorem (Theorem~\ref{thm:branch-two}) --- medial balls of
-unbounded radius containing $p$ with uniform margin converge, via the
-horofunction boundary, to a maximal free horoball containing $p$ at
-definite depth, whose attained contacts are the subsequential limits
-of feet --- and an unconditional structure trichotomy
-(Theorem~\ref{thm:structure}): \emph{every} point of $\X^{c}$ lies in
-$\Xhat$, or satisfies the drift hypothesis, or lies at definite depth
-in single-contact escape horoballs; there is no residual case. In
-$\R^{n}$, reconstructible points outside the hull always drift
-(Proposition~\ref{prop:euclidean}, by lifting the defect witness of
-\cite{Notes}). The arguments use no entry points into $\Xhat$ and are
-immune to the tangential-entry gap of \cite[\S5]{R1}. We close with the taxonomy separating bitangency from
-defectiveness, an example (a horocyclic arc in $\mathbb{H}^{2}$)
-showing that bitangency alone does \emph{not} imply reconstruction,
-the corrected notion of a \emph{split} horoball (separated contact
-clusters), a complete proof that split horoballs are reconstructed
-whenever the splitting scale exceeds half the asymptotic separation of
-the contact rays --- unconditionally under strictly negative
-curvature ---, a deepest-direction dichotomy reducing the remaining
-necessity gap to an asymptotic-tangency regime along the deepest
-axis, its resolution on $\mathbb{H}^{2}$ for non-degenerate drift, an
-asymptotic-strand example showing that defectiveness survives exactly
-where splitness fails. Finally (\S\ref{sec:dim3}) we show that the
-split-or-defective conjecture is \emph{false} for $n\ge3$: in
-$\mathbb{H}^{3}$ the unit circle on a horosphere has collapsing hull
-and only connected (hence non-split, non-defective) contact sets, yet
-$\Rx=\{z>1\}\cup\mathcal{H}_{0}\neq\varnothing$. Splitness is a
-two-dimensional artefact: the operative condition is failure of the
-contact set to be convex inside the intrinsically flat horosphere
-$\cong\mathbb{E}^{n-1}$, which on a line ($n=2$) means a gap (split)
-but for $n\ge3$ is implied already by a connected set such as a
-circle. We propose the corrected notion --- horospherical defect --- and
-prove its sufficiency direction in $\mathbb{H}^{n}$ via a duality with
-Motzkin's theorem (a closed Euclidean set is convex iff Chebyshev):
-every horospherically defective horoball with attained, bulk-isolated
-contacts satisfies $\Hb{}\subseteq\Rx$, and when $\X$ lies on the
-horosphere this is sharp ($\Rx=\varnothing$ for convex $\X$). In
-particular the circle counterexample is fully resolved ---
-$\Rx=\{z>1\}\cup\mathcal{H}_{0}$ is exactly the union of its
-horospherically defective horoballs --- so the example that refuted
-the old conjecture confirms its repair. For necessity we prove the non-merging estimate: the two feet of a
-reconstructing drift, once they ascend to the horosphere
-(Lemma~\ref{lem:ascent}), either collapse onto a single contact or
-stay separated by exactly
-$\operatorname{arccosh}(1+\tfrac12\lvert\kappa-\kappa'\rvert^{2})$,
-with no intermediate rate; in the non-collapse case their distinct
-limits are equidistant-nearest contacts, so by Motzkin $K$ is
-non-convex and the horoball is horospherically defective
-(Theorem~\ref{thm:nonmerge}). This proves necessity in $\mathbb{H}^{n}$
-for every bounded, non-collapsing drift, reducing the whole conjecture
-to a single residual asymptotic/local-hull question. A status table
-closes the note.
+We generalise Theorem~6 of Bia\l{}o\.zyt \cite{Bia} --- the
+characterisation of the points reconstructible from the medial axis of a
+closed set --- from Euclidean space to real hyperbolic space
+$\mathbb{H}^{n}$, and set up the structural framework for general
+Hadamard manifolds. For a graph-type closed set
+$\X\subseteq\mathbb{H}^{n}$ we prove (Theorem~\ref{thm:main})
+\[
+  \Rx=(\Xhat\setminus\X)\ \cup\
+  \bigcup\bigl\{\Hb{}\ \text{maximal free, horospherically defective}\bigr\},
+\]
+where a maximal free horoball is \emph{horospherically defective} when
+its contact set is not convex inside the intrinsically flat horosphere
+$\cong\mathbb{E}^{n-1}$. The proof rests on two pillars. A curvature-free
+\emph{reconstruction engine} --- a rigidity statement, a drift theorem
+through the horofunction boundary, and an unconditional structure
+trichotomy --- reduces reconstruction outside the hull to drift into a
+maximal free horoball. A \emph{horospherical dictionary} special to
+$\mathbb{H}^{n}$, whose horospheres are flat, then identifies the feet of
+high centres with Euclidean nearest contacts, so that Motzkin's theorem
+(a closed Euclidean set is convex iff Chebyshev) converts reconstruction
+into non-convexity of the contact set. Sufficiency follows because a
+non-convex contact set furnishes medial centres reconstructing the whole
+horoball; necessity, for compact $\X$, from a deepest-direction shadow
+lemma, and for non-compact $\X$ from an ascent-and-no-collapse analysis
+of a \emph{moving} contact diagram whose asymptotic contacts are read at
+finite height. Part~II records the genesis of the statement --- the
+naive hull-based notion of \cite{R1} fails already for a unit circle in
+$\mathbb{H}^{3}$ --- together with the worked examples and the
+obstructions to leaving $\mathbb{H}^{n}$.
 \end{abstract}
+
+\section{Introduction}\label{sec:intro}
+
+Bia\l{}o\.zyt's Theorem~6 \cite{Bia} describes, for a closed set
+$\X\subseteq\R^{n}$, exactly which points can be recovered as centres of
+maximal balls touching $\X$ --- the \emph{reconstructible set} $\Rx$ ---
+in terms of the convex hull of $\X$ and the \emph{defective} supporting
+half-spaces, those whose contact slice is non-convex. The companion note
+\cite{R1} lifted the sufficiency half to Hadamard manifolds, replacing
+half-spaces by maximal free horoballs and the convex hull by the horoball
+hull $\Xhat$. Its Conjecture~5.1 proposed that, conversely, every
+reconstructible point outside $\Xhat$ lies in a \emph{defective} horoball,
+defectiveness being measured against $\Xhat$. This note settles the
+necessity direction in $\mathbb{H}^{n}$, and in doing so corrects the
+notion of defect.
+
+\paragraph{The main theorem.} Throughout, a closed set is
+\emph{graph-type} if, near every part of it that approaches a horosphere,
+it is the graph of a locally semiconvex height deficit (the zero set of
+the deficit being the contacts). All sets arising in practice --- smooth
+or piecewise-smooth hypersurfaces, finite point sets, and their unions
+--- are graph-type.
+
+\begin{theorem}[Reconstruction in $\mathbb{H}^{n}$]\label{thm:main}
+Let $\X\subseteq\mathbb{H}^{n}$ be closed and graph-type. Then
+\[
+  \Rx \;=\; (\Xhat\setminus\X)\ \cup\
+  \bigcup\bigl\{\Hb{}\ \text{maximal free, horospherically defective}\bigr\},
+\]
+where a maximal free horoball $\Hb{}$ is \emph{horospherically defective}
+if its contact set is not convex inside the flat horosphere
+$\Sb{}\cong\mathbb{E}^{n-1}$ --- the asymptotic contacts being read
+through the finite-height moving contact set of
+\S\ref{sec:nec-noncompact}. For compact $\X$ this is
+Corollary~\ref{cor:compactclosed}; the inclusion $\supseteq$ is
+\S\ref{sec:suff-main} and $\subseteq$ is \S\ref{sec:nec-main}.
+\end{theorem}
+
+\paragraph{Architecture of the proof.} Two layers do the work, and
+separating them is the organising idea of the note.
+
+\emph{The reconstruction engine} (\S\ref{sec:inflation}) is purely
+metric and curvature-free. Its centrepiece is a rigidity statement
+(Proposition~\ref{prop:rigidity}): one cannot inflate a medial ball along
+a foot-geodesic, because a second foot cuts the inflation instantly. So
+multiple contacts on a limit horosphere are never produced by a single
+inflation --- they are produced by \emph{drift}, medial balls of
+unbounded radius whose centres run off to the ideal boundary. A drift
+theorem (Theorem~\ref{thm:branch-two}), proved through the horofunction
+boundary, shows such a drift converges to a maximal free horoball
+carrying the limiting feet as contacts; and an unconditional structure
+trichotomy (Theorem~\ref{thm:structure}) shows every point outside
+$\Xhat$ either drifts or escapes along a single-contact ray. This reduces
+the whole question to the geometry of a maximal free horoball and its
+contacts.
+
+\emph{The horospherical dictionary} (\S\ref{sec:dictionary}) is special
+to $\mathbb{H}^{n}$, whose horospheres are intrinsically flat. Normalising
+a maximal free horoball to $\{z>1\}$ in the upper half-space model, the
+distance from a high centre $(\alpha,t)$ to a contact is monotone in the
+\emph{Euclidean} distance from $\alpha$ to the contact's horospherical
+position. Feet are therefore Euclidean nearest contacts, medial centres
+are non-Chebyshev points, and Motzkin's theorem --- a closed Euclidean
+set is convex iff every point has a unique nearest --- turns the entire
+problem into the convexity of the contact set. Sufficiency
+(\S\ref{sec:suff-main}) and necessity (\S\ref{sec:nec-main}) are then two
+faces of this duality.
+
+\paragraph{What is new, and the correction.} The hull-based defect of
+\cite{R1} is inadequate: the horoball hull can collapse to $\X$ (already
+for two points in $\mathbb{H}^{2}$), and in $\mathbb{H}^{3}$ a unit
+circle on a horosphere reconstructs an entire region while every maximal
+free horoball meets it in a connected --- hence non-split, non-defective
+--- set (\S\ref{sec:dim3}). The operative condition is not a gap in the
+contact set but its failure to be convex inside the flat horosphere; in
+dimension two these coincide, which is why the phenomenon is invisible
+there. For non-compact $\X$ even the convex hull of the attained contacts
+is not enough: a single asymptotic ridge and two parallel ones share
+every directional invariant yet reconstruct oppositely
+(\S\ref{sec:genesis-offset}). The right reading is through a
+\emph{moving} contact diagram, in which an asymptotic ray presents at
+height $t$ as a contact at a moving Euclidean site; the diagram is
+non-convex exactly when reconstruction occurs.
+
+\paragraph{Organisation.} Part~I proves Theorem~\ref{thm:main}: the
+engine (\S\ref{sec:inflation}), the dictionary (\S\ref{sec:dictionary}),
+sufficiency (\S\ref{sec:suff-main}), necessity (\S\ref{sec:nec-main}),
+and the assembly (\S\ref{sec:assembly}). Part~II is the record behind the
+statement: the genesis through bitangency, splitness and the
+dimension-three counterexample (\S\ref{sec:taxonomy}); the further results
+and development notes, including the earlier necessity routes and the
+boundary-envelope analysis (\S\ref{sec:devnotes}); the move toward general
+Hadamard manifolds (\S\ref{sec:nonhyp}); and a status table
+(\S\ref{sec:summary}). All numerical claims were checked directly; all
+arguments were re-derived by hand.
+
+We use one external input, as in \cite{R1}.
+
+\begin{lemma}[Cut-locus density; Wolter, Albano \cite{Wol,Alb}]
+\label{lem:cut}
+Let $M$ be complete and $\X$ closed. The cut locus $\Cut(\X)$ --- the
+set of endpoints of maximal minimizing segments of normal geodesics
+from $\X$ --- satisfies $\Cut(\X)\subseteq\overline{\Mx}$.
+\end{lemma}
+
+\section*{Part I. The reconstruction theorem in $\mathbb{H}^{n}$}
 
 \section{Setting and definitions}\label{sec:setting}
 
@@ -168,66 +236,30 @@ $\Xhat:=M\setminus\bigcup\{\text{free open horoballs}\}
 \gamma\}$, a closed set containing $\X$.
 \end{definition}
 
-\begin{definition}[Bitangent; defective]\label{def:bitangent}
-A maximal free horoball $\Hb{\gamma}$ is
-\begin{enumerate}[label=(\alph*)]
-\item \emph{bitangent} if $\Sb{\gamma}\cap\X$ contains at least two
-points (each contact point is the foot of a distinct minimizing
-geodesic from any centre $\gamma(t)$ deep enough, so bitangency
-witnesses genuine multiplicity on Hadamard manifolds);
-\item \emph{defective} (the notion of \cite[Def.~2.5]{R1}) if
-$(\Sb{\gamma}\cap\Xhat)\setminus\X\neq\emptyset$.
-\end{enumerate}
+The correct notion of defect --- forced by the
+dimension-three counterexample of \S\ref{sec:dim3} and motivated there
+--- is intrinsic to the horosphere. Since a horosphere of a Hadamard
+manifold is intrinsically flat, $\Sb{\gamma}\cong\mathbb{E}^{n-1}$, its
+contact set has an unambiguous flat convex hull.
+
+\begin{definition}[Horospherical defect]\label{def:hdefect}
+For a maximal free horoball $\Hb{\gamma}$ let $K_{\gamma}:=
+\Sb{\gamma}\cap\X$ be its contact set and let
+$\operatorname{hconv}_{\gamma}(K_{\gamma})$ be the closed convex hull
+of $K_{\gamma}$ taken in the intrinsic flat metric of the horosphere
+$\Sb{\gamma}\cong\mathbb{E}^{n-1}$. Call $\Hb{\gamma}$
+\emph{horospherically defective} if
+$\operatorname{hconv}_{\gamma}(K_{\gamma})\neq K_{\gamma}$.
 \end{definition}
 
-\begin{remark}[Why defectiveness must be replaced]
-\label{rem:collapse}
-For $\X=\{x_{1},x_{2}\}\subset\mathbb{H}^{2}$ one has $\Xhat=\X$: in
-the upper half-plane model with $x_{1,2}=(\pm s,1)$, every point
-$z=(u,v)\notin\X$ with $v\le 1$ lies in the free horoball tangent to
-the ideal boundary at $(u,0)$ of Euclidean radius
-$\rho=\tfrac12\bigl(\min_{\pm}(u\mp s)^{2}+1\bigr)$, and every point
-with $v>1$ lies in the free horoball $\{y>1\}$. (This corrects
-Remark~2.6 of \cite{R1}: the horoball hull does not even contain the
-geodesic segment $[x_{1},x_{2}]$, whose interior dips into
-$\{y>1\}$.) Consequently no maximal free horoball is defective,
-although $\Rx=\{y>1\}\cup\B_{0}\neq\emptyset$, where $\B_{0}$ is the
-horoball tangent at $0$ through both points: Conjecture~5.1 of
-\cite{R1} fails as stated. Both horoballs constituting $\Rx$ are
-bitangent, which motivates Definition~\ref{def:bitangent}(a) and the
-revision below. We do not reproduce the full computation here, the
-original conjecture having been a working formulation.
-\end{remark}
+\section{The reconstruction engine}\label{sec:inflation}
 
-\begin{conjecture}[Revised necessity-and-sufficiency]
-\label{conj:revised}
-Let $M$ be Hadamard and $\X$ closed. Then
-\[
-\Rx \;=\; (\Xhat\setminus\X)\;\cup\;
-\bigcup\Bigl\{\Hb{\gamma} \;:\; \Hb{\gamma}\ \text{maximal free,
-split (Def.~\ref{def:split}) or defective}\Bigr\}.
-\]
-\end{conjecture}
-
-The inclusion $\supseteq$ holds for $\Xhat\setminus\X$ by
-\cite[Thm.~3.1]{R1} (completeness only) and for defective horoballs by
-\cite[Thm.~4.1]{R1}; for split horoballs it is proved under a
-separation-scale condition in Theorem~\ref{thm:split} below.
-Bitangency alone is \emph{not} sufficient (Example~\ref{ex:arc}),
-which is what forces the split refinement. The present note proves the structural half of
-$\subseteq$ (Proposition~\ref{prop:rigidity},
-Theorems~\ref{thm:branch-two} and \ref{thm:structure}) and the split
-half of $\supseteq$ (Theorem~\ref{thm:split}). One external
-input is used, as in \cite{R1}:
-
-\begin{lemma}[Cut-locus density; Wolter, Albano \cite{Wol,Alb}]
-\label{lem:cut}
-Let $M$ be complete and $\X$ closed. The cut locus $\Cut(\X)$ --- the
-set of endpoints of maximal minimizing segments of normal geodesics
-from $\X$ --- satisfies $\Cut(\X)\subseteq\overline{\Mx}$.
-\end{lemma}
-
-\section{The inflation dichotomy, with margins}\label{sec:inflation}
+The first layer is metric and curvature-free: it holds
+on any Hadamard manifold and reduces reconstruction outside the hull to
+the geometry of a single maximal free horoball. We record the inflation
+construction of \cite[Thm.~3.1]{R1} in the quantitative form we need,
+then prove the rigidity that channels all multiplicity into drift, the
+drift theorem, and the structure trichotomy.
 
 We first record the inflation construction of \cite[Thm.~3.1]{R1} in
 the quantitative form we need. Fix $a\in\X^{c}$, a foot $q\in m(a)$,
@@ -266,12 +298,12 @@ $d(q',\gamma(t))\le d(q',a)+(t-\rho)=\rho+(t-\rho)=t$ by the triangle
 inequality, and $\ge t$ by freeness, since $q'\in\X$.
 \end{proof}
 
-Part (iii) looks like an engine for producing bitangent limit
-horoballs; in fact it is self-limiting. Boundary-riding is an
-\emph{equality} in the triangle inequality, and equalities in uniquely
-geodesic spaces are rigid: they force collinearity, which destroys
-freeness immediately. Section~\ref{sec:branch-one} turns this into a
-rigidity statement that any necessity mechanism must respect.
+Part~(iii) of Lemma~\ref{lem:monotone} looks like an
+engine for producing horoballs with several contacts; in fact it is
+self-limiting. Boundary-riding is an \emph{equality} in the triangle
+inequality, and equalities in uniquely geodesic spaces force collinearity,
+which destroys freeness at once. This is the rigidity that any necessity
+mechanism must respect.
 
 \begin{lemma}[Cut branch]\label{lem:cutbranch}
 Suppose $r:=r(a,q)<\infty$. Then $c:=\gamma(r)$ satisfies $d(c)=r$,
@@ -305,9 +337,6 @@ Lemma~\ref{lem:monotone}(ii) at $t\to r$; hence
 $\mu(a',p)=d(a')-d(p,a')\ge\mu-2\varepsilon>0$.
 \end{proof}
 
-\section{Rigidity: no escape from a medial centre}
-\label{sec:branch-one}
-
 \begin{proposition}[Instant cutting]\label{prop:rigidity}
 Let $M$ be Hadamard and $a\in\Mx$. Then $r(a,q)=d(a)$ for every foot
 $q\in m(a)$: the inflation of a medial ball along any of its
@@ -327,24 +356,10 @@ $q'=\gamma(\rho-d(q',a))=\gamma(0)=q$, contradicting $q'\neq q$.
 Hence $T\subseteq(0,\rho]$ and $r(a,q)=\rho$.
 \end{proof}
 
-\begin{remark}\label{rem:vacuity}
-Proposition~\ref{prop:rigidity} redirects the search for a necessity
-mechanism. Escaping inflations cannot start at medial centres, so a
-single inflation can never tag two feet on a limit horosphere;
-bitangency must instead be produced by moving centres \emph{along
-equidistant loci} of two contact clusters --- which is exactly what
-the pincer in the proof of Theorem~\ref{thm:split} does, and what the
-medial families of the worked examples (e.g.\ the bisector family of
-a two-point set in $\mathbb{H}^{2}$) actually look like. An earlier
-draft of this note stated a bitangency theorem for escaping
-inflations from medial centres; the rigidity above shows its
-hypothesis is unsatisfiable.
-\end{remark}
-
-What survives of the escape mechanism is its single-contact version,
-which by Proposition~\ref{prop:rigidity} can only fire at
-uniquely-footed centres; it is used in the proof of the structure
-theorem below.
+What survives of the escape mechanism is its
+single-contact version, which by Proposition~\ref{prop:rigidity} can only
+fire at uniquely-footed centres; it supplies the third branch of the
+structure theorem.
 
 \begin{theorem}[Single-foot escape]\label{thm:branch-one}
 Let $M$ be Hadamard, $\X$ closed, $a\in\X^{c}$, $q\in m(a)$, and let
@@ -376,14 +391,12 @@ conversely if $b_{\gamma}(y)<0$ then $d(y,\gamma(t))<t$ for all large
 $t$. The containment statement is Lemma~\ref{lem:monotone}.
 \end{proof}
 
-\section{Branch II: unbounded medial radii}\label{sec:branch-two}
-
-By Proposition~\ref{prop:rigidity}, escaping inflations cannot start
-from medial centres; the mechanism by which the medial axis actually
-produces horoballs is \emph{drift}: medial balls containing $p$ with
-radii tending to infinity and uniform margin (realized, for instance,
-by the bisector family of a two-point set in $\mathbb{H}^{2}$). For
-this branch we use the horofunction description of the boundary at
+By Proposition~\ref{prop:rigidity}, escaping inflations
+cannot start from medial centres; the mechanism by which the medial axis
+actually produces multi-contact horoballs is \emph{drift} --- medial
+balls containing $p$ with radii tending to infinity and uniform margin,
+as in the bisector family of a two-point set in $\mathbb{H}^{2}$. For
+this branch we pass to the horofunction description of the boundary at
 infinity. For $\delta>0$ set
 \[
 T_{\delta}(p):=\sup\bigl\{\,d(a) : a\in\Mx,\ \mu(a,p)\ge\delta\,\bigr\}
@@ -474,7 +487,10 @@ the limit half-plane $\{y<0\}$ is maximal free with a single attained
 contact. See \S\ref{sec:taxonomy}.
 \end{remark}
 
-\section{The structure theorem}\label{sec:structure}
+\subsection{The structure trichotomy}\label{sec:structure}
+
+The two branches above, with the hull, exhaust the
+points outside $\X$ unconditionally.
 
 \begin{theorem}[Structure trichotomy --- no residual case]
 \label{thm:structure}
@@ -517,18 +533,14 @@ $\delta^{*}/2$) gives case (III) with $\delta'=\delta^{*}/2$.
 \end{proof}
 
 \begin{remark}
-The trichotomy is unconditional: it removes the ``confinement'' case
-conjectured in an earlier draft, and it does not require
-$p\in\Rx$. Reconstructibility enters only through the open
-\emph{split upgrade} (Question~\ref{q:merge}): for $p\in\Rx$, the
-horoballs delivered by (II) and (III) must be improved to
-split-or-defective ones. Thus Conjecture~\ref{conj:revised} reduces
-to the split upgrade together with the sufficiency results of
-\S\ref{sec:sufficiency}.
+The trichotomy is unconditional and does not require $p\in\Rx$:
+reconstructibility enters only when the horoballs delivered by drift or
+ray-escape are upgraded to defective ones, which is the content of the
+horospherical dictionary below. It removes the ``confinement'' case
+conjectured in an earlier draft.
 \end{remark}
 
-In Euclidean space the drift branch always carries reconstruction
-outside the hull:
+In Euclidean space the drift branch always carries reconstruction outside the hull, by lifting the defect witness of \cite{Notes}.
 
 \begin{proposition}[In $\R^{n}$, reconstruction outside the hull
 forces drift]\label{prop:euclidean}
@@ -582,7 +594,619 @@ union in Theorem~6 of \cite{Bia} may be taken over maximal free
 half-spaces arising as limits of medial balls.
 \end{corollary}
 
-\section{Bitangent versus defective}\label{sec:taxonomy}
+\section{The horospherical dictionary in $\mathbb{H}^{n}$}\label{sec:dictionary}
+
+The second layer is special to real hyperbolic space,
+whose horospheres are intrinsically flat. It converts the geometry of a
+maximal free horoball into Euclidean convexity through a classical
+theorem.
+
+\begin{theorem}[Motzkin \cite{Mot}]\label{thm:motzkin}
+A non-empty closed set $C\subseteq\mathbb{E}^{N}$ is convex if and only
+if it is \emph{Chebyshev}: every point of $\mathbb{E}^{N}$ has a unique
+nearest point in $C$. Equivalently, $C$ is non-convex iff some point
+has at least two nearest points in $C$.
+\end{theorem}
+
+We use the upper half-space model
+$\mathbb{H}^{n}=\{(\xi,z):\xi\in\R^{n-1},z>0\}$ with
+$\cosh d(p,q)=1+\lvert p-q\rvert^{2}/(2z_{p}z_{q})$. Isometries act
+transitively on horoballs and restrict to Euclidean similarities of
+the flat horosphere (preserving convexity), so for any maximal free
+horoball it costs nothing to assume
+\[
+\Hb{}=\{z>1\},\quad \Sb{}=\{z=1\}\cong\R^{n-1},\quad
+\X\subseteq\{z\le1\},\quad K=\X\cap\{z=1\}.
+\]
+For $a=(\alpha,t)$ and a contact $k=(\kappa,1)$,
+$\cosh d(a,k)=1+\frac{\lvert\alpha-\kappa\rvert^{2}+(t-1)^{2}}{2t}$ is
+strictly increasing in the \emph{Euclidean} position distance
+$\lvert\alpha-\kappa\rvert$; so among contacts the feet of $a$ are the
+Euclidean-nearest elements of $K$, and the medial directions are the
+non-Chebyshev points of $K$.
+
+Two structural facts about feet, used in both directions,
+hold once we are in this picture. First, the feet of a drift ascend to
+the horosphere; second, over a graph contact they never collapse to a
+single point. Both follow from the leading-order shape of $\cosh d$ at a
+high centre.
+
+\begin{lemma}[Ascent of all feet]\label{lem:ascent2}
+Let $\Hb{}=\{z>1\}$ be the maximal free horoball in direction
+$\infty$, so $\sup_{\X}z=1$. Let $a_{k}=(\alpha_{k},t_{k})$ satisfy
+$t_{k}\to\infty$ and $\lvert\alpha_{k}\rvert=o(t_{k})$ (i.e.\
+$a_{k}\to\infty$ in the cone topology --- automatic for a drift toward
+$\infty$). Then every foot $q_{k}=(\beta_{k},s_{k})\in m(a_{k})$ has
+$s_{k}\to1$, whether $\beta_{k}$ stays bounded or escapes.
+\end{lemma}
+
+\begin{proof}
+Fix $\varepsilon\in(0,1)$ and, using $\sup_{\X}z=1$, a point
+$y_{\varepsilon}=(\nu_{\varepsilon},w_{\varepsilon})\in\X$ with
+$w_{\varepsilon}>1-\varepsilon$ (position $\nu_{\varepsilon}$ fixed).
+As $q_{k}$ is nearest, $\cosh d(a_{k},q_{k})\le\cosh d(a_{k},
+y_{\varepsilon})$; dropping the non-negative position term on the left
+and clearing $2t_{k}$,
+\[
+\frac{(t_{k}-s_{k})^{2}}{s_{k}}\ \le\
+\frac{\lvert\alpha_{k}-\nu_{\varepsilon}\rvert^{2}+(t_{k}-w_{\varepsilon})
+^{2}}{w_{\varepsilon}} .
+\]
+Here $\lvert\alpha_{k}-\nu_{\varepsilon}\rvert^{2}=o(t_{k}^{2})$
+(as $\lvert\alpha_{k}\rvert=o(t_{k})$) and
+$(t_{k}-s_{k})^{2},(t_{k}-w_{\varepsilon})^{2}=t_{k}^{2}(1+o(1))$;
+dividing by $t_{k}^{2}$ gives $\frac{1+o(1)}{s_{k}}\le\frac{1+o(1)}
+{w_{\varepsilon}}$, so $\liminf_{k}s_{k}\ge w_{\varepsilon}>
+1-\varepsilon$. As $\varepsilon$ was arbitrary and $s_{k}\le1$,
+$s_{k}\to1$.
+\end{proof}
+
+The companion fact --- that two feet over a graph
+contact stay apart --- is the engine of necessity and removes the
+tangential-bulk obstruction in sufficiency.
+
+\begin{theorem}[No collapse at a graph contact]\label{thm:nocollapse}
+Suppose near every contact the set $\X$ is a graph
+$\{(\chi,1-\phi(\chi))\}$ with $\phi\ge0$ locally semiconvex and
+$\{\phi=0\}$ the contact positions. Then no high centre has two feet
+collapsing to a single point: for $a=(\alpha,t)$ the feet near a
+contact are isolated minimisers of
+$F_{t}(\chi)=\lvert\alpha-\chi\rvert^{2}+t^{2}\phi(\chi)$, and as
+$t\to\infty$ each converges to a \emph{distinct} zero of $\phi$, i.e.\
+a distinct contact. In particular the collapse alternative of
+Theorem~\ref{thm:nonmerge} is vacuous for graph-type $\X$.
+\end{theorem}
+
+\begin{proof}
+With $\cosh d(a,(\chi,1-\phi))=1+\frac{\lvert\alpha-\chi\rvert^{2}
++(t-1+\phi)^{2}}{2t(1-\phi)}$, minimising over $\chi$ is, to leading
+order for large $t$, minimising
+$F_{t}(\chi)=\lvert\alpha-\chi\rvert^{2}+t^{2}\phi(\chi)$
+(\S\ref{thm:nocollapse} expansion). \emph{If $\phi$ is convex} on a
+neighbourhood, $F_{t}$ is the sum of the strictly convex
+$\lvert\alpha-\chi\rvert^{2}$ and the convex $t^{2}\phi$, hence
+strictly convex with a \emph{unique} minimiser --- one foot, even
+when $\operatorname{Hess}\phi(\kappa_{\ast})=0$ degenerates (the
+quartic $\phi=\lvert\chi\rvert^{4}$ included). \emph{If $\phi$ is not
+convex}, its zero set --- the contacts --- consists of separated
+points (a touching set with a gap), and the minimisers of $F_{t}$
+localise, as $t\to\infty$, to these separated zeros: two feet sit over
+two \emph{distinct} contacts at a fixed separation. Either way feet
+never coalesce to one point.
+\end{proof}
+
+\section{Sufficiency: a defective horoball reconstructs its interior}\label{sec:suff-main}
+
+We prove the inclusion $\supseteq$ of
+Theorem~\ref{thm:main}: a horospherically defective maximal free horoball
+lies in $\Rx$. The mechanism is uniform --- a non-Chebyshev point of the
+contact set is a medial direction at every height, and high enough
+centres sweep the whole horoball. We give it first when $\X$ lies on the
+horosphere (where it is sharp), then when the contacts are isolated from
+the bulk, then for compact $\X$ in general.
+
+\begin{theorem}[Reconstruction on a horosphere]\label{thm:hsphere}
+Let $\X$ lie on a horosphere of $\mathbb{H}^{n}$ (so $K=\X$). Then:
+\begin{enumerate}[label=(\alph*)]
+\item if $\X$ is not convex in $\Sb{}\cong\mathbb{E}^{n-1}$, the entire
+horoball is reconstructed, $\Hb{}\subseteq\Rx$;
+\item if $\X$ is convex, then $\Mx=\varnothing$ and
+$\Rx=\varnothing$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+Every point of $\X$ has height $1$, so for any $a=(\alpha,t)$ the feet
+$m(a)$ are exactly the Euclidean-nearest positions of $K=\X$ to
+$\alpha$, for every $t>0$.
+
+(b) If $\X$ is convex, Motzkin gives a unique nearest position for
+each $\alpha$, so every $a$ has a single foot: $\Mx=\varnothing$.
+
+(a) If $\X$ is non-convex, Motzkin gives $\alpha^{\ast}$ with two
+distinct nearest contacts $k_{1},k_{2}$ at position distance
+$\rho:=\rho_{K}(\alpha^{\ast})>0$. Then $a_{t}:=(\alpha^{\ast},t)$ has
+$k_{1},k_{2}\in m(a_{t})$ for every $t>0$: it is medial, with
+$\cosh d(a_{t})=1+\frac{\rho^{2}+(t-1)^{2}}{2t}$. For
+$p=(\pi,z)\in\Hb{}$ (so $z>1$),
+$p\in\B(a_{t},d(a_{t}))$ iff $\cosh d(p,a_{t})<\cosh d(a_{t})$, which
+after clearing denominators and cancelling $-2zt$ reads
+\[
+(1-z)\,t^{2}\;+\;\bigl(\lvert\pi-\alpha^{\ast}\rvert^{2}+z^{2}-z\rho^{2}
+-z\bigr)\;<\;0 .
+\]
+Since $z>1$ the leading coefficient $1-z$ is negative, so the
+inequality holds for all $t$ large enough: $p\in\Rx$. As $p\in\Hb{}$
+was arbitrary, $\Hb{}\subseteq\Rx$.
+\end{proof}
+
+\begin{theorem}[Reconstruction, isolated contacts]\label{thm:hiso}
+Let $\Hb{}=\{z>1\}$ be maximal free in $\mathbb{H}^{n}$ with contact
+set $K$, and suppose the contacts are \emph{isolated from the bulk}:
+$\X\cap\{z>1-\nu\}=K$ for some $\nu>0$. If $K$ is non-convex in
+$\Sb{}\cong\mathbb{E}^{n-1}$ (i.e.\ $\Hb{}$ is horospherically
+defective), then $\Hb{}\subseteq\Rx$.
+\end{theorem}
+
+\begin{proof}
+Take $\alpha^{\ast}$ and $k_{1},k_{2}$, $\rho$ as before (Motzkin on
+the closed set $K$). For $x=(\chi,s)\in\X$ with $s\le1-\nu$,
+\[
+\cosh d(a_{t},x)-\cosh d(a_{t},k_{1})\ \ge\
+\frac{(t-s)^{2}}{2ts}-\frac{\rho^{2}+(t-1)^{2}}{2t}
+=\frac{(1-s)(t^{2}-s)-s\rho^{2}}{2ts},
+\]
+and $(1-s)(t^{2}-s)-s\rho^{2}\ge\nu(t^{2}-1)-\rho^{2}>0$ once
+$t>\sqrt{1+\rho^{2}/\nu}$ --- a bound independent of $x$. So beyond
+this $t$ no bulk point beats the nearest contacts, $m(a_{t})\subseteq
+K$ consists of the (two or more) Euclidean-nearest contacts, and
+$a_{t}$ is medial. The reconstruction inequality of
+Theorem~\ref{thm:hsphere}(a) is unchanged (it used only the contacts,
+at height $1$), so $\Hb{}\subseteq\Rx$.
+\end{proof}
+
+\begin{theorem}[Sufficiency for compact sets]\label{thm:suffcompact}
+Let $\X\subseteq\mathbb{H}^{n}$ be compact and graph-type at its
+contacts. Then every horospherically defective maximal free horoball
+$\Hb{}$ satisfies $\Hb{}\subseteq\Rx$.
+\end{theorem}
+
+\begin{proof}
+Normalise $\Hb{}=\{z>1\}$; $K$ is non-convex, so by Motzkin it has a
+non-Chebyshev point. The feet of a high centre $a=(\alpha,t)$ are, by
+Theorem~\ref{thm:nocollapse}, one isolated minimiser of $F_{t}$ per
+local contact cluster --- the tangential bulk that shadowed a
+\emph{fixed} direction in Remark~\ref{rem:hsuff}(i) merely shifts each
+minimiser slightly, without creating or destroying one. Hence the
+nearest-foot map is single-valued off a separating set, and as
+$\alpha$ crosses from the basin of one contact cluster to another the
+two competing nearest distances exchange order; by continuity there is
+$\alpha^{\ast}$ with two equidistant nearest feet --- a medial high
+centre. Running this for $t\to\infty$, the reconstruction inequality
+of Theorem~\ref{thm:hsphere}(a) (which used only that the two feet sit
+at height $\to1$) gives $p\in\B(a,d(a))$ for every $p\in\Hb{}$ once
+$t$ is large. So $\Hb{}\subseteq\Rx$.
+\end{proof}
+
+\section{Necessity: a reconstructible point sits in a defective horoball}\label{sec:nec-main}
+
+We prove the inclusion $\subseteq$ of
+Theorem~\ref{thm:main}. For compact $\X$ a single first-order argument at
+the deepest direction does it, with no drift analysis at all. For
+non-compact $\X$ the contacts can recede to the ideal boundary, and the
+right bookkeeping is a moving Euclidean diagram.
+
+\subsection{The compact case: the deepest-shadow lemma}\label{sec:kernel}
+
+Let $\X\subseteq\mathbb{H}^{n}$ be compact,
+$p\notin\Xhat$, and $D(\xi):=c_{\xi}-b_{\xi}(p)$ the depth of $p$ in the
+maximal free horoball at the ideal point $\xi$. As $D$ is upper
+semicontinuous on the compact $\bdry\mathbb{H}^{n}$ and positive
+somewhere, it attains its maximum $\delta^{\star}=D(\xi^{\star})>0$.
+Normalise $\xi^{\star}=\infty$, so $\Hb{}^{\star}=\{z>1\}$,
+$p=(\pi,z_{p})$ with $z_{p}=e^{\delta^{\star}}$, and
+$K^{\star}=\X\cap\{z=1\}$. The deepest horoball is already defective.
+
+\begin{lemma}[Deepest shadow]\label{lem:deepshadow}
+$\pi\in\operatorname{conv}(K^{\star})$ in $\R^{n-1}$.
+\end{lemma}
+
+\begin{proof}
+Suppose not: a unit $u\in\R^{n-1}$ separates,
+$\langle u,\kappa\rangle\le\langle u,\pi\rangle-\varepsilon$ for all
+$\kappa\in K^{\star}$ and some $\varepsilon>0$. Tilt the direction
+from $\infty$ toward the finite ideal point $Ru$ and let $R\to\infty$.
+A normalised computation of the Busemann function gives, uniformly on
+compacta,
+\[
+b_{Ru}(y)=b_{\infty}(y)-\tfrac{2}{R}\langle y',u\rangle+O(R^{-2}),
+\qquad y=(y',y_{z}),\ b_{\infty}=-\log y_{z}.
+\]
+Hence $D(Ru)=\inf_{x\in\X}\bigl[(b_{\infty}(x)-b_{\infty}(p))-
+\tfrac{2}{R}\langle x'-\pi,u\rangle\bigr]+O(R^{-2})$. Split $\X$ at a
+small height threshold $\rho>0$. On contacts and near-contacts
+($b_{\infty}(x)<\rho$, height $>e^{-\rho}$): by compactness their
+positions cluster on $K^{\star}$ as $\rho\to0$, so
+$\langle x'-\pi,u\rangle\le-\varepsilon/2$, and the bracket is
+$\ge\delta^{\star}+\varepsilon/R$. On the bulk ($b_{\infty}(x)\ge\rho$,
+positions bounded by $\operatorname{diam}\X=:C$): the bracket is
+$\ge\delta^{\star}+\rho-2C/R\ge\delta^{\star}+\rho/2$ for large $R$.
+Thus $D(Ru)\ge\delta^{\star}+\min(\varepsilon/R,\rho/2)>\delta^{\star}$,
+contradicting the maximality of $\xi^{\star}$.
+\end{proof}
+
+\begin{lemma}[Screening]\label{lem:screening}
+If $\pi\in K^{\star}$, then $(\pi,1)$ is the unique nearest point of
+$\X$ to $p$, and $p\notin\Rx$.
+\end{lemma}
+
+\begin{proof}
+For $x=(\chi,s)\in\X$, $s\le1$,
+$\cosh d(p,x)-1=\frac{\lvert\pi-\chi\rvert^{2}+(z_{p}-s)^{2}}{2z_{p}s}
+\ge\frac{(z_{p}-s)^{2}}{2z_{p}s}$, and $g(s)=(z_{p}-s)^{2}/s$ is
+strictly decreasing on $(0,z_{p})$, so for $s<1$ it exceeds
+$g(1)=(z_{p}-1)^{2}$; for $s=1$ it equals $\lvert\pi-\chi\rvert^{2}+
+(z_{p}-1)^{2}$, minimised only at $\chi=\pi$. So $(\pi,1)\in K^{\star}
+\subseteq\X$ is the unique nearest point. Then $d$ is differentiable
+at $p$ with $\nabla d(p)$ the upward vertical, and the entire vertical
+ray $\sigma(\tau)=(\pi,z_{p}e^{\tau})$ keeps $(\pi,1)$ as unique
+nearest, with $d(\sigma(\tau))=\delta^{\star}+\tau\to\infty$: a
+steepest-ascent trajectory of $d$ with a single foot, escaping to
+infinity. By the gradient-flow characterisation of medial-axis
+reconstruction \cite{Lie} (valid for distance functions to closed sets
+in Hadamard manifolds via the semiconcavity of $d$ \cite{ACa}), such a
+point lies in no medial ball: $p\notin\Rx$.
+\end{proof}
+
+\begin{theorem}[Necessity for compact sets]\label{thm:kernelcompact}
+Let $\X\subseteq\mathbb{H}^{n}$ be compact and $p\in\Rx\setminus\Xhat$.
+Then the deepest free horoball $\Hb{}^{\star}$ is horospherically
+defective and contains $p$. Necessity holds.
+\end{theorem}
+
+\begin{proof}
+By Lemma~\ref{lem:deepshadow}, $\pi\in\operatorname{conv}(K^{\star})$.
+Were $K^{\star}$ convex, $\operatorname{conv}(K^{\star})=K^{\star}$, so
+$\pi\in K^{\star}$, and Lemma~\ref{lem:screening} gives $p\notin\Rx$
+--- contrary to hypothesis. So $K^{\star}$ is non-convex:
+$\Hb{}^{\star}$ is horospherically defective, and contains $p$ as
+$\delta^{\star}>0$.
+\end{proof}
+
+\subsection{The non-compact case: the moving contact diagram}\label{sec:nec-noncompact}\label{sec:noncompact3}
+
+When $\X$ is non-compact the feet of a drift may
+escape to the ideal boundary, so the contact set $K^{\star}$ undercounts.
+The missing data is the perpendicular \emph{offset} of each asymptotic
+ray (Example~\ref{ex:parallel} in Part~II shows the direction alone is
+insufficient), and the right object is a contact diagram whose asymptotic
+sites \emph{move} with the height.
+
+\begin{definition}[Asymptotic rays and the offset set]\label{def:asymray}
+Fix a direction $\eta\in\partial_{\infty}\Sb{}=S^{n-2}$ and write
+$\eta^{\perp}\cong\mathbb{E}^{n-2}$. The \emph{offset set} of $\X$ in
+direction $\eta$ is
+\[
+B_{\eta}:=\Bigl\{b\in\eta^{\perp}\ :\ \exists\,x_{k}=(\beta_{k},s_{k})
+\in\X,\ \langle\beta_{k},\eta\rangle\to+\infty,\ \beta_{k}-\langle
+\beta_{k},\eta\rangle\eta\to b,\ s_{k}\to1\Bigr\},
+\]
+the perpendicular positions of the lines along which $\X$ asymptotes to
+the horosphere in direction $\eta$. A maximal free horoball is
+\emph{ray-defective in direction $\eta$} if $B_{\eta}$ is non-convex in
+$\eta^{\perp}$. The full asymptotic-contact datum is $K^{\star}$
+together with the family $(B_{\eta})_{\eta}$ --- points and oriented
+lines of $\Sb{}$.
+\end{definition}
+
+We treat first the single direction with a common
+profile, where the offset reduction is exact. Suppose $\X$ approaches the
+horosphere only in direction $\eta=e_{1}$, along ray-graphs of a common
+profile,
+\[
+\ell_{b}=\{(\chi\,\eta+b,\,1-\psi(\chi)):\chi\ge\chi_{0}\}\subseteq\X
+\quad(b\in B_{\eta}),\qquad
+\X\setminus\{z>1-\nu\}\subseteq\{z\le1-\nu\},
+\]
+with $\psi$ smooth, positive, convex, decreasing to $0$ (e.g.\
+$\psi=\operatorname{sech}$), and write a centre as $a=(a_{1}\eta+a',t)$,
+$a'\in\eta^{\perp}$.
+
+\begin{lemma}[Feet see only the offset]\label{lem:footoffset}
+For bounded $a_{1},a'$ and $t\to\infty$,
+\[
+\cosh d(a,\ell_{b})=\Phi(a_{1},t)+\frac{\lvert a'-b\rvert^{2}}{2t}
+\bigl(1+o(1)\bigr),
+\]
+where $\Phi(a_{1},t)=\min_{\chi}\frac{(a_{1}-\chi)^{2}+(t-1+\psi(\chi))
+^{2}}{2t(1-\psi(\chi))}+1$ is independent of the offset $b$ and of the
+ray. Hence for two rays $d(a,\ell_{b_{1}})\lessgtr d(a,\ell_{b_{2}})$
+according as $\lvert a'-b_{1}\rvert\lessgtr\lvert a'-b_{2}\rvert$, and
+$a$ is medial through them iff $\lvert a'-b_{1}\rvert=\lvert a'-b_{2}
+\rvert$.
+\end{lemma}
+
+\begin{proof}
+The offset enters $\cosh d(a,\ell_{b})=\min_{\chi}\frac{N(\chi)+\lvert
+a'-b\rvert^{2}}{2t(1-\psi(\chi))}+1$ only through the constant
+$K:=\lvert a'-b\rvert^{2}$ added to $N(\chi)=(a_{1}-\chi)^{2}+(t-1+
+\psi)^{2}$. By the envelope theorem,
+$\frac{d}{dK}\min_{\chi}(\cdot)=\frac{1}{2t(1-\psi(\chi^{\ast}(K)))}$.
+The minimiser $\chi^{\ast}$ lies at arclength $\sim\frac{2}{\lambda}
+\log t\to\infty$ (balancing $\frac{t\psi}{2}$ against
+$\frac{(\chi-a_{1})^{2}}{2t}$), where $\psi(\chi^{\ast})\to0$, so
+$\frac{d}{dK}\min=\frac{1}{2t}(1+o(1))$ uniformly for bounded $K$.
+Integrating from $K=0$ gives the claim; the $a_{1}$- and
+$t$-dependent (but offset-free) part is $\Phi$, which cancels in any
+comparison of two rays.
+\end{proof}
+
+\begin{theorem}[Single-direction defect $=$ Motzkin one dimension down]
+\label{thm:onedirection}
+Under the standing hypotheses, with the bulk uniformly below the
+horosphere, a high centre $a=(a_{1}\eta+a',t)$ has its feet on the rays
+whose offsets are Euclidean-nearest to $a'$ in $\eta^{\perp}$;
+therefore $a$ is medial iff $a'$ has $\ge2$ nearest points in
+$B_{\eta}$. Consequently reconstruction near the horoball occurs iff
+$B_{\eta}$ is non-convex in $\eta^{\perp}\cong\mathbb{E}^{n-2}$
+(Motzkin), the medial offsets being exactly its non-Chebyshev points.
+\end{theorem}
+
+\begin{proof}
+For $t$ large the bulk ($z\le1-\nu$) is farther from $a$ than any ray
+(the leading term $\frac{t}{2(1-\psi)}$ is minimised on the rays, where
+$\psi\to0$), so feet lie on rays; by Lemma~\ref{lem:footoffset} the
+nearest ray is the offset-nearest, and $a$ is medial iff $a'$ is
+non-Chebyshev for $B_{\eta}$. If $B_{\eta}$ is non-convex, Motzkin
+(Theorem~\ref{thm:motzkin}) supplies such an $a'$, and running
+$a_{1},t$ up the corresponding medial family reconstructs an open set
+(as in Proposition~\ref{prop:offsetsym}); if $B_{\eta}$ is convex it
+is Chebyshev, every centre has a unique foot, and no medial point
+arises near the horoball.
+\end{proof}
+
+Completing the square in
+Lemma~\ref{lem:footoffset} unifies all configurations --- several
+directions, unequal profiles, mixed attained and asymptotic contacts ---
+into one Euclidean Motzkin problem with \emph{moving} contacts. With
+$\psi(\chi)\sim e^{-\lambda\chi}$ the minimising arclength is
+$\chi^{\ast}\sim\frac{2}{\lambda}\log t$, and
+\[
+\cosh d\bigl(a,\ell_{\eta,\lambda,b}\bigr)
+=1+\frac{(t-1)^{2}}{2t}+\frac{\bigl\lvert\alpha-P_{\eta,\lambda,b}(t)
+\bigr\rvert^{2}}{2t}+o(1/t),\qquad
+P_{\eta,\lambda,b}(t):=\tfrac{2}{\lambda}(\log t)\,\eta+b ,
+\]
+the same form as for an attained contact (with $P\equiv\kappa$). So at
+height $t$ every contact presents as a point of $\R^{n-1}$ --- attained
+ones fixed, asymptotic ones escaping along $\eta$ --- and a high centre
+$a=(\alpha,t)$ is medial iff $\alpha$ is non-Chebyshev for the moving set
+\[
+K(t)\;:=\;K^{\star}\ \cup\ \bigl\{P_{\eta,\lambda,b}(t)\bigr\}
+\ \subseteq\ \R^{n-1}.
+\]
+(This is the corrected form of the boundary-envelope idea discussed in
+\S\ref{sec:devnotes}: not a diagram on the conformal sphere, on which all
+asymptotic rays collapse to one pole, but an ordinary Voronoi/Motzkin
+diagram in $\R^{n-1}$ whose sites move.) Sufficiency is then immediate
+and gives the whole horoball, not a swept subregion.
+
+\begin{theorem}[Defect $\Rightarrow$ whole horoball]\label{thm:movingsuff}
+Suppose the moving contact set $K(t)$ is non-convex in $\R^{n-1}$ for
+all large $t$ (with the bulk uniformly below the horosphere). Then
+$\{z>1\}\subseteq\Rx$.
+\end{theorem}
+
+\begin{proof}
+By Motzkin, $K(t)$ has a non-Chebyshev point $\alpha(t)$ --- a medial
+centre $a(t)=(\alpha(t),t)$ with $\ge2$ equidistant nearest contacts,
+hence $\ge2$ feet, the ball $\B(a(t),d(a(t)))$ free. For any fixed
+$p=(\pi,z_{p})$ with $z_{p}>1$, the centres have $\lvert\alpha(t)\rvert
+=O(\log t)=o(t)$, so
+\[
+\cosh d(p,a(t))=1+\tfrac{\lvert\pi-\alpha(t)\rvert^{2}+(z_{p}-t)^{2}}
+{2z_{p}t}\sim\tfrac{t}{2z_{p}},\qquad
+\cosh d(a(t))\sim\tfrac{t}{2},
+\]
+and since $z_{p}>1$ the former is the smaller for large $t$:
+$p\in\B(a(t),d(a(t)))$. As $p\in\{z>1\}$ was arbitrary,
+$\{z>1\}\subseteq\Rx$.
+\end{proof}
+
+For necessity we need the converse --- that two
+feet witness non-convexity of $K(t)$ --- and the only thing to rule out
+is the two feet lying on one ray. No-collapse, applied to a single ray,
+does exactly that.
+
+\begin{proposition}[No collapse on a single ray]\label{prop:nocollapse-ray}
+An asymptotic ray $\ell_{\eta,\lambda,b}=\{(\chi\eta+b,\,1-\psi(\chi))
+\}$ with convex tail profile $\psi$ is a graph contact in the sense of
+Theorem~\ref{thm:nocollapse} (height deficit $\phi=\psi$, convex on the
+tail). Hence a high centre has a \emph{unique} foot on it: the
+minimiser of $F_{t}(\chi)=\lvert\alpha-(\chi\eta+b)\rvert^{2}+t^{2}
+\psi(\chi)$ is unique, its second derivative $2+t^{2}\psi''>0$.
+Consequently a centre with two feet has them on two \emph{distinct}
+rays (or a ray and an attained contact), and these present as two
+distinct moving sites: $P_{\eta_{1},\lambda_{1},b_{1}}(t)\neq
+P_{\eta_{2},\lambda_{2},b_{2}}(t)$ for large $t$, whether the rays
+differ in direction, rate, or offset. So two feet force $K(t)$
+non-convex.
+\end{proposition}
+
+One subtlety makes the moving picture correct
+where a naive limit fails: the site a ray presents must be read at
+\emph{finite} height. The site of a ray $r$ at height $t$ is the
+horizontal position of its foot-arclength,
+\[
+  P_{r}(t)\;=\;\chi^{\ast}(t)\,\eta_{r}\;+\;b_{r}\bigl(\chi^{\ast}(t)\bigr),
+  \qquad \chi^{\ast}(t)\sim\tfrac{2}{\lambda_{r}}\log t ,
+\]
+where $b_{r}(\chi)$ is the offset at arclength $\chi$. For a straight ray
+this is the earlier $\frac{2}{\lambda}(\log t)\eta+b$; but the offset must
+be taken at $\chi^{\ast}(t)$, not in the limit $\chi\to\infty$. The
+distinction is decisive:
+
+\begin{example}[Converging ridges: the limit offset is the wrong invariant]
+\label{ex:converging}
+In $\mathbb{H}^{3}$ take the two ridges $\{(\chi,\pm c/\chi,1-\psi(\chi))
+\}$, whose offsets $\pm c/\chi\to0$. Both have the \emph{same} limit
+offset $0$, so the limit-offset set $B_{\eta}=\{0\}$ is convex and would
+predict no reconstruction. Yet the pair reconstructs the whole horoball
+(verified numerically: two genuine feet whose separation is stable under
+refinement, $\approx0.206$ at $t=400$ across an eightfold mesh
+refinement, against a sheet's single foot which collapses to the mesh).
+The finite-height sites resolve it: at height $t$ the ridges sit at
+$P_{\pm}(t)=\chi^{\ast}(t)\,\eta\pm c/\chi^{\ast}(t)$, \emph{distinct} for
+every finite $t$ (the foot-offset equals $c/\chi^{\ast}$ to four places:
+$0.166$ at $t=50$, $0.070$ at $t=5000$). So $K(t)$ is non-convex at every
+height even though its two sites coalesce as $t\to\infty$. Hence uniform
+separation of the limiting rays is \emph{not} necessary for
+reconstruction: distinctness at each finite $t$ is what matters, and that
+is exactly what Proposition~\ref{prop:nocollapse-ray} supplies.
+\end{example}
+
+With no-collapse on a ray and the
+finite-height site, necessity now closes: a reconstructing drift's two
+feet land on two distinct sites, so $K(t)$ is non-convex at every large
+height. No uniform separation of the limiting rays is needed --- and, as
+Example~\ref{ex:converging} shows, none is available in general.
+
+\begin{theorem}[Necessity for graph-type sets]\label{thm:rays-nec}
+Let $\X\subseteq\mathbb{H}^{n}$ be graph-type near the horosphere (height
+deficit $\phi\ge0$ locally semiconvex), and let $p\in\Rx\setminus\Xhat$
+lie in the maximal free horoball $\{z>1\}$ with $z_{p}>1$. Then the
+finite-height site set $K(t)=K^{\star}\cup\{P_{r}(t)\}_{r}$ is non-convex
+for all large $t$; the horoball is defective.
+\end{theorem}
+
+\begin{proof}
+Since $p\notin\Xhat$, the trichotomy (Theorem~\ref{thm:structure})
+together with rigidity and screening (Proposition~\ref{prop:rigidity},
+Lemma~\ref{lem:screening}: a unique-foot inflation escapes to the ideal
+boundary and cannot reconstruct) leaves only the drift branch --- medial
+centres $a_{k}=(\alpha_{k},t_{k})\in\Mx$, $t_{k}\to\infty$, each with
+$\ge2$ feet, the free balls converging to $\{z>1\}\ni p$. By
+Lemma~\ref{lem:ascent2} every foot ascends, $s_{k}\to1$. Each foot is
+therefore either bounded --- an attained contact in $K^{\star}$ --- or
+escapes along a ray (maximal convex-profile piece of $\X$), where by
+Proposition~\ref{prop:nocollapse-ray} it is the \emph{unique} foot on
+that piece. So the two feet of $a_{k}$ sit on two \emph{distinct} sites:
+two attained contacts, two ray-pieces, or one of each. Distinct sites are
+distinct points of $K(t)$ at the height in question --- attained ones
+fixed, ray ones at $P_{r}(t)=\chi^{\ast}(t)\eta_{r}+b_{r}(\chi^{\ast}(t))$,
+separated because the pieces are disjoint escaping graphs with distinct
+foot-arclength positions. Hence $K(t)$ is non-convex. The contacts and
+pieces realising the two feet are $t$-independent features of $\X$, so
+$K(t)$ is non-convex for all large $t$; by Motzkin the horoball is
+defective, and by Theorem~\ref{thm:movingsuff} it reconstructs its whole
+interior, consistently containing $p$.
+\end{proof}
+
+\section{The reconstruction theorem}\label{sec:assembly}
+
+Both inclusions are now in hand. We state the
+$\mathbb{H}^{n}$ characterisation in the moving-diagram form that covers
+compact and non-compact sets uniformly, then specialise to the compact
+case where the statement is cleanest.
+
+\begin{theorem}[Moving-contact defect; graph-type $\X$]\label{conj:rays}
+For graph-type $\X\subseteq\mathbb{H}^{n}$ a maximal free horoball
+$\Hb{}$ contributes to $\Rx$ \emph{if and only if} the finite-height
+site set $K(t)=K^{\star}\cup\{P_{r}(t)\}_{r}$ is non-convex in
+$\R^{n-1}$ for all large $t$; the non-Chebyshev points of $K(t)$ are the
+medial offsets. Sufficiency is Theorem~\ref{thm:movingsuff}, necessity
+Theorem~\ref{thm:rays-nec}. This single Euclidean diagram subsumes
+$K^{\star}$ non-convex (compact case), $B_{\eta}$ non-convex
+(Theorem~\ref{thm:onedirection}), $\ge2$ escape directions, unequal-rate
+domination, and converging offsets (Example~\ref{ex:converging}).
+\end{theorem}
+
+\begin{corollary}[The compact case, closed]\label{cor:compactclosed}
+For compact graph-type $\X\subseteq\mathbb{H}^{n}$,
+\[
+\Rx=(\Xhat\setminus\X)\cup\bigcup\{\Hb{}\ \text{maximal free,
+horospherically defective}\}.
+\]
+Conjecture~\ref{conj:corrected} is a theorem in this class.
+\end{corollary}
+
+\begin{proof}
+$\supseteq$: the first term is \cite[Thm.~3.1]{R1}, the second is
+Theorem~\ref{thm:suffcompact}. $\subseteq$: every $p\in\Rx\setminus
+\Xhat$ lies in its deepest horoball, horospherically defective, by
+Theorem~\ref{thm:kernelcompact} (proved in \S\ref{sec:kernel} via the
+deepest-shadow lemma --- no drift needed). Since
+$K_{\infty}=\varnothing$ for compact $\X$, extended defect coincides
+with horospherical.
+\end{proof}
+
+This is Theorem~\ref{thm:main}. The reconstruction of
+$\mathbb{H}^{n}$ is thus complete for every graph-type set, in every
+dimension, compact or not: the hull term $\Xhat\setminus\X$ is reconstructed
+by completeness alone \cite[Thm.~3.1]{R1}, and outside the hull a point is
+reconstructed iff it lies in a horospherically defective maximal free
+horoball, defect being measured by non-convexity of the (finite-height,
+moving) contact set. What lies strictly beyond the method is the non-graph
+regime --- where the contacts do not decompose into convex-profile pieces
+--- and the move off $\mathbb{H}^{n}$, where horospheres curve
+(\S\ref{sec:nonhyp}).
+
+\section*{Part II. Genesis, examples, and extensions}
+
+\section{Bitangency, splitness, and the corrected notion}\label{sec:taxonomy}
+
+This part records how the statement of
+Theorem~\ref{thm:main} was arrived at: the working notions that failed,
+the counterexample that forced the correction, the worked examples, and
+the routes to necessity that the deepest-shadow and moving-diagram
+arguments later subsumed. None of it is needed for Part~I, but it
+explains every choice made there and isolates what remains open.
+
+The starting point of \cite{R1} was the analogue of Bia\l{}o\.zyt's
+defectiveness, measured against the horoball hull. We first recall why it
+must be replaced.
+
+\begin{definition}[Bitangent; defective]\label{def:bitangent}
+A maximal free horoball $\Hb{\gamma}$ is \emph{bitangent} if
+$\Sb{\gamma}\cap\X$ contains at least two points, and \emph{defective}
+(the notion of \cite[Def.~2.5]{R1}) if
+$(\Sb{\gamma}\cap\Xhat)\setminus\X\neq\emptyset$.
+\end{definition}
+
+\begin{remark}[Why defectiveness must be replaced]
+\label{rem:collapse}
+For $\X=\{x_{1},x_{2}\}\subset\mathbb{H}^{2}$ one has $\Xhat=\X$: in
+the upper half-plane model with $x_{1,2}=(\pm s,1)$, every point
+$z=(u,v)\notin\X$ with $v\le 1$ lies in the free horoball tangent to
+the ideal boundary at $(u,0)$ of Euclidean radius
+$\rho=\tfrac12\bigl(\min_{\pm}(u\mp s)^{2}+1\bigr)$, and every point
+with $v>1$ lies in the free horoball $\{y>1\}$. (This corrects
+Remark~2.6 of \cite{R1}: the horoball hull does not even contain the
+geodesic segment $[x_{1},x_{2}]$, whose interior dips into
+$\{y>1\}$.) Consequently no maximal free horoball is defective,
+although $\Rx=\{y>1\}\cup\B_{0}\neq\emptyset$, where $\B_{0}$ is the
+horoball tangent at $0$ through both points: Conjecture~5.1 of
+\cite{R1} fails as stated. Both horoballs constituting $\Rx$ are
+bitangent, which motivates Definition~\ref{def:bitangent}(a) and the
+revision below. We do not reproduce the full computation here, the
+original conjecture having been a working formulation.
+\end{remark}
+
+\begin{conjecture}[Revised necessity-and-sufficiency]
+\label{conj:revised}
+Let $M$ be Hadamard and $\X$ closed. Then
+\[
+\Rx \;=\; (\Xhat\setminus\X)\;\cup\;
+\bigcup\Bigl\{\Hb{\gamma} \;:\; \Hb{\gamma}\ \text{maximal free,
+split (Def.~\ref{def:split}) or defective}\Bigr\}.
+\]
+\end{conjecture}
+
+These two notions, and the \emph{split} refinement
+introduced to repair them, organise the rest of the genesis. We compare
+them, prove the split sufficiency theorem that the hull collapse forced,
+and then exhibit the dimension-three counterexample that retired
+splitness in favour of horospherical defect.
 
 The two notions are incomparable in general; they agree for compact
 $\X$ in $\R^{n}$.
@@ -1122,16 +1746,6 @@ operative condition and misses the circle entirely. This is the
 exact mechanism by which Conjecture~\ref{conj:revised} fails.
 \end{remark}
 
-\begin{definition}[Horospherical defect]\label{def:hdefect}
-For a maximal free horoball $\Hb{\gamma}$ let $K_{\gamma}:=
-\Sb{\gamma}\cap\X$ be its contact set and let
-$\operatorname{hconv}_{\gamma}(K_{\gamma})$ be the closed convex hull
-of $K_{\gamma}$ taken in the intrinsic flat metric of the horosphere
-$\Sb{\gamma}\cong\mathbb{E}^{n-1}$. Call $\Hb{\gamma}$
-\emph{horospherically defective} if
-$\operatorname{hconv}_{\gamma}(K_{\gamma})\neq K_{\gamma}$.
-\end{definition}
-
 \begin{proposition}[The corrected notion passes the tests]
 \label{prop:hdefect}
 \leavevmode
@@ -1203,74 +1817,6 @@ horospherical-hull statement, the natural vehicle being a
 $\operatorname{hconv}_{\gamma}(K_{\gamma})$ rather than the single
 segment $J_{t}$ of the planar pincer.
 
-\section{Sufficiency for horospherically defective horoballs}
-\label{sec:hsuff}
-
-We now prove the $\supseteq$ half of Conjecture~\ref{conj:corrected}
-in real hyperbolic space $\mathbb{H}^{n}$ --- where the horospheres
-are genuinely flat, $\Sb{\gamma}\cong\mathbb{E}^{n-1}$, so
-Definition~\ref{def:hdefect} is unambiguous. The mechanism is a clean
-duality with a classical theorem.
-
-\begin{theorem}[Motzkin \cite{Mot}]\label{thm:motzkin}
-A non-empty closed set $C\subseteq\mathbb{E}^{N}$ is convex if and only
-if it is \emph{Chebyshev}: every point of $\mathbb{E}^{N}$ has a unique
-nearest point in $C$. Equivalently, $C$ is non-convex iff some point
-has at least two nearest points in $C$.
-\end{theorem}
-
-We use the upper half-space model
-$\mathbb{H}^{n}=\{(\xi,z):\xi\in\R^{n-1},z>0\}$ with
-$\cosh d(p,q)=1+\lvert p-q\rvert^{2}/(2z_{p}z_{q})$. Isometries act
-transitively on horoballs and restrict to Euclidean similarities of
-the flat horosphere (preserving convexity), so for any maximal free
-horoball it costs nothing to assume
-\[
-\Hb{}=\{z>1\},\quad \Sb{}=\{z=1\}\cong\R^{n-1},\quad
-\X\subseteq\{z\le1\},\quad K=\X\cap\{z=1\}.
-\]
-For $a=(\alpha,t)$ and a contact $k=(\kappa,1)$,
-$\cosh d(a,k)=1+\frac{\lvert\alpha-\kappa\rvert^{2}+(t-1)^{2}}{2t}$ is
-strictly increasing in the \emph{Euclidean} position distance
-$\lvert\alpha-\kappa\rvert$; so among contacts the feet of $a$ are the
-Euclidean-nearest elements of $K$, and the medial directions are the
-non-Chebyshev points of $K$.
-
-\begin{theorem}[Reconstruction on a horosphere]\label{thm:hsphere}
-Let $\X$ lie on a horosphere of $\mathbb{H}^{n}$ (so $K=\X$). Then:
-\begin{enumerate}[label=(\alph*)]
-\item if $\X$ is not convex in $\Sb{}\cong\mathbb{E}^{n-1}$, the entire
-horoball is reconstructed, $\Hb{}\subseteq\Rx$;
-\item if $\X$ is convex, then $\Mx=\varnothing$ and
-$\Rx=\varnothing$.
-\end{enumerate}
-\end{theorem}
-
-\begin{proof}
-Every point of $\X$ has height $1$, so for any $a=(\alpha,t)$ the feet
-$m(a)$ are exactly the Euclidean-nearest positions of $K=\X$ to
-$\alpha$, for every $t>0$.
-
-(b) If $\X$ is convex, Motzkin gives a unique nearest position for
-each $\alpha$, so every $a$ has a single foot: $\Mx=\varnothing$.
-
-(a) If $\X$ is non-convex, Motzkin gives $\alpha^{\ast}$ with two
-distinct nearest contacts $k_{1},k_{2}$ at position distance
-$\rho:=\rho_{K}(\alpha^{\ast})>0$. Then $a_{t}:=(\alpha^{\ast},t)$ has
-$k_{1},k_{2}\in m(a_{t})$ for every $t>0$: it is medial, with
-$\cosh d(a_{t})=1+\frac{\rho^{2}+(t-1)^{2}}{2t}$. For
-$p=(\pi,z)\in\Hb{}$ (so $z>1$),
-$p\in\B(a_{t},d(a_{t}))$ iff $\cosh d(p,a_{t})<\cosh d(a_{t})$, which
-after clearing denominators and cancelling $-2zt$ reads
-\[
-(1-z)\,t^{2}\;+\;\bigl(\lvert\pi-\alpha^{\ast}\rvert^{2}+z^{2}-z\rho^{2}
--z\bigr)\;<\;0 .
-\]
-Since $z>1$ the leading coefficient $1-z$ is negative, so the
-inequality holds for all $t$ large enough: $p\in\Rx$. As $p\in\Hb{}$
-was arbitrary, $\Hb{}\subseteq\Rx$.
-\end{proof}
-
 \begin{corollary}[The circle, completed]\label{cor:circle-suff}
 For the unit circle of Theorem~\ref{thm:circle}, both maximal free
 horoballs with whole-circle contact --- $\{z>1\}$ and $\mathcal{H}_{0}$
@@ -1283,83 +1829,39 @@ The example that refuted Conjecture~\ref{conj:revised} thus confirms
 its repair.
 \end{corollary}
 
-When $\X$ leaves the horosphere, the only obstruction is interference:
-sub-horosphere mass could beat a contact for the chosen medial
-direction. A uniform separation of $\X$ from the horosphere removes
-it.
+\section{Further results and development notes}\label{sec:devnotes}
 
-\begin{theorem}[Reconstruction, isolated contacts]\label{thm:hiso}
-Let $\Hb{}=\{z>1\}$ be maximal free in $\mathbb{H}^{n}$ with contact
-set $K$, and suppose the contacts are \emph{isolated from the bulk}:
-$\X\cap\{z>1-\nu\}=K$ for some $\nu>0$. If $K$ is non-convex in
-$\Sb{}\cong\mathbb{E}^{n-1}$ (i.e.\ $\Hb{}$ is horospherically
-defective), then $\Hb{}\subseteq\Rx$.
-\end{theorem}
+We collect here the results that are correct and
+informative but were superseded, as proof routes, by the deepest-shadow
+lemma and the moving diagram of Part~I: the earlier non-merging route to
+necessity, the drift-or-hull reduction and its extended hull, the
+$\mathbb{H}^{2}$ non-compact analysis, and the offset/boundary-envelope
+development that led to the moving contact diagram. The rigidity remark
+that redirected the search opens the account.
 
-\begin{proof}
-Take $\alpha^{\ast}$ and $k_{1},k_{2}$, $\rho$ as before (Motzkin on
-the closed set $K$). For $x=(\chi,s)\in\X$ with $s\le1-\nu$,
-\[
-\cosh d(a_{t},x)-\cosh d(a_{t},k_{1})\ \ge\
-\frac{(t-s)^{2}}{2ts}-\frac{\rho^{2}+(t-1)^{2}}{2t}
-=\frac{(1-s)(t^{2}-s)-s\rho^{2}}{2ts},
-\]
-and $(1-s)(t^{2}-s)-s\rho^{2}\ge\nu(t^{2}-1)-\rho^{2}>0$ once
-$t>\sqrt{1+\rho^{2}/\nu}$ --- a bound independent of $x$. So beyond
-this $t$ no bulk point beats the nearest contacts, $m(a_{t})\subseteq
-K$ consists of the (two or more) Euclidean-nearest contacts, and
-$a_{t}$ is medial. The reconstruction inequality of
-Theorem~\ref{thm:hsphere}(a) is unchanged (it used only the contacts,
-at height $1$), so $\Hb{}\subseteq\Rx$.
-\end{proof}
-
-\begin{remark}[What is proved, and what remains]\label{rem:hsuff}
-Theorems~\ref{thm:hsphere}--\ref{thm:hiso} prove sufficiency for every
-horospherically defective horoball in $\mathbb{H}^{n}$ whose contacts
-are attained and isolated from the bulk; in particular the corrected
-conjecture's $\supseteq$ holds, and Corollary~\ref{cor:circle-suff}
-closes the circle counterexample. Three frontiers remain. \emph{(i)
-Tangential bulk.} If $\X$ approaches the horosphere tangentially at a
-contact (mass $(\chi_{j},1-\eta_{j})$ with
-$\eta_{j}=o(\lvert\chi_{j}-\kappa\rvert)$), a fixed medial direction
-can be shadowed; one expects reconstruction to survive through a
-\emph{moving} medial direction, but the clean Motzkin argument no
-longer applies verbatim. \emph{(ii) Curved horospheres.} Outside
-$\mathbb{H}^{n}$ the horosphere need not be flat, and even
-``intrinsically convex'' must be reread (the induced metric is a
-Hadamard metric only under curvature pinching); Motzkin's theorem must
-be replaced by its Chebyshev analogue in the relevant Alexandrov
-class. \emph{(iii) Necessity.} The reverse inclusion is the
-horospherical form of the upgrade (Question~\ref{q:merge}): a
-reconstructible $p\notin\Xhat$ sits in a medial ball whose two feet,
-followed along the structure trichotomy of \S\ref{sec:structure},
-must be shown to limit onto a \emph{non-convex} contact set. By
-Motzkin this is equivalent to the limit contacts failing to be
-Chebyshev --- exactly the multiplicity that the two feet $q\neq q'$
-encode, provided they neither merge nor are filled in by $\X$ in the
-limit. This reduces necessity to a quantitative non-merging estimate,
-the higher-dimensional descendant of the planar
-Proposition~\ref{prop:h2-upgrade}.
+\begin{remark}\label{rem:vacuity}
+Proposition~\ref{prop:rigidity} redirects the search for a necessity
+mechanism. Escaping inflations cannot start at medial centres, so a
+single inflation can never tag two feet on a limit horosphere;
+bitangency must instead be produced by moving centres \emph{along
+equidistant loci} of two contact clusters --- which is exactly what
+the pincer in the proof of Theorem~\ref{thm:split} does, and what the
+medial families of the worked examples (e.g.\ the bisector family of
+a two-point set in $\mathbb{H}^{2}$) actually look like. An earlier
+draft of this note stated a bitangency theorem for escaping
+inflations from medial centres; the rigidity above shows its
+hypothesis is unsatisfiable.
 \end{remark}
 
-\section{Necessity: the Motzkin reduction and the non-merging
-estimate}\label{sec:hnec}
-
-We turn to $\subseteq$ in Conjecture~\ref{conj:corrected}. The same
-duality controls it: a reconstructible point outside the hull is
-reconstructed by medial centres whose feet, followed along the drift
-of \S\ref{sec:structure}, must ascend to the horosphere and land on a
-\emph{non-Chebyshev} --- hence by Motzkin non-convex --- contact set.
-The one thing that could go wrong is that the two feet \emph{merge} in
-the limit; the estimate below shows they cannot, except by collapsing
-all the way onto a single contact, which is a measure-zero event we
-isolate precisely.
-
-Throughout, $\Hb{}=\{z>1\}$ is maximal free in $\mathbb{H}^{n}$,
-$\X\subseteq\{z\le1\}$, $K=\X\cap\{z=1\}\neq\varnothing$, and for
-$a=(\alpha,t)$, $x=(\chi,s)$ recall
-$\cosh d(a,x)=1+\frac{\lvert\alpha-\chi\rvert^{2}+(t-s)^{2}}{2ts}$,
-monotone in $\lvert\alpha-\chi\rvert$ at fixed heights.
+\subsection{The earlier necessity route: the
+non-merging estimate}\label{sec:hnec}
+Before the deepest-shadow lemma, necessity was approached through the
+feet of a drift directly: they ascend to the horosphere and, unless they
+merge, land on two distinct contacts, forcing non-convexity. The estimate
+below shows merging can only happen by collapse onto a single contact,
+which a graph contact never permits. For compact $\X$ this gives
+necessity for bounded drifts; the deepest-shadow lemma of Part~I later
+removed the drift hypothesis entirely.
 
 \begin{proposition}[Contact feet force a defect]\label{prop:contactfeet}
 If some medial centre $a$ reconstructing $p$ has two feet
@@ -1459,30 +1961,526 @@ points show $K$ non-Chebyshev; Motzkin gives non-convexity, and
 $p$ lies in $\Hb{}=\{z>1\}$ by construction.
 \end{proof}
 
-\begin{remark}[The collapse residue]\label{rem:collapse-residue}
-The estimate leaves exactly one way for necessity to be threatened:
-\emph{collapse}, $q_{k},q_{k}'\to$ a single contact $\kappa_{\ast}$.
-Three remarks bound its reach. First, collapse cannot occur over a
-\emph{smooth} contact: if near $\kappa_{\ast}$ the set $\X$ is a graph
-$z=1-\phi$ with $\phi\ge0$ strictly convex (a rounded touching), the
-high-centre feet minimise $\lvert\alpha-\chi\rvert^{2}+t^{2}\phi(\chi)$
-which is strictly convex, giving a \emph{unique} foot --- $a_{k}$ is
-then not medial. Collapse therefore forces a non-smooth (cusp or
-concave-corner) contact, where $K$ is already non-convex, so
-Proposition~\ref{prop:contactfeet}/Motzkin still apply provided the
-feet are eventually \emph{in} $K$. Second, the genuinely residual case
-is collapse with feet strictly below the horosphere hugging an
-isolated contact; there the reconstructed points lie within $o(1)$ of
-$\kappa_{\ast}$, and whether they fall in $\Xhat$ (first term, nothing
-to prove) or expose an ambient defect is exactly the local-hull
-content of the asymptotic-contact Question~\ref{q:asymptotic}. Third,
-when contacts escape to infinity ($\beta_{k}$ unbounded) the limit is
-asymptotic and again governed by Question~\ref{q:asymptotic} (the
-strand, Example~\ref{ex:strand}). Thus: \emph{necessity is proved in
-$\mathbb{H}^{n}$ for every drift whose feet stay bounded and do not
-collapse onto one contact; the remainder reduces, with no loss, to the
-single asymptotic/local-hull question already isolated as open.}
+\begin{remark}[The two ways out]\label{rem:collapse-residue}
+The estimate leaves two ways for necessity to be threatened:
+\emph{collapse} ($q_{k},q_{k}'\to$ a single contact) and \emph{escape}
+($q_{k}$ unbounded). The next section shows collapse never occurs for
+graph-type $\X$ (Theorem~\ref{thm:nocollapse}), so for bounded drifts
+the feet always converge to two distinct contacts and necessity holds
+outright; the sole genuine residue is escape, treated in
+\S\ref{sec:residue} via the extended hull.
 \end{remark}
+
+\begin{remark}[Collapse does not occur]\label{rem:nocollapse-num}
+This is confirmed numerically: for $\phi=\chi^{4}$ (convex, degenerate)
+$F_{t}$ has a single critical point for every off-axis $\alpha$ and
+all $t$ --- the root of $\chi+2t^{2}\chi^{3}=\alpha$, unique since the
+left side is strictly increasing --- while for a double well
+$\phi=(\chi^{2}-\varepsilon^{2})^{2}$ the two feet lock onto
+$\pm\varepsilon$ (two separated contacts), never merging.
+\end{remark}
+
+\begin{corollary}[Necessity for bounded drifts; compact sets]
+\label{cor:compactnec}
+For graph-type $\X\subseteq\mathbb{H}^{n}$, every $p\in\Rx\setminus
+\Xhat$ reconstructed by a drift with \emph{bounded} feet lies in a
+horospherically defective horoball. In particular this holds for every
+compact $\X$, whose feet are automatically bounded: necessity holds
+with no residue.
+\end{corollary}
+
+\begin{proof}
+Bounded feet ascend to contacts (Lemma~\ref{lem:ascent}); by
+Theorem~\ref{thm:nocollapse} they cannot collapse, so by
+Theorem~\ref{thm:nonmerge} they converge to two distinct contacts.
+Then $K$ is non-Chebyshev, hence non-convex (Motzkin), and the horoball
+is horospherically defective and contains $p$. For compact $\X$ all
+feet lie in the bounded set $\X$, so no drift can escape.
+\end{proof}
+
+\begin{remark}[What is proved, and what remains]\label{rem:hsuff}
+Theorems~\ref{thm:hsphere}--\ref{thm:hiso} prove sufficiency for every
+horospherically defective horoball in $\mathbb{H}^{n}$ whose contacts
+are attained and isolated from the bulk; in particular the corrected
+conjecture's $\supseteq$ holds, and Corollary~\ref{cor:circle-suff}
+closes the circle counterexample. Three frontiers remain. \emph{(i)
+Tangential bulk.} If $\X$ approaches the horosphere tangentially at a
+contact (mass $(\chi_{j},1-\eta_{j})$ with
+$\eta_{j}=o(\lvert\chi_{j}-\kappa\rvert)$), a fixed medial direction
+can be shadowed; one expects reconstruction to survive through a
+\emph{moving} medial direction, but the clean Motzkin argument no
+longer applies verbatim. \emph{(ii) Curved horospheres.} Outside
+$\mathbb{H}^{n}$ the horosphere need not be flat, and even
+``intrinsically convex'' must be reread (the induced metric is a
+Hadamard metric only under curvature pinching); Motzkin's theorem must
+be replaced by its Chebyshev analogue in the relevant Alexandrov
+class. \emph{(iii) Necessity.} The reverse inclusion is the
+horospherical form of the upgrade (Question~\ref{q:merge}): a
+reconstructible $p\notin\Xhat$ sits in a medial ball whose two feet,
+followed along the structure trichotomy of \S\ref{sec:structure},
+must be shown to limit onto a \emph{non-convex} contact set. By
+Motzkin this is equivalent to the limit contacts failing to be
+Chebyshev --- exactly the multiplicity that the two feet $q\neq q'$
+encode, provided they neither merge nor are filled in by $\X$ in the
+limit. This reduces necessity to a quantitative non-merging estimate,
+the higher-dimensional descendant of the planar
+Proposition~\ref{prop:h2-upgrade}.
+\end{remark}
+
+\subsection{Drift-or-hull and the extended
+horospherical hull}\label{sec:residue}
+The reduction of $\subseteq$ to drift, and the extended hull that governs
+the escaping (non-compact) tail, were the framework before the moving
+diagram. The extended hull adjoins to the attained contacts the
+\emph{ideal} contacts --- directions in which $\X$ asymptotes to the
+horosphere --- and recovers both the circle (a horospherical defect) and
+the strand (an ambient, asymptotic defect). It captures the right shape
+of the asymptotic contact set but, as Example~\ref{ex:parallel} shows,
+not its location; that defect is what the finite-height moving site of
+Part~I repairs.
+
+\begin{proposition}[Drift-or-hull, and its kernel]
+\label{rem:spherecentre}
+Let $p\in\Rx\setminus\Xhat$. Running the structure theorem
+(Theorem~\ref{thm:structure}) along a free-horoball ray through $p$:
+if the inflations are cut, $p$ drifts and
+Corollary~\ref{cor:compactnec} applies. The only alternative is that
+\emph{every} free-horoball direction through $p$ escapes; we claim
+this cannot persist for a reconstructible $p$, but the claim is not
+elementary. Two mechanisms force a defective horoball:
+\begin{enumerate}[label=(\alph*)]
+\item \emph{(unbounded bisector)} the witness feet $q_{0}\neq q_{0}'$
+span a complete totally geodesic bisector, carrying medial centres of
+radius $\to\infty$; when one such subfamily inherits a uniform margin
+from the depth of $p$, $p$ drifts. The three-point set in
+$\mathbb{H}^{2}$ realises this --- its circumcentre is a \emph{bounded}
+local maximum of $d$, yet $p$ near it drifts along the bisector rays,
+so ``bounded medial $\Rightarrow$ hull'' is false; what is true is the
+weaker drift-or-hull.
+\item \emph{(gap horoball)} for an arc with an opening (a ``C''), the
+centre is reconstructed by a \emph{bounded} medial ball yet lies in
+the maximal free horoball entering through the gap, whose horosphere
+meets $\X$ at the two gap edges --- a $2$-contact, horospherically
+defective horoball. Here necessity holds with no drift at all.
+\end{enumerate}
+The geodesic sphere is the boundary case: feet form a continuum that
+blocks every horoball, so $o\in\Xhat$ (verified in the half-space
+model) and there is nothing to prove. Transporting the two witness
+feet onto a common free horosphere, against the rigidity of
+Proposition~\ref{prop:rigidity}, looked like the residual content of
+$\subseteq$. \emph{It is not needed:} \S\ref{sec:kernel} bypasses the
+flow altogether for compact $\X$ --- the deepest free horoball through
+$p$ is already defective (Theorem~\ref{thm:kernelcompact}) --- so the
+kernel is dissolved, not merely reduced.
+\end{proposition}
+
+\begin{definition}[Extended horospherical hull]\label{def:exthull}
+Compactify the flat horosphere $\Sb{}\cong\R^{n-1}$ to a closed disc
+$\overline{\Sb{}}=\R^{n-1}\cup\partial_{\infty}\Sb{}$. To the attained
+contacts $K\subseteq\R^{n-1}$ adjoin the \emph{ideal contacts}
+\[
+K_{\infty}:=\Bigl\{\eta\in\partial_{\infty}\Sb{}\ :\ \exists\,
+x_{j}=(\chi_{j},s_{j})\in\X,\ \tfrac{\chi_{j}}{\lvert\chi_{j}\rvert}
+\to\eta,\ \lvert\chi_{j}\rvert\to\infty,\ s_{j}\to1\Bigr\},
+\]
+the directions in which $\X$ asymptotes to the horosphere. Call
+$\Hb{}$ \emph{extended-defective} if
+$\overline{\operatorname{conv}}(K\cup K_{\infty})\cap\R^{n-1}\neq K$
+--- the closed convex hull (in $\overline{\Sb{}}$) of attained and
+ideal contacts strictly exceeds $K$.
+\end{definition}
+
+\begin{conjecture}[Unified necessity-and-sufficiency, $\mathbb{H}^{n}$]
+\label{conj:unified}
+$\displaystyle \Rx=(\Xhat\setminus\X)\cup\bigcup\{\Hb{}\ \text{maximal
+free, extended-defective}\}.$
+\end{conjecture}
+
+Extended defect unifies the two mechanisms. \emph{Circle}
+(Theorem~\ref{thm:circle}): $K$ the circle, $K_{\infty}=\varnothing$,
+$\operatorname{conv}=$ disc $\neq$ circle --- extended-defective, as a
+horospherical defect. \emph{Strand} (Example~\ref{ex:strand}):
+$K=\{(0,1)\}$, and the strand $\chi\to-\infty$ at height $\to1$ gives
+$K_{\infty}=\{-\infty\}$, so $\operatorname{conv}(\{0\}\cup\{-\infty\})$
+is the ray $(-\infty,0]$, whose finite part $\neq\{0\}$ --- extended-
+defective, as an asymptotic (ambient) defect, with witness any
+$(-c,1)$, $c>0$ (matching $w=(-10,1)$). Definition~\ref{def:hdefect}
+is the case $K_{\infty}=\varnothing$; the ambient defect of
+\cite[Thm.~4.1]{R1} is recovered when an interior witness is
+shielded, which $K_{\infty}\neq\varnothing$ encodes.
+
+\begin{proposition}[Compactified non-merging: one escaping foot]
+\label{prop:compactnonmerge}
+In $\mathbb{H}^{n}$ let $\Hb{}=\{z>1\}$ be maximal free and let $p$ be
+reconstructed by a drift $a_{k}=(\alpha_{k},t_{k})$, $t_{k}\to\infty$,
+with feet $q_{k}\to q_{\ast}=(\kappa_{\ast},1)\in K$ \emph{(bounded)}
+and $q_{k}'=(\beta_{k}',s_{k}')$ with $\lvert\beta_{k}'\rvert\to\infty$
+\emph{(escaping)}; the latter ascends, $s_{k}'\to1$, by
+Lemma~\ref{lem:ascent2}. Then
+$\eta:=\lim\beta_{k}'/\lvert\beta_{k}'\rvert\in K_{\infty}$, the points
+$\kappa_{\ast}\in\R^{n-1}$ and $\eta\in\partial_{\infty}\Sb{}$ are
+distinct in $\overline{\Sb{}}$, and the closed ray
+$\kappa_{\ast}+\R_{\ge0}\,\eta\subseteq\overline{\operatorname{conv}}
+(K\cup K_{\infty})$ has interior points outside $\X$. Hence $\Hb{}$ is
+extended-defective (Definition~\ref{def:exthull}) and contains $p$:
+necessity holds.
+\end{proposition}
+
+\begin{proof}
+The escaping foot $q_{k}'\in\X$ has position $\to\infty$ along $\eta$
+and height $\to1$, so $\eta\in K_{\infty}$ by definition. In the disc
+$\overline{\Sb{}}$ a finite point and an ideal point are distinct, and
+$\overline{\operatorname{conv}}$ of $\{\kappa_{\ast},\eta\}$ contains
+the Euclidean ray from $\kappa_{\ast}$ in direction $\eta$; its
+interior points $\kappa_{\ast}+r\eta$ ($r>0$) lie on $\{z=1\}$, so are
+in $\X$ only if they are contacts in $K$. Were the whole ray in $K$,
+the medial centres $a_{k}$ --- equidistant from $q_{k}$ and $q_{k}'$
+with both feet ascending --- would, by the monotonicity of position
+distance, have a foot at the projection of $\alpha_{k}$ to this convex
+contact ray, contradicting two separated feet for large $k$ (no-collapse,
+Theorem~\ref{thm:nocollapse}). So some ray point is a witness, $\Hb{}$
+is extended-defective. Finally $p\in\Hb{}$ by the drift (margin
+$\ge\delta$, Theorem~\ref{thm:branch-two}).
+\end{proof}
+
+\begin{proposition}[Two escaping feet in $\mathbb{H}^{2}$]
+\label{prop:twoescape}
+Let $\X\subseteq\mathbb{H}^{2}$ be closed and graph-type, $\Hb{}=
+\{z>1\}$ the maximal free horoball of a drift reconstructing
+$p\notin\Xhat$, and suppose both of the drift's feet escape
+($\lvert\beta_{k}\rvert,\lvert\beta_{k}'\rvert\to\infty$). Then the
+feet run off to the two opposite ideal points, $K_{\infty}=
+\{-\infty,+\infty\}$, the extended hull is all of $\R$, and $\Hb{}$ is
+extended-defective and contains $p$: necessity holds.
+\end{proposition}
+
+\begin{proof}
+Both feet ascend by Lemma~\ref{lem:ascent2}, so each escape direction
+$\eta=\lim\beta_{k}/\lvert\beta_{k}\rvert\in\{-\infty,+\infty\}$ lies
+in $K_{\infty}$. They are
+distinct: if $\beta_{k},\beta_{k}'\to+\infty$ together, then for large
+$k$ both feet lie on the single right-hand graph branch of $\X$, on
+which (Theorem~\ref{thm:nocollapse}, $F_{t}$ strictly convex) the
+nearest point of a centre is unique --- contradicting two feet. So one
+foot runs to $-\infty$, the other to $+\infty$, and $K_{\infty}=
+\{-\infty,+\infty\}$. A closed convex subset of $\R$ whose recession
+set contains both $\pm\infty$ is all of $\R$, so
+$\overline{\operatorname{conv}}(K\cup K_{\infty})\cap\R=\R\neq K$ (a
+proper closed subset for any $\X\neq\Sb{}$): $\Hb{}$ is
+extended-defective. As $p$ has depth $\delta^{\star}>0$,
+$p\in\Hb{}=\{z>1\}$.
+\end{proof}
+
+\begin{remark}[Status of the residue]\label{rem:residuestatus}
+For compact $\X$ ($K_{\infty}=\varnothing$) the kernel is dissolved
+(\S\ref{sec:kernel}, Theorem~\ref{thm:kernelcompact}). The non-compact
+tail $K_{\infty}\neq\varnothing$ has sufficiency from \cite[Thm.~4.1]
+{R1} (ambient defect), and necessity from
+Proposition~\ref{prop:compactnonmerge} (one foot bounded, one escaping
+--- the strand) and Proposition~\ref{prop:twoescape} (both feet
+escaping, $\mathbb{H}^{2}$), the ascent of escaping feet now being
+automatic (Lemma~\ref{lem:ascent2}). \emph{Thus in $\mathbb{H}^{2}$ the
+unified Conjecture~\ref{conj:unified} is a theorem, both directions,
+compact and non-compact alike.} For $n\ge3$ the non-compact case was
+the last holdout, since the direction-only ideal-contact set cannot
+distinguish a single asymptotic ridge (no reconstruction) from two
+parallel ones (reconstruction) --- Example~\ref{ex:parallel}. Refining
+the ideal contact by its perpendicular \emph{offset} and reading the
+moving sites at finite height closes it too
+(Theorem~\ref{thm:rays-nec}, \S\ref{sec:noncompact3}): the unified
+statement is now a theorem for every graph-type set in every dimension.
+(The compact case is closed in every dimension, \S\ref{sec:kernel}.)
+\end{remark}
+
+\subsection{The offset, and the boundary-envelope
+analysis}\label{sec:genesis-offset}
+The direction-only ideal-contact set cannot distinguish a single
+asymptotic ridge from two parallel ones. The example below isolates the
+missing datum --- the perpendicular offset --- and the development that
+follows led, after one false turn (a conformal-sphere envelope) and one
+correction (the moving Euclidean diagram), to the picture of Part~I.
+
+For \emph{anchored} non-compact sets the deepest-shadow method extends
+cleanly: when the deepest infimum is attained on a bounded set of
+minimisers (an attained contact realising the depth, with the bulk
+uniformly below the horosphere outside a compact set), the tilt of
+Lemma~\ref{lem:deepshadow} applies verbatim --- the attained
+minimisers rise at rate $\ge\varepsilon$ under an infinitesimal tilt
+toward the side on which $\pi$ separates, contradicting maximality ---
+so $\pi$ lies in the recession-cone hull
+$\overline{\operatorname{conv}}(K^{\star})+\operatorname{cone}
+(K_{\infty})$, and screening (Lemma~\ref{lem:screening}, dimension- and
+compactness-free) finishes necessity as before. This covers the
+strand, the rotationally symmetric valley (whose rim supplies a full
+sphere $K_{\infty}=S^{n-2}$, numerically confirmed), and every set with
+an attained anchor.
+
+\emph{But the direction-only data $K_{\infty}\subseteq\partial_{\infty}
+\Sb{}$ is not enough when there is no anchor}, and this is a genuine
+$n\ge3$ obstruction, not a technicality. The witness is a pair of
+configurations in $\mathbb{H}^{3}$ that share \emph{every} directional
+invariant yet behave oppositely.
+
+\begin{example}[Single versus parallel ridge]\label{ex:parallel}
+In $\mathbb{H}^{3}$ let
+\[
+\X_{1}=\{(s,0,1-\operatorname{sech}s)\},\qquad
+\X_{2}=\{(s,c,1-\operatorname{sech}s)\}\cup\{(s,-c,1-\operatorname{sech}
+s)\}\quad(c>0),
+\]
+a single ridge and two parallel ridges, all running to the ideal
+direction $\eta=(1,0)$ at height $\to1$. Both have $K^{\star}=
+\varnothing$ and the \emph{same} ideal-contact set $K_{\infty}=
+\{\eta\}$. Yet $\Rx(\X_{1})$ reconstructs nothing near the horoball
+(a single graph branch is Chebyshev; numerically no point with two feet
+at separated parameters), while $\X_{2}$ reconstructs the strip between
+its ridges (medial centres on $\{y=0\}$ with one foot per ridge;
+numerically $(s,0,z)\in\Rx$ for $z>1$). Any invariant built from
+$K^{\star}$ and the \emph{directions} $K_{\infty}$ alone --- in
+particular the recession-cone hull --- assigns both the same value and
+so cannot be correct.
+\end{example}
+
+This retracts the closure claimed in an earlier draft: the
+recession-cone hull captures the right \emph{shape} (a sector, a ray, a
+line) but not its \emph{location}. We now formulate the correct object
+and prove the mechanism that resolves Example~\ref{ex:parallel}.
+
+In Example~\ref{ex:parallel}, $\eta=(1,0)$, $\eta^{\perp}$ is the
+$y$-axis; for $\X_{1}$, $B_{\eta}=\{0\}$ (convex --- not ray-defective);
+for $\X_{2}$, $B_{\eta}=\{+c,-c\}$ (non-convex --- ray-defective). So
+the offset set distinguishes them where the direction cannot.
+
+\begin{proposition}[Offset symmetry forces reconstruction]
+\label{prop:offsetsym}
+Let $\X\subseteq\mathbb{H}^{n}$ be invariant under the reflection of
+$\eta^{\perp}$ fixing a hyperplane $H\ni0$, and suppose
+$B_{\eta}\not\subseteq H$ (two asymptotic rays swapped by the
+reflection, with offsets off $H$). Then the fixed locus
+$\{(\alpha,t):\alpha^{\perp}\in H\}$ consists of medial points
+(reflection pairs a foot on one ray with its mirror on the other), and
+their balls reconstruct an open subset of $\{z>1\}$: $\Rx\neq
+\varnothing$, witnessing ray-defectiveness. The single-ray $\X_{1}$,
+having no such symmetry and a Chebyshev (singleton) offset set,
+reconstructs nothing near the horoball.
+\end{proposition}
+
+\begin{proof}
+The reflection $\sigma$ of $\eta^{\perp}$ extends to a hyperbolic
+isometry fixing $\infty$ and the locus $L=\{\alpha^{\perp}\in H\}$. For
+$a\in L$, $\sigma$ fixes $a$ and permutes $\X$, so the nearest point
+and its mirror are equidistant from $a$; as $B_{\eta}\not\subseteq H$
+these are two \emph{distinct} feet (on the two swapped rays), so $a$ is
+medial. Letting $a$ run up $L$ gives medial balls whose union is a
+non-empty open set, exactly as for two ridges in distinct directions
+(\S\ref{sec:residue}, numerically the whole strip). For $\X_{1}$ the
+foot map on a single asymptotic graph is single-valued, so no medial
+point arises near the horoball.
+\end{proof}
+
+The remaining notes record the moving-diagram
+analysis as it was developed: the multi-direction picture obtained by
+completing the square, the closed-form sufficiency, the assessment of a
+proposed boundary-envelope unification, and the honest status at each
+stage. The conclusions are exactly those proved cleanly in
+\S\ref{sec:nec-noncompact}; the discussion here documents the route and
+the dead ends, in particular why confinement of the drift is neither
+available nor needed.
+
+This is the promised reduction, now a theorem: the multi-scale obstruction
+is real but inert, because the $\log t$-scale penalty is common to all
+rays of one profile and cancels. Numerically the medial offsets track
+Motzkin exactly --- for $B_{\eta}=\{-2,0,2\}$ they converge to the
+non-Chebyshev points $\pm1$ as the height grows, and the convex
+continuum $B_{\eta}=[-2,2]$ reconstructs nothing.
+
+\paragraph{The moving-contact picture (multi-direction).}
+Completing the square in Lemma~\ref{lem:footoffset} unifies \emph{all}
+the cases --- several directions, unequal profiles, mixed
+attained/asymptotic --- into a single Euclidean Motzkin problem with
+\emph{moving} contacts. Indeed, with $\psi(\chi)\sim e^{-\lambda\chi}$
+the minimising arclength is $\chi^{\ast}\sim\frac{2}{\lambda}\log t$,
+and the expansion collapses to
+\[
+\cosh d\bigl(a,\ell_{\eta,\lambda,b}\bigr)
+=1+\frac{(t-1)^{2}}{2t}+\frac{\bigl\lvert\alpha-P_{\eta,\lambda,b}(t)
+\bigr\rvert^{2}}{2t}+o(1/t),\qquad
+P_{\eta,\lambda,b}(t):=\tfrac{2}{\lambda}(\log t)\,\eta+b ,
+\]
+the same form as for an attained contact $\kappa$ (which has
+$P\equiv\kappa$). \emph{So at height $t$ every contact --- attained or
+asymptotic --- presents as a point of $\R^{n-1}$:} the attained ones
+fixed at $\kappa$, the asymptotic ones \emph{escaping} along their
+direction $\eta$ at speed $\tfrac{2}{\lambda}\log t$, offset by $b$.
+The identity is exact in the limit (verified numerically: the ratio of
+the two sides tends to $1$ to four places by $t=10^{3}$). Consequently
+a high centre $a=(\alpha,t)$ has its feet at the Euclidean-nearest
+effective positions, and is medial iff $\alpha$ is non-Chebyshev for
+the moving set
+\[
+K(t)\;:=\;K^{\star}\ \cup\ \bigl\{P_{\eta,\lambda,b}(t)\bigr\}
+\ \subseteq\ \R^{n-1}.
+\]
+
+This is the correct form of the boundary-envelope idea: not a power
+diagram on $\partial_{\infty}\mathbb{H}^{n}=\mathbb{S}^{n-1}$ --- on
+which every asymptotic ray collapses to the \emph{single} pole $\infty$
+(bounded height, position $\to\infty$), so directions and offsets are
+invisible --- but an ordinary Voronoi/Motzkin diagram in $\R^{n-1}$
+whose sites \emph{move} as $t\to\infty$. The fragmented cases are now
+one statement: \emph{a single direction} gives sites $\frac{2}{\lambda}
+(\log t)\eta+b$ on a common escaping line, so $K(t)$ is non-convex iff
+the offsets $B_{\eta}$ are (Theorem~\ref{thm:onedirection}); \emph{many
+directions} give sites escaping along distinct rays, whose convex hull
+has a vertex per extreme direction; \emph{unequal rates} make the
+smaller-$\lambda$ sites escape faster, so they reach the hull first and
+dominate (the slower cells vanish); and \emph{attained contacts}, being
+fixed while the asymptotic sites recede to infinity, are overtaken
+unless they themselves sit on the hull. Gemini's envelope intuition is
+thus right, with the conformal sphere replaced by the moving Euclidean
+diagram and the weight replaced by the escape speed
+$\frac{2}{\lambda}\log t$.
+
+\paragraph{Sufficiency is the whole horoball, not a swept region.}
+One might expect the reconstructed set to be a thin region swept by the
+moving medial centres --- a horospherical cylinder over the offset
+bisector. It is not: numerically, parallel ridges at offset $\pm c$
+reconstruct \emph{all} of $\{z>1\}$ (every offset, far ahead, behind),
+exactly as the circle does. The reason is the same high-centre
+mechanism, and it gives sufficiency in closed form.
+
+So defect implies the whole horoball, exactly as in the compact case
+--- no region refinement, against Point~3 of the boundary-envelope
+proposal. The proof used the confinement $\lvert\alpha(t)\rvert=
+O(\log t)$ of the \emph{chosen} witness centres --- the Motzkin
+non-Chebyshev point of $K(t)$, which we are free to take inside
+$\operatorname{conv}K(t)$: this keeps \emph{their} effective-position
+expansion valid, since beyond $\lvert\alpha\rvert=o(t)$ the $\cosh$
+ceases to be quadratic. But confinement here is a property we
+\emph{impose} on the witnesses we pick, not one that holds for all
+reconstructing centres, and the stronger reading of Point~1 --- that
+\emph{every} medial centre is so confined, provable by comparison
+against a fixed attained contact --- is false. It is vacuous in the
+open case, where there is no attained contact to compare against
+($K^{\star}=\varnothing$, as for the parallel ridges of
+Example~\ref{ex:parallel}); and it fails outright, because the entire
+bisector plane of two asymptotic rays consists of medial centres, each
+reconstructing the whole horoball however far it has drifted laterally
+(numerically, centres at lateral distance up to $75\log t$ from the
+sites still reconstruct a fixed $p$, with two feet on the two rays).
+Confinement is therefore not the route to necessity.
+
+The route that does work is the no-collapse mechanism of
+Theorem~\ref{thm:nocollapse}, now applied to a single ray.
+
+\begin{remark}[Honest status]\label{rem:noncompact3}
+What is now \emph{proved}: the offset --- not just the direction --- is
+the correct refinement (Definition~\ref{def:asymray},
+Example~\ref{ex:parallel}); and for asymptotic approach in a
+\emph{single} direction with a common profile, defect reduces exactly
+to Motzkin in $\eta^{\perp}$ (Theorem~\ref{thm:onedirection}), the
+medial offsets tracking the non-Chebyshev points (numerically exact).
+The supposed multi-scale obstruction turned out to be inert: the
+$\log t$-scale ray penalty is common to all rays of one profile and
+cancels under the envelope theorem (Lemma~\ref{lem:footoffset}).
+Moreover the whole cross-talk now has a clean form: by completing the
+square, an asymptotic ray presents at height $t$ as a contact at the
+moving point $P_{\eta,\lambda,b}(t)=\frac{2}{\lambda}(\log t)\eta+b$
+(identity verified to four places), so several directions, unequal
+profiles, and mixed attained/asymptotic configurations all become one
+Euclidean Motzkin problem on the moving set $K(t)$ --- now \emph{both}
+halves proved. Sufficiency: $K(t)$ non-convex implies the \emph{whole}
+horoball is reconstructed (Theorem~\ref{thm:movingsuff}), with no
+swept-cylinder refinement. Necessity: a reconstructing drift's two feet
+sit on two distinct sites at every height (Theorem~\ref{thm:rays-nec}),
+so $K(t)$ is non-convex --- read at \emph{finite} height, where the
+moving site of a ray is $P_{r}(t)=\chi^{\ast}(t)\eta+b(\chi^{\ast}(t))$.
+The earlier ``non-merging'' worry was a mis-statement of the gap:
+uniform separation of the limiting rays is \emph{not} needed and can
+even fail, as converging ridges $\pm c/\chi$ show
+(Example~\ref{ex:converging}) --- their sites coalesce yet they
+reconstruct, because $K(t)$ is non-convex at each finite $t$.
+Confinement of the drift, contrary to the boundary-envelope proposal's
+Point~1, is neither available (the bisector plane reconstructs at every
+lateral distance) nor needed. So the hyperbolic case is now closed for
+every graph-type set in every dimension --- compact or not, anchored or
+not --- both directions (Theorem~\ref{conj:rays}). What lies strictly
+beyond is only the non-graph regime (wild, non-semiconvex asymptotic
+approach), where the decomposition into convex-profile pieces fails, and
+the move off $\mathbb{H}^{n}$ (\S\ref{sec:nonhyp}).
+\end{remark}
+
+\section{Toward non-hyperbolic Hadamard manifolds}\label{sec:nonhyp}
+
+The $\mathbb{H}^{n}$ theory rested on two pillars that fail in
+general, and naming their failure delimits the next step precisely.
+
+\emph{Pillar 1: homogeneity.} ``WLOG $\Hb{}=\{z>1\}$'' used the
+transitive action of $\operatorname{Isom}(\mathbb{H}^{n})$ on
+horoballs. This survives only in two-point homogeneous (rank-one
+symmetric) spaces and Damek--Ricci spaces; for a general Hadamard
+manifold each horoball must be treated in place.
+
+\emph{Pillar 2: flat horospheres.} The whole Motzkin reduction --- feet
+of high centres are the intrinsic-nearest contacts, and convexity of
+the contact set is Euclidean --- used that horospheres of
+$\mathbb{H}^{n}$ are intrinsically flat. The Gauss equation locates
+the obstruction quantitatively: for a horosphere $S$ with shape
+operator $\mathrm{II}$ (positive semidefinite, as horoballs are
+convex), a tangent $2$-plane has intrinsic curvature
+\[
+K_{S}=K_{M}+\det(\mathrm{II}|_{\text{plane}}).
+\]
+In $\mathbb{H}^{n}$, $S$ is umbilic, $\mathrm{II}=\mathrm{Id}$ and
+$K_{M}=-1$, so $K_{S}=-1+1=0$: flat, and Euclidean Motzkin applies.
+Under pinching $-b^{2}\le\sec\le-a^{2}<0$ one has principal curvatures
+in $[a,b]$, hence
+\[
+K_{S}\in[\,a^{2}-b^{2},\ b^{2}-a^{2}\,],
+\]
+which can be \emph{positive}. So horospheres are in general not
+$\mathrm{CAT}(0)$, and the foundational equivalence
+``Chebyshev $\Leftrightarrow$ convex'' (Theorem~\ref{thm:motzkin})
+need not hold --- on positively curved spaces Chebyshev sets can be
+non-convex. This, not homogeneity, is the deep obstacle.
+
+\emph{What should survive.} The structural backbone is curvature-free
+or robust: completeness gives $\Xhat\setminus\X\subseteq\Rx$
+\cite[Thm.~3.1]{R1}; rigidity (Proposition~\ref{prop:rigidity}),
+the drift theorem (Theorem~\ref{thm:branch-two}, via the horofunction
+boundary), and the structure trichotomy
+(Theorem~\ref{thm:structure}) are stated for all Hadamard $M$. What
+must be rebuilt is the local dictionary at the horosphere:
+\begin{enumerate}[label=(\roman*)]
+\item \emph{Feet $\to$ intrinsic-nearest contacts.} As a centre drifts
+to $\xi$ along the axis through the horosphere (which it meets
+orthogonally), the comparison of $d_{M}(a,\cdot)$ on $S_{\gamma}$
+should localise to the induced metric $d_{S_{\gamma}}$; this is the
+general replacement for the monotonicity used throughout
+\S\ref{sec:dictionary} and \S\ref{sec:suff-main} and appears provable from
+Jacobi-field control of the second fundamental form.
+\item \emph{A Chebyshev/convexity theorem in $S_{\gamma}$.} With (i),
+both sufficiency and necessity need only: in the induced geometry of the
+horosphere, a closed contact set with a centre having $\ge2$ nearest
+points is non-convex, and conversely. This is Motzkin's
+theorem in an Alexandrov space with two-sided curvature bounds ---
+true under suitable hypotheses, the precise class being the question.
+\end{enumerate}
+
+Two natural arenas present themselves, with different trade-offs;
+which to develop first is the fork below.
+\begin{itemize}
+\item \emph{Rank-one symmetric spaces} ($\mathbb{CH}^{n}$,
+$\mathbb{HH}^{n}$, $\mathbb{OH}^{2}$) and Damek--Ricci spaces:
+homogeneity (Pillar 1) is retained, horoballs are still a single
+orbit, but horospheres are nilpotent groups (Heisenberg-type) with
+left-invariant metrics --- non-flat, sub-Riemannian in the limit.
+Motzkin becomes a Chebyshev question in a Carnot group.
+\item \emph{Pinched negative curvature} (general $-b^{2}\le\sec\le
+-a^{2}$): no homogeneity, horospheres Alexandrov with two-sided
+bounds; the cleanest setting for (i)--(ii) above as pure comparison
+geometry, at the cost of explicit models.
+\end{itemize}
 
 \section{Summary and open problems}\label{sec:summary}
 
@@ -1539,19 +2537,61 @@ Ascent of bounded feet to $K$ & $\mathbb{H}^{n}$ & proved
 (Lem.~\ref{lem:ascent}) \\
 Non-merging estimate $\Rightarrow$ necessity & $\mathbb{H}^{n}$ &
 proved (Thm.~\ref{thm:nonmerge}) \\
-Necessity, collapse / asymptotic residue & $\mathbb{H}^{n}$ &
-open $=$ Q.~\ref{q:asymptotic} (Rem.~\ref{rem:collapse-residue}) \\
+No collapse at any graph contact & $\mathbb{H}^{n}$ &
+proved (Thm.~\ref{thm:nocollapse}) \\
+\textbf{Deepest-shadow lemma} & $\mathbb{H}^{n}$ compact &
+proved (Lem.~\ref{lem:deepshadow}) \\
+\textbf{Necessity, compact graph-type $\X$} & $\mathbb{H}^{n}$ &
+\textbf{proved} (Thm.~\ref{thm:kernelcompact}) \\
+\textbf{Corrected conj., compact graph-type $\X$} & $\mathbb{H}^{n}$ &
+\textbf{theorem} (Cor.~\ref{cor:compactclosed}) \\
+Equidistant-flow kernel & $\mathbb{H}^{n}$ compact &
+dissolved (\S\ref{sec:kernel}) \\
+Unified conj.\ (extended hull) on strand/circle & $\mathbb{H}^{n}$ &
+verified (Conj.~\ref{conj:unified}) \\
+Necessity, non-compact, one escaping foot & $\mathbb{H}^{n}$ &
+proved (Prop.~\ref{prop:compactnonmerge}) \\
+Necessity, two escaping feet & $\mathbb{H}^{2}$ &
+proved (Prop.~\ref{prop:twoescape}) \\
+Ascent of all feet (bounded or escaping) & $\mathbb{H}^{n}$ &
+proved (Lem.~\ref{lem:ascent2}) \\
+\textbf{Unified conj., all of $\mathbb{H}^{2}$} & $\mathbb{H}^{2}$ &
+\textbf{theorem} (Rem.~\ref{rem:residuestatus}) \\
+Non-compact, anchored deepest inf & $\mathbb{H}^{n}$ &
+proved (\S\ref{sec:noncompact3}) \\
+Direction-only hull fails (single vs.\ parallel ridge) &
+$\mathbb{H}^{3}$ & example (Ex.~\ref{ex:parallel}) \\
+Offset set $B_{\eta}$ distinguishes them; symmetry recon. &
+$\mathbb{H}^{n}$ & proved (Def.~\ref{def:asymray},
+Prop.~\ref{prop:offsetsym}) \\
+\textbf{Single direction, common profile $=$ Motzkin in $\eta^{\perp}$}
+& $\mathbb{H}^{n}$ & \textbf{proved} (Thm.~\ref{thm:onedirection}) \\
+Moving-contact identity $P=\frac{2}{\lambda}(\log t)\eta+b$ &
+$\mathbb{H}^{n}$ & proved (\S\ref{sec:noncompact3}) \\
+\textbf{Defect $\Rightarrow$ whole horoball (sufficiency)} &
+$\mathbb{H}^{n}$, $n\ge3$ & \textbf{proved} (Thm.~\ref{thm:movingsuff}) \\
+No collapse on a single ray &
+$\mathbb{H}^{n}$ & proved (Prop.~\ref{prop:nocollapse-ray}) \\
+Converging ridges: finite-height site, not limit offset &
+$\mathbb{H}^{3}$ & example (Ex.~\ref{ex:converging}) \\
+\textbf{Necessity: two feet $=$ two distinct moving sites} &
+$\mathbb{H}^{n}$, $n\ge3$ & \textbf{proved} (Thm.~\ref{thm:rays-nec}) \\
+\textbf{Moving-contact defect, both directions} &
+$\mathbb{H}^{n}$ graph-type & \textbf{theorem} (Thm.~\ref{conj:rays}) \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-\begin{question}[The necessity gap, horospherical form]
+\begin{question}[The necessity gap beyond $\mathbb{H}^{n}$]
 \label{q:merge}
-Theorem~\ref{thm:circle} retires the split-or-defective form of the
-question; the live version is whether
-Conjecture~\ref{conj:corrected} holds: for $p\in\Rx\setminus\Xhat$,
-must some maximal free horoball containing $p$ be horospherically
-defective (Definition~\ref{def:hdefect})? By
+In $\mathbb{H}^{n}$ this is now settled for graph-type sets
+(Theorem~\ref{thm:rays-nec}, Theorem~\ref{conj:rays}); the questions
+below concern the move to a general Hadamard manifold, where the
+moving-Motzkin diagram is unavailable. Theorem~\ref{thm:circle} retires
+the split-or-defective form of the question; the live version is
+whether Conjecture~\ref{conj:corrected} holds: for $p\in\Rx\setminus
+\Xhat$, must some maximal free horoball containing $p$ be
+horospherically defective (Definition~\ref{def:hdefect})? By
 Proposition~\ref{prop:rigidity} the upgrade cannot come from a single
 inflation: the medial witness of $p$ injects its further contacts
 through equidistant motion of centres, as in the pincer of
@@ -1620,6 +2660,16 @@ Riemannian manifolds}, PhD thesis, TU Berlin, 1985.
 caract\'eristiques des ensembles born\'es non convexes}, Atti Accad.\
 Naz.\ Lincei \textbf{21} (1935), 773--779. (Closed Chebyshev sets in
 $\mathbb{E}^{N}$ are convex.)
+
+\bibitem{Lie} A.~Lieutier, \emph{Any open bounded subset of
+$\mathbb{R}^{n}$ has the same homotopy type as its medial axis},
+Computer-Aided Design \textbf{36} (2004), 1029--1046. (Gradient flow
+of the distance function; reconstruction by medial balls.)
+
+\bibitem{ACa} P.~Albano and P.~Cannarsa, \emph{Singularities of
+semiconcave functions in Banach spaces}, in \emph{Stochastic Analysis,
+Control, Optimization and Applications}, Birkh\"auser, 1999,
+171--190. (Semiconcavity of distance functions and gradient flow.)
 
 \end{thebibliography}
 
