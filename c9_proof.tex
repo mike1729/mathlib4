@@ -1,0 +1,322 @@
+\documentclass[11pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[margin=1.1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{enumitem}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{example}[theorem]{Example}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\B}{\mathbb{B}}
+\newcommand{\X}{X}
+\newcommand{\conv}{\operatorname{conv}}
+\newcommand{\cconv}[1]{\overline{\conv}\,#1}
+\newcommand{\dist}{\operatorname{dist}}
+\newcommand{\sca}[2]{\left\langle #1,\, #2\right\rangle}
+\newcommand{\norm}[1]{\left\lVert #1\right\rVert}
+\newcommand{\Mx}{M_{\X}}
+\newcommand{\Cx}{C_{\X}}
+\newcommand{\Ml}{M_{\lambda}(\X)}
+\newcommand{\Bcl}[2]{\overline{\B}(#1,#2)}
+
+\title{Conjecture 9 of \emph{Sets Reconstructible with Medial Axis} is true\thanks{Companion
+note to our formalization notes on Theorem~6 of \cite{Bia}. Drafted with the assistance of
+Claude (Anthropic); all arguments were re-derived and checked by hand at the level of detail a
+proof assistant requires. Remaining errors are ours.}}
+\author{}
+\date{June 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We prove Conjecture~9 of \cite{Bia}: if $\X\subset\R^n$ is closed, $p\in\conv \X$, and
+$d(p,\X)>\lambda>0$, then $p$ is $\lambda$-reconstructible, i.e.\ $p$ lies in an open ball
+$\B(a,d(a))$ centred at a point $a$ of the $\lambda$-medial axis $\Ml$ of Chazal--Lieutier
+\cite{CL}. The proof is elementary and variational: no flows, no semiconcavity, no
+compactness of $\X$, and no machinery beyond nearest points, orthogonal projection onto a
+closed convex set, and the parallel-axis (variance) identity. The hypothesis is used through
+a single quantitative separation lemma, and the strict inequality $d(p,\X)>\lambda$ is sharp.
+The statement in fact holds for all $p\in\cconv \X$ and degenerates for $\lambda=0$ to an
+independent proof of the convex-hull part of Theorem~6 of \cite{Bia}.
+\end{abstract}
+
+\section{Setting and statement}
+
+Throughout, $\X\subset\R^n$ is a non-empty closed set, $d(a):=\dist(a,\X)$, and
+\[
+m(a):=\{x\in \X \mid \norm{a-x}=d(a)\}
+\]
+is the (non-empty, compact) set of points of $\X$ nearest to $a$. The medial axis is
+$\Mx=\{a\in\R^n\mid \#m(a)>1\}$. Following \cite{Bia,CL}, for $\lambda\ge 0$ the
+$\lambda$-medial axis $\Ml$ is obtained from $\Mx$ by removing the points $a$ whose nearest-point
+set fits in a closed ball of radius~$\lambda$:
+\[
+\Ml=\bigl\{a\in \Mx \;\big|\; \forall z\in\R^n:\ m(a)\not\subseteq \Bcl{z}{\lambda}\bigr\}.
+\]
+A point $p\in \X^{c}$ is \emph{$\lambda$-reconstructible} if
+$p\in\bigcup_{a\in \Ml}\B(a,d(a))$ \cite[Def.~5]{Bia}.
+
+\begin{theorem}[Conjecture~9 of \cite{Bia}, strengthened to the closed hull]\label{thm:main}
+Let $\X\subset\R^n$ be a non-empty closed set, let $\lambda>0$, and let
+$p\in\cconv\X$ satisfy $d(p)>\lambda$. Then there exists $a\in \Ml$ with
+$\norm{p-a}<d(a)$; in particular $p$ is $\lambda$-reconstructible.
+\end{theorem}
+
+Note that $d(p)>\lambda>0$ forces $p\notin \X$, so the statement is well-posed. We fix from now on
+\[
+d_0:=d(p)>\lambda,
+\qquad
+\beta_0:=\sqrt{d_0^{\,2}-\lambda^2}>0 .
+\]
+Call a point $a\in\R^n$ \emph{captured} if $\norm{a-p}<d(a)$, i.e.\ if the open free ball
+$\B(a,d(a))$ contains $p$. Since $m(a)$ is a singleton for $a\notin\Mx$ and a singleton fits in a
+closed $\lambda$-ball, producing a \emph{captured $a$ whose $m(a)$ fits in no closed
+$\lambda$-ball} immediately gives $a\in\Mx$ and then $a\in\Ml$, proving the theorem. We therefore
+argue by contradiction and assume:
+\begin{equation}\label{eq:H}\tag{H}
+\text{for every captured } a \text{ there exists } z_a\in\R^n \text{ with } m(a)\subseteq
+\Bcl{z_a}{\lambda}.
+\end{equation}
+
+The whole proof is organized around the \emph{power function}
+\[
+\psi(a):=d(a)^2-\norm{a-p}^2 ,
+\]
+the (negated) power of the point $p$ with respect to the sphere $\partial\B(a,d(a))$. Thus
+$a$ is captured iff $\psi(a)>0$, and $\psi(p)=d_0^{\,2}$.
+
+\section{Two lemmas}
+
+\begin{lemma}[separation]\label{lem:sep}
+Let $S\subseteq\R^n$ be non-empty with $S\subseteq\Bcl{z}{r}$ for some $z\in\R^n$, $r\ge0$, and
+let $q\in\R^n$ satisfy $\dist(q,S)\ge D>r$. Then:
+\begin{enumerate}[label=(\roman*)]
+\item every $y\in\conv S$ satisfies $\norm{q-y}\ge\sqrt{D^2-r^2}>0$;
+\item there is a unit vector $u$ with
+$\sca{u}{q-x}\ \ge\ \sqrt{D^2-r^2}$ for all $x\in S$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+(i) Let $y=\sum_i\theta_i x_i$ be a finite convex combination of points $x_i\in S$. The
+parallel-axis identity (expand and use $\sum_i\theta_i(y-x_i)=0$) gives, for any $w\in\R^n$,
+\[
+\sum_i\theta_i\norm{w-x_i}^2=\norm{w-y}^2+\sum_i\theta_i\norm{y-x_i}^2 .
+\]
+Applying it once with $w=q$ and once with $w=z$,
+\[
+\norm{q-y}^2=\sum_i\theta_i\norm{q-x_i}^2-\sum_i\theta_i\norm{y-x_i}^2
+\ \ge\ \sum_i\theta_i\norm{q-x_i}^2-\sum_i\theta_i\norm{z-x_i}^2
+\ \ge\ D^2-r^2 .
+\]
+
+(ii) Let $C:=\cconv S$, a non-empty closed convex set; by continuity, (i) holds for all $y\in C$.
+Let $\pi$ be the orthogonal projection of $q$ onto $C$ and $\beta:=\norm{q-\pi}$; by (i),
+$\beta\ge\sqrt{D^2-r^2}>0$, so $u:=(q-\pi)/\beta$ is well defined. The obtuse-angle
+characterization of the projection gives $\sca{q-\pi}{x-\pi}\le 0$ for every $x\in C$, hence for
+$x\in S$
+\[
+\sca{u}{q-x}=\sca{u}{q-\pi}+\sca{u}{\pi-x}
+=\beta-\tfrac1\beta\sca{q-\pi}{x-\pi}\ \ge\ \beta\ \ge\ \sqrt{D^2-r^2}. \qedhere
+\]
+\end{proof}
+
+\begin{lemma}[ascent step]\label{lem:step}
+Assume \eqref{eq:H} and let $a$ be captured. Then there is a unit vector $u$ such that for every
+$\varepsilon>0$ there is $h_0>0$ with
+\[
+\psi(a+hu)\ \ge\ \psi(a)+2h\,(\beta_0-\varepsilon)
+\qquad\text{for all } h\in(0,h_0).
+\]
+\end{lemma}
+
+\begin{proof}
+Since $m(a)\subseteq \X$ we have $\dist\bigl(p,m(a)\bigr)\ge d_0$, and \eqref{eq:H} provides
+$m(a)\subseteq\Bcl{z_a}{\lambda}$ with $\lambda<d_0$. Lemma~\ref{lem:sep} (with $S=m(a)$,
+$q=p$, $r=\lambda$, $D=d_0$) yields a unit vector $u$ with
+\begin{equation}\label{eq:gap}
+\sca{u}{p-x}\ \ge\ \beta_0\qquad\text{for all }x\in m(a).
+\end{equation}
+
+\emph{Exact increment.} Fix $h>0$ and pick any $y\in m(a+hu)$. Then
+\[
+d(a+hu)^2=\norm{a+hu-y}^2=\norm{a-y}^2+2h\sca{u}{a-y}+h^2,
+\qquad
+\norm{a+hu-p}^2=\norm{a-p}^2+2h\sca{u}{a-p}+h^2 ,
+\]
+so the $h^2$ terms cancel in the difference:
+\begin{equation}\label{eq:exact}
+\psi(a+hu)=\norm{a-y}^2-\norm{a-p}^2+2h\sca{u}{p-y}
+\ \ge\ \psi(a)+2h\sca{u}{p-y},
+\end{equation}
+using $\norm{a-y}\ge d(a)$ (valid because $y\in \X$). Note that \eqref{eq:exact} is exact:
+there is no second-order error term.
+
+\emph{The new nearest point still sees the gap.} We claim that for every $\varepsilon>0$ there is
+$h_0>0$ such that every $h\in(0,h_0)$ and every $y\in m(a+hu)$ satisfy
+$\sca{u}{p-y}\ge\beta_0-\varepsilon$; combined with \eqref{eq:exact} this proves the lemma.
+Suppose not: there are $\varepsilon_0>0$, $h_k\downarrow 0$ and $y_k\in m(a+h_ku)$ with
+$\sca{u}{p-y_k}<\beta_0-\varepsilon_0$. Since $d$ is $1$-Lipschitz,
+\[
+\norm{y_k-a}\ \le\ \norm{y_k-(a+h_ku)}+h_k\ =\ d(a+h_ku)+h_k\ \le\ d(a)+2h_k ,
+\]
+so $(y_k)$ is bounded; passing to a subsequence, $y_k\to y^*\in \X$ ($\X$ is closed). Then
+$\norm{a-y^*}=\lim_k\norm{a-y_k}\le d(a)$, while $\norm{a-y^*}\ge d(a)$ because $y^*\in\X$;
+hence $y^*\in m(a)$ and $\sca{u}{p-y^*}\ge\beta_0$ by \eqref{eq:gap}. But
+$\sca{u}{p-y^*}=\lim_k\sca{u}{p-y_k}\le\beta_0-\varepsilon_0$, a contradiction.
+\end{proof}
+
+\begin{remark}
+Lemma~\ref{lem:step} is the engine of the proof, and it is worth recording the heuristics.
+Under \eqref{eq:H} the nearest points of any captured $a$ are clustered in a $\lambda$-ball, while
+all of them are at distance $\ge d_0>\lambda$ from $p$; Lemma~\ref{lem:sep} converts this into a
+\emph{uniform} transversality gap \eqref{eq:gap}, with the same constant $\beta_0$ for every
+captured $a$, no matter how large $d(a)$ is. Moving the centre in the direction $u$ may well
+\emph{decrease} the radius $d$ and the depth $d-\norm{\cdot-p}$; what it always increases, at
+rate $2\beta_0$, is the power $\psi$. This is what the strict hypothesis $d_0>\lambda$ buys;
+when $d_0=\lambda$, $\beta_0=0$ and the engine stalls (cf.\ Remark~\ref{rem:sharp}).
+\end{remark}
+
+\section{Proof of Theorem \ref{thm:main}}
+
+Assume \eqref{eq:H}. Set
+\[
+\kappa:=\tfrac{\beta_0}{2},\qquad \varepsilon:=\tfrac{\beta_0}{4},\qquad
+\Phi(a):=\psi(a)-2\kappa\,\norm{a-p},\qquad
+\mathcal G:=\{a\in\R^n\mid \Phi(a)\ge d_0^{\,2}\}.
+\]
+$\Phi$ is continuous ($d$ is $1$-Lipschitz), and $\Phi(p)=\psi(p)=d_0^{\,2}$, so $p\in\mathcal G$
+and $\mathcal G$ is non-empty and closed. Moreover
+\begin{equation}\label{eq:Gprops}
+a\in\mathcal G\ \Longrightarrow\ \psi(a)\ \ge\ d_0^{\,2}+2\kappa\norm{a-p}\ >\ 0,
+\end{equation}
+so every point of $\mathcal G$ is captured.
+
+\medskip
+\noindent\textbf{Step 1: $\sup_{a\in\mathcal G}d(a)=\infty$.}
+Suppose instead $\bar D:=\sup_{\mathcal G}d<\infty$. For $a\in\mathcal G$,
+\eqref{eq:Gprops} gives $2\kappa\norm{a-p}\le\psi(a)-d_0^{\,2}\le d(a)^2-d_0^{\,2}\le \bar
+D^2-d_0^{\,2}$, so $\mathcal G$ is bounded, hence compact. The continuous function $\Phi$
+attains its maximum over $\mathcal G$ at some $a^*\in\mathcal G$. By \eqref{eq:Gprops},
+$a^*$ is captured, so Lemma~\ref{lem:step} (with $\varepsilon=\beta_0/4$) supplies a unit $u$
+and an $h>0$ with $\psi(a^*+hu)\ge\psi(a^*)+2h\cdot\tfrac{3\beta_0}{4}$. Since
+$\norm{a^*+hu-p}\le\norm{a^*-p}+h$,
+\[
+\Phi(a^*+hu)\ \ge\ \Phi(a^*)+2h\Bigl(\tfrac{3\beta_0}{4}-\kappa\Bigr)
+=\Phi(a^*)+\tfrac{\beta_0}{2}\,h\ >\ \Phi(a^*)\ \ge\ d_0^{\,2} .
+\]
+Thus $a^*+hu\in\mathcal G$ and $\Phi(a^*+hu)>\Phi(a^*)$, contradicting maximality. Hence
+$\sup_{\mathcal G}d=\infty$.
+
+\medskip
+\noindent\textbf{Step 2: a limiting half-space.}
+By Step~1 choose $a_k\in\mathcal G$ with $d_k:=d(a_k)\to\infty$, and put
+$s_k:=\norm{a_k-p}$, $\psi_k:=d_k^2-s_k^2$. Since $d$ is $1$-Lipschitz, $d_k\le d_0+s_k$, so
+$s_k\ge d_k-d_0\to\infty$; discard the finitely many $k$ with $s_k=0$ and set
+$w_k:=(a_k-p)/s_k$. By \eqref{eq:Gprops}, $\psi_k\ge d_0^{\,2}+2\kappa s_k$.
+For every $y\in \X$ we have $\norm{y-a_k}\ge d_k$, i.e.
+$\norm{(y-p)-s_kw_k}^2\ge d_k^2$; expanding,
+\[
+\sca{w_k}{\,y-p\,}\ \le\ \frac{\norm{y-p}^2+s_k^2-d_k^2}{2s_k}
+=\frac{\norm{y-p}^2-\psi_k}{2s_k}
+\ \le\ \frac{\norm{y-p}^2-d_0^{\,2}}{2s_k}\;-\;\kappa .
+\]
+Passing to a subsequence with $w_k\to w$ (unit sphere compactness) and letting $k\to\infty$
+with $y\in\X$ fixed:
+\begin{equation}\label{eq:halfspace}
+\sca{w}{\,y-p\,}\ \le\ -\kappa\qquad\text{for every } y\in \X .
+\end{equation}
+
+\medskip
+\noindent\textbf{Step 3: contradiction with $p\in\cconv\X$.}
+Inequality \eqref{eq:halfspace} is linear in $y$, hence it is inherited by every finite convex
+combination of points of $\X$, i.e.\ by every $q\in\conv\X$, and by continuity by every
+$q\in\cconv\X$. Taking $q=p$ gives $0=\sca{w}{p-p}\le-\kappa<0$, absurd.
+
+\medskip
+Therefore \eqref{eq:H} is false: there exists a captured $a$ such that $m(a)$ fits in no closed
+ball of radius $\lambda$. As observed in Section~1, such an $a$ lies in $\Mx$ (a singleton
+$m(a)$ would fit in a $\lambda$-ball), hence in $\Ml$, and $p\in\B(a,d(a))$.
+\hfill$\qed$
+
+\section{Remarks}
+
+\begin{remark}[sharpness]\label{rem:sharp}
+The strict inequality $d(p)>\lambda$ cannot be weakened to $d(p)\ge\lambda$. Take
+$\X=\{-\lambda e_1,\lambda e_1\}\subset\R^n$ and $p=0\in\conv\X$, so $d(p)=\lambda$. Here
+$\Mx=\{x_1=0\}$ and every $a\in\Mx$ has $m(a)=\X\subseteq\Bcl{0}{\lambda}$, so
+$\Ml=\emptyset$ and no point is $\lambda$-reconstructible.
+\end{remark}
+
+\begin{remark}[the case $\lambda=0$]
+The proof used $\lambda>0$ nowhere except through $\beta_0=\sqrt{d_0^2-\lambda^2}$, and it runs
+verbatim for $\lambda=0$ (balls of radius $0$ being points, \eqref{eq:H} then reads ``every
+captured point has a unique nearest point''). The conclusion is: every $p\in\cconv\X$ with
+$d(p)>0$ lies in $\B(a,d(a))$ for some $a\in\Mx$. This is precisely the convex-hull part of
+Theorem~6 of \cite{Bia} (Proposition~2 and Corollary~5 there), re-proved without the central-set
+machinery: no maximal balls, no $\Cx$, and no Motzkin--Fremlin inclusion
+$\Cx\subseteq\overline{\Mx}$ are needed. The argument lands directly in $\Mx$.
+\end{remark}
+
+\begin{remark}[what the proof does \emph{not} use]
+There is no smallest-enclosing-ball (circumradius) theory: hypothesis \eqref{eq:H} is consumed
+in the raw form ``$m(a)$ fits in \emph{some} closed $\lambda$-ball''. There is no distance flow,
+no semiconcavity or Clarke subdifferential, no upper semicontinuity of the multimap $m$ beyond
+the one-point compactness argument inside Lemma~\ref{lem:step}, and no Euler polygons: the
+tilted functional $\Phi=\psi-2\kappa\norm{\cdot-p}$ replaces the whole trajectory construction
+by a single compact maximization (Step~1). Boundedness or convexity of $\X$ is never assumed.
+\end{remark}
+
+\begin{remark}[why the na\"ive attacks see a threshold]
+It is instructive to compare with the steepest-ascent attack along Lieutier's flow
+\cite{Lie}: moving a captured centre $a$ away from (the projection of $a$ onto)
+$\conv m(a)$ grows $d$ at rate $g=\sqrt{1-\mathcal F^2/d^2}\le 1$ (with $\mathcal F\le\lambda$
+the cluster radius under \eqref{eq:H}), while the depth $d(a)-\norm{a-p}$ can leak at rate
+$1-g\approx \lambda^2/2d^2$. Integrating the leak from $d=d_0$ to $\infty$ gives a total loss
+$\tfrac{\lambda}{4}\log\frac{d_0+\lambda}{d_0-\lambda}$, which stays below the initial depth
+$d_0$ only for $d_0\gtrsim 1.033\,\lambda$ (the root of
+$x=\tfrac14\log\frac{x+1}{x-1}$). Constrained-maximization variants of that idea stall
+similarly (at thresholds such as $d_0\ge\tfrac{2}{\sqrt3}\lambda$). The two changes that remove
+the threshold are: \emph{(a)} the step direction is aimed by Lemma~\ref{lem:sep} at the
+separation between $p$ and the cluster $\conv m(a)$, rather than by the gradient of $d$; and
+\emph{(b)} progress is measured by the power $\psi$, whose increment \eqref{eq:exact} is exact
+--- the gain rate $2\beta_0$ is independent of $d(a)$, so nothing has to be integrated and
+nothing leaks.
+\end{remark}
+
+\begin{remark}[formalization]
+Every ingredient is mathlib-friendly: nearest points on a closed set in a proper space;
+$1$-Lipschitzness of \texttt{Metric.infDist}; the parallel-axis identity (inner-product
+algebra over finite convex combinations); orthogonal projection onto a non-empty closed convex
+set and its obtuse-angle characterization
+(\texttt{Mathlib.Analysis.InnerProductSpace.Projection}); compactness of closed bounded sets
+and of the unit sphere; and an extreme-value argument. The contradiction scheme mirrors the
+one already used in our formalization of Theorem~6, and Lemma~\ref{lem:step} is structurally
+the same one-point limit argument as the inflation dichotomy there.
+\end{remark}
+
+\begin{thebibliography}{9}
+
+\bibitem{Bia} A.~Bia{\l}o\.zyt,
+\emph{Sets reconstructible with medial axis}, manuscript (version \texttt{medial\_v2}), 2026.
+
+\bibitem{CL} F.~Chazal, A.~Lieutier,
+\emph{The $\lambda$-medial axis}, Graph.\ Models \textbf{67} (2005), 304--331.
+
+\bibitem{Lie} A.~Lieutier,
+\emph{Any open bounded subset of $\R^n$ has the same homotopy type as its medial axis},
+Computer-Aided Design \textbf{36} (2004), 1029--1046.
+
+\end{thebibliography}
+
+\end{document}
