@@ -1,0 +1,707 @@
+\documentclass[11pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[margin=1.1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{enumitem}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{example}[theorem]{Example}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\B}{\mathbb{B}}
+\newcommand{\X}{X}
+\newcommand{\conv}{\operatorname{conv}}
+\newcommand{\cconv}[1]{\overline{\conv}\,#1}
+\newcommand{\dist}{\operatorname{dist}}
+\newcommand{\sca}[2]{\left\langle #1,\, #2\right\rangle}
+\newcommand{\norm}[1]{\left\lVert #1\right\rVert}
+\newcommand{\Mx}{M_{\X}}
+\newcommand{\Cx}{C_{\X}}
+
+\title{Notes on the proofs in\\ \emph{Sets Reconstructible with Medial Axis}\\[2mm]
+\large prepared for a formalization in Lean~4 / mathlib\thanks{Notes drafted with the assistance
+of Claude (Anthropic) during the planning stage of the formalization. All arguments below were
+re-derived and checked by hand at the level of detail a proof assistant requires; remaining
+errors are ours.}}
+\author{}
+\date{June 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We are formalizing Theorem~6 of \cite{Bia} in the Lean~4 proof assistant, on top of the
+\texttt{mathlib} library. Machine checking forces every implicit step of a proof to be made fully
+explicit, and these notes record what that process surfaced. Concretely, we document:
+(i)~one classical background fact which the paper uses through a citation
+(the Motzkin--Fremlin inclusion $\Cx\subseteq\overline{\Mx}$) and for which we give a
+self-contained elementary proof that avoids Brouwer's fixed point theorem (which is not
+available in \texttt{mathlib});
+(ii)~a small toolbox of lemmas (a ``ball membership along a ray'' criterion and an
+``inflation dichotomy'') through which all the ball-inflation arguments of the paper factor;
+(iii)~a reorganization in which Propositions~3 and~4 of \cite{Bia} merge into a single statement
+whose proof does not use Motzkin's theorem on Chebyshev sets at all, and turns out to be
+entirely free of limit arguments;
+(iv)~a complete replacement for the proof of the forward direction of Theorem~6, where the
+argument sketched in \cite{Bia} has a genuine gap.
+None of this affects the validity of the \emph{statements} in \cite{Bia}: Theorem~6 is correct as
+stated. The notes are written in ordinary mathematical language and require no knowledge of Lean.
+As of this version, every proof below \emph{except} Appendix~\ref{app:fremlin} has been
+machine-verified: Theorem~6 is fully checked in Lean modulo the single classical input
+\eqref{eq:fremlin}.
+\end{abstract}
+
+\section{Setting, notation, and the result being formalized}
+
+Throughout, $E$ is a finite-dimensional real inner product space (the formalization is carried
+out at this level of generality; $E=\R^n$ is the motivating case), and $\X\subseteq E$ is a
+nonempty closed set. Following \cite{Bia} we write
+\[
+ d(a) \;=\; d(a,\X)\;=\;\inf_{x\in \X}\norm{a-x},\qquad
+ m(a)\;=\;\{x\in \X \mid \norm{a-x}=d(a)\},
+\]
+$\B(a,r)$ for the \emph{open} ball, and
+\[
+ \Mx=\{a\in E\mid \#m(a)>1\},\qquad
+ \Cx=\{\text{centres of inclusion-maximal open balls contained in } E\setminus \X\}.
+\]
+A point $p\in E\setminus\X$ is \emph{reconstructible} if
+$p\in\bigcup_{a\in \Mx}\B(a,d(a))$, and $E\setminus\X$ is reconstructible if all its points are.
+A hyperplane $L$ is \emph{supporting} for a set $S$ if $S\cap L\neq\emptyset$ and $S$ lies in one
+of the two closed half-spaces bounded by $L$; then $L^{+}$ denotes the open half-space disjoint
+from $S$. We represent hyperplanes by a unit normal: $L=\{x\mid \sca{\eta}{x}=c\}$ with
+$S\subseteq\{\sca{\eta}{\cdot}\le c\}$ and $L^{+}=\{\sca{\eta}{\cdot}>c\}$. We call a supporting
+hyperplane $L$ of $\cconv \X$ \emph{defective} if $\X\cap L\neq \cconv \X\cap L$; equivalently
+(since $\X\cap L\subseteq\cconv\X\cap L$ always) if there exists a \emph{defect witness}
+\[
+ w\in (\cconv \X\cap L)\setminus \X .
+\]
+
+The target is:
+
+\begin{theorem}[{\cite[Theorem 6]{Bia}}]\label{thm:main}
+Let $\X\subseteq E$ be closed and nonempty, and let $\mathcal L$ be the family of all defective
+supporting hyperplanes of $\cconv \X$. Then $E\setminus\X$ is reconstructible if and only if
+\[
+E\setminus\X\;\subseteq\; \cconv \X\,\cup \bigcup_{L\in\mathcal L} L^{+}.
+\]
+\end{theorem}
+
+(The paper says ``let $\mathcal L$ be \emph{a} family\dots''; for the forward implication
+$\mathcal L$ must be the family of \emph{all} defective supporting hyperplanes, and we formalize
+the statement in that form.)
+
+\subsection*{Summary of findings}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{p{0.27\textwidth}p{0.66\textwidth}}
+\hline
+Result in \cite{Bia} & Status in the formalization \\
+\hline
+Lemma 1 & Proved; the step ``$c$ can be approximated by points of $\Mx$'' is the
+Motzkin--Fremlin theorem $\Cx\subseteq\overline{\Mx}$, which we must prove ourselves
+(\S\ref{sec:fremlin}, Appendix~\ref{app:fremlin}); in the first stage of the formalization this
+single classical fact is assumed.\\
+Proposition 2 & Proved; one definition repaired (Remark~\ref{rem:prop2sup}) and Carath\'eodory's
+theorem is not needed (Remark~\ref{rem:prop2cara}).\\
+Propositions 3, 4 & Merged into one statement (Theorem~\ref{thm:unified}) with a shorter proof:
+Motzkin's theorem on Chebyshev sets, the cone at infinity, and the two-nearest-points analysis
+are no longer used; moreover the proof is entirely limit-free — a single explicit value of the
+lift parameter suffices (Remark~\ref{rem:swallow}).\\
+Corollary 5 & As written it invokes the \emph{proof} (not the statement) of Proposition~4 and
+does not literally follow from it; we give a direct ``one-shot'' proof needing no limits
+(\S\ref{sec:cor5}).\\
+Theorem 6, ``$\Leftarrow$'' & Assembly of the above. \\
+Theorem 6, ``$\Rightarrow$'' & The sketch in \cite{Bia} has a gap (the segment
+$\left]p,q\right[$ may miss $\cconv\X$ entirely, and a separating hyperplane through the entry
+point need not exist); we give a complete replacement proof via the metric projection onto
+$\cconv \X$ (\S\ref{sec:forward}).\\
+\hline
+\end{tabular}
+\end{center}
+
+\section{Toolbox}\label{sec:toolbox}
+
+All inflation arguments in \cite{Bia} grow a one-parameter family of balls that share a tangency
+point. The following trivial identity is the workhorse that replaces every limit computation
+``$p$ eventually falls into the growing balls'' by an explicit inequality. (In a formalization
+such a reduction matters enormously; but we believe it also makes the paper proofs shorter.)
+
+\begin{lemma}[ball membership along a ray]\label{lem:swallow}
+Let $x,p\in E$, let $v$ be a unit vector and $\rho>0$. Then
+\[
+ p\in\B(x+\rho v,\rho)\iff 2\rho\,\sca{v}{p-x}>\norm{p-x}^2 .
+\]
+\end{lemma}
+
+\begin{proof}
+Expand $\norm{p-x-\rho v}^2<\rho^2$.
+\end{proof}
+
+\begin{lemma}[tangent families]\label{lem:tangent}
+Fix $x\in E$ and a unit vector $v$, and write $\B_t:=\B(x+tv,t)$ for $t>0$ (the family of open
+balls tangent to the hyperplane through $x$ with normal $v$, at the point $x$). Then
+\begin{enumerate}[label=(\alph*),itemsep=1pt]
+\item $0<s\le t\implies \B_s\subseteq \B_t$;
+\item $\bigcup_{0<t<T}\B_t=\B_T$ for every $T>0$;
+\item $\bigcup_{t>0}\B_t=\{y\mid\sca{v}{y-x}>0\}$, the open half-space.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+All three are immediate from Lemma~\ref{lem:swallow}: membership of $y$ in $\B_t$ reads
+$2t\sca{v}{y-x}>\norm{y-x}^2$, in which the left side is nonnegative-increasing in $t$ once
+$\sca{v}{y-x}>0$, and which for $y\ne x$ can hold only if $\sca{v}{y-x}>0$.
+\end{proof}
+
+We record the elementary facts about maximal balls; recall a ball
+$\B(c,r)\subseteq E\setminus \X$, $r>0$, is \emph{maximal} if
+$\B(c,r)\subseteq\B(c',r')\subseteq E\setminus\X$ (with $r'>0$) forces $c'=c$, $r'=r$.
+
+\begin{lemma}\label{lem:maxballs}
+Let $\X$ be closed and nonempty.
+\begin{enumerate}[label=(\alph*),itemsep=1pt]
+\item For balls in a normed space, $\B(c,r)\subseteq\B(c',r')$ iff $\norm{c-c'}\le r'-r$.
+\item A maximal ball centred at $c$ has radius $d(c)$; thus
+$\Cx=\{c\mid \B(c,d(c))\text{ is maximal}\}$.
+\item $\Mx\subseteq \Cx$.
+\item If $a\in \X$ then $m(a)=\{a\}$; hence $\Mx\cap \X=\emptyset$ and $d(a)>0$ for
+$a\in\Mx\cup\Cx$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}[Proof sketch]
+(b) $\B(c,r)\subseteq E\setminus\X$ iff $r\le d(c)$. (c) Let $a\in\Mx$ with distinct
+$x,y\in m(a)$ and suppose $\B(a,d(a))\subseteq\B(c',r')\subseteq E\setminus\X$. Since
+$x\in \X$, $x\notin\B(c',r')$, so $\norm{x-c'}\ge r'$; on the other hand by (a),
+$\norm{x-c'}\le\norm{x-a}+\norm{a-c'}\le d(a)+(r'-d(a))=r'$. So equality holds in the triangle
+inequality, which in a Euclidean (strictly convex) space forces $c'$ to lie on the ray from $x$
+through $a$, at distance $r'-d(a)$ beyond $a$; the same holds with $y$ in place of $x$. If
+$r'>d(a)$ the two descriptions of $c'$ give $(a-x)/d(a)=(a-y)/d(a)$, i.e.\ $x=y$, a
+contradiction; hence $r'=d(a)$ and $c'=a$.
+\end{proof}
+
+The next lemma is the common engine behind Propositions 2--4 and Corollary 5 of \cite{Bia}.
+It is the precise form of ``inflate a ball keeping the tangency point until it either becomes
+maximal or sweeps out a half-space''.
+
+\begin{lemma}[inflation dichotomy]\label{lem:dicho}
+Let $\X$ be closed and nonempty, $x_0\in \X$, $v$ a unit vector, and suppose
+$\B(x_0+t_0v,t_0)\cap \X=\emptyset$ for some $t_0>0$. Put
+\[
+ T:=\sup\{t>0\mid \B(x_0+tv,t)\cap \X=\emptyset\}\;\in\;[t_0,\infty].
+\]
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item If $T=\infty$, then $\X\cap\{y\mid\sca{v}{y-x_0}>0\}=\emptyset$.
+\item If $T<\infty$, then $c:=x_0+Tv\in\Cx$, with $d(c)=T$ and $x_0\in m(c)$.
+\item If moreover $p\notin \X$, $x_0\in m(p)$ and $v=(p-x_0)/d(p)$, then $t_0=d(p)$ qualifies,
+and in case~(ii) one has $p\in\B(c,d(c))$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+By Lemma~\ref{lem:tangent}(a) the set of admissible $t$ is an interval, so every $t<T$ is
+admissible. (i)~is Lemma~\ref{lem:tangent}(c). For (ii): by Lemma~\ref{lem:tangent}(b),
+$\B(c,T)=\bigcup_{t<T}\B_t$ is disjoint from $\X$, so $d(c)\ge T$; since $x_0\in \X$ and
+$\norm{c-x_0}=T$ we get $d(c)=T$ and $x_0\in m(c)$. Maximality: if
+$\B(c,T)\subseteq\B(c',r')\subseteq E\setminus\X$ then, exactly as in the proof of
+Lemma~\ref{lem:maxballs}(c), $\norm{x_0-c'}=r'$ with equality in the triangle inequality through
+$c$, so $c'=x_0+r'v$; if $r'>T$ this contradicts the definition of $T$, hence $r'=T$, $c'=c$.
+For (iii): $\B(x_0+d(p)v,d(p))=\B(p,d(p))$ is disjoint from $\X$, so $T\ge d(p)$; and by
+Lemma~\ref{lem:swallow}, $p\in\B(c,T)$ iff $2T\sca{v}{p-x_0}=2T\,d(p)>d(p)^2$, which holds
+because $T\ge d(p)>\tfrac12 d(p)$.
+\end{proof}
+
+\section{Lemma 1 and the Motzkin--Fremlin theorem}\label{sec:fremlin}
+
+The proof of \cite[Lemma~1]{Bia} uses that every $c\in\Cx$ ``can be approximated by a sequence of
+points $x_n\in\Mx$'', i.e.
+\begin{equation}\label{eq:fremlin}
+ \Mx\;\subseteq\;\Cx\;\subseteq\;\overline{\Mx},
+\end{equation}
+which the paper quotes from the literature (Motzkin; Fremlin \cite{Fre}). For the formalization
+this inclusion must itself be proved, and it sits on the critical path of \emph{everything}: all
+the reconstruction arguments produce centres of maximal balls, and a maximal ball may touch $\X$
+at a single point, so the passage from $\Cx$ back to $\Mx$ is genuinely needed and genuinely
+nontrivial. The textbook proofs use Brouwer's fixed point theorem or degree theory, neither of
+which is currently available in \texttt{mathlib}. In Appendix~\ref{app:fremlin} we give a
+self-contained proof of $\Cx\subseteq\overline{\Mx}$ which uses nothing beyond compactness and an
+explicit Euler-polygon construction; we believe it may be of independent interest. (In the first
+stage of the formalization, \eqref{eq:fremlin} is assumed as a clearly marked placeholder and
+everything else is proved unconditionally; in the second stage we formalize
+Appendix~\ref{app:fremlin}.)
+
+Given \eqref{eq:fremlin}, Lemma~1 of \cite{Bia} is straightforward, exactly as in the paper:
+
+\begin{lemma}[{\cite[Lemma~1]{Bia}}]\label{lem:one}
+Let $p\in E\setminus \X$. Then $p$ is reconstructible if and only if there is $c\in\Cx$ with
+$p\in\B(c,d(c))$.
+\end{lemma}
+
+\begin{proof}
+($\Rightarrow$) $\Mx\subseteq\Cx$ by Lemma~\ref{lem:maxballs}(c).
+($\Leftarrow$) By \eqref{eq:fremlin} pick $a_n\in\Mx$, $a_n\to c$. Since $d$ is $1$-Lipschitz,
+$d(a_n)\to d(c)$ and $\norm{p-a_n}\to\norm{p-c}<d(c)$, so $\norm{p-a_n}<d(a_n)$ for large $n$.
+\end{proof}
+
+\section{Proposition 2}\label{sec:prop2}
+
+\begin{remark}[a repaired definition]\label{rem:prop2sup}
+The proof of \cite[Proposition~2]{Bia} introduces, for $p_t:=t(p-x_p)+x_p$,
+\[
+ r:=\sup\{t>0\mid \B(p_t,d(p_t))\cap \X=\emptyset\},
+\]
+and argues by cases on $r<\infty$. As literally written the defining condition is vacuous:
+$\B(a,d(a))\cap \X=\emptyset$ holds for \emph{every} $a$, so $r=\infty$ always. What is meant
+(and what the surrounding text uses, e.g.\ ``it is the union of the family of balls'') is the
+family of balls \emph{tangent to $\X$ at $x_p$}, i.e.\ $\B(p_t,t\,d(p))$, equivalently the
+condition $d(p_t)=t\,d(p)$. Lemma~\ref{lem:dicho} is exactly this corrected statement, packaged
+once and for all; the same correction applies wherever the ``directional reaching radius''
+$r_v(x):=\sup\{\rho\ge0\mid\B(\rho v+x,\,\rho)\cap \X=\emptyset\}$ of \cite{Bia} is used, which
+matches our $T$ in Lemma~\ref{lem:dicho}.
+\end{remark}
+
+\begin{proposition}[{\cite[Proposition~2]{Bia}}]\label{prop:two}
+If $p\in\conv \X\setminus \X$, then $p$ is reconstructible.
+\end{proposition}
+
+\begin{proof}
+Pick $x_p\in m(p)$ (nonempty: $\X$ closed nonempty, $E$ finite-dimensional) and let
+$v=(p-x_p)/d(p)$. Apply Lemma~\ref{lem:dicho}(iii). If $T<\infty$ we obtain $c\in\Cx$ with
+$p\in\B(c,d(c))$, and Lemma~\ref{lem:one} concludes. If $T=\infty$, then
+$\X\subseteq K:=\{y\mid \sca{v}{y-x_p}\le0\}$. But $K$ is convex, so $\conv \X\subseteq K$, and
+$p\in\conv \X$ gives $\sca{v}{p-x_p}\le0$; since $\sca{v}{p-x_p}=d(p)>0$, this is a
+contradiction.
+\end{proof}
+
+\begin{remark}\label{rem:prop2cara}
+The paper's proof invokes Carath\'eodory's lemma to write $p$ as a convex combination of points
+of $\X$ and then computes. This is not needed: the half-space $K$ is convex and contains $\X$, so
+it contains $\conv \X\ni p$ --- the computation with the convex combination in \cite{Bia} is
+precisely the proof of this containment in the special case. (In the formalization this saves a
+dependency on the Carath\'eodory machinery.)
+\end{remark}
+
+\section{A unified Proposition 3/4}\label{sec:unified}
+
+This section contains the main reorganization. Recall \cite[Proposition~3]{Bia}: if $L$ is a
+supporting hyperplane of $\conv \X$ with $\X\cap L$ \emph{non-convex}, then every $p\in L^{+}$
+is reconstructible; and \cite[Proposition~4]{Bia}: the same conclusion when $L$ is a supporting
+hyperplane of $\cconv \X$ with $\X\cap L\neq\cconv \X\cap L$. The proof of Proposition~3 in
+\cite{Bia} starts from Motzkin's theorem (a closed non-convex set has a nonempty medial axis,
+applied to $\X\cap L$ inside $L$) to obtain a point $q$ with two nearest points $a\neq b$ in
+$\X\cap L$, and the proof of Proposition~4 reduces its convex case to a separate ladder
+construction.
+
+Two observations let us merge the two propositions and shorten the proof considerably.
+
+\begin{enumerate}[label=(\Alph*),itemsep=2pt]
+\item The hypothesis of Proposition 3 implies that of Proposition 4: if $\X\cap L$ is
+non-convex, then $\X\cap L\subsetneq\conv(\X\cap L)\subseteq\cconv\X\cap L$, so $L$ is
+defective. Hence a single statement with the ``defective'' hypothesis covers both.
+\item In the ladder construction, the role played in \cite{Bia} by the pair $a,b$ of nearest
+points (Proposition 3) or by approximating convex combinations $a_\nu,b_\nu$ (Proposition 4) can
+be played directly by a \emph{defect witness} $w\in(\cconv\X\cap L)\setminus \X$: in the
+``infinite radius'' case the half-space produced by Lemma~\ref{lem:dicho}(i) is closed and
+convex, hence contains $\cconv \X\ni w$, and evaluating the half-space inequality at $w$ gives an
+immediate contradiction. \emph{Consequently Motzkin's theorem is not needed anywhere in the proof
+of Theorem~6.} (It remains an interesting target in its own right; see
+Remark~\ref{rem:motzkin}.)
+\end{enumerate}
+
+\begin{theorem}[unified Propositions 3 and 4]\label{thm:unified}
+Let $\X$ be closed and nonempty and let $L=\{x\mid\sca{\eta}{x}=c\}$, $\norm{\eta}=1$, satisfy
+\[
+\X\subseteq\{x\mid \sca{\eta}{x}\le c\},\qquad
+\exists\, w\in \cconv\X\cap L,\ w\notin \X .
+\]
+Then every $p$ with $\sca{\eta}{p}>c$ is reconstructible.
+\end{theorem}
+
+\begin{proof}
+Translating, we may assume $c=0$; write $\gamma:=\sca{\eta}{p}>0$, and fix \emph{once and for
+all} the lift parameter
+\[
+ t\;:=\;\frac{\norm{p-w}^2}{2\gamma}+1,\qquad\text{so that}\qquad
+ \norm{p-w}^2\;=\;2t\gamma-2\gamma .
+\]
+Consider the lifted point $w_t:=w+t\eta$; since $\sca{\eta}{w_t}=t>0$ while
+$\X\subseteq\{\sca{\eta}{\cdot}\le0\}$, we have $w_t\notin \X$, so
+\[
+ x_t\in m(w_t),\qquad D:=d(w_t)=\norm{w_t-x_t}>0,\qquad v:=\frac{w_t-x_t}{D}
+\]
+are well defined. Abbreviate
+\[
+ S:=w-x_t,\qquad P:=p-w,\qquad \beta:=-\sca{\eta}{x_t}\;\ge\;0
+\]
+(the inequality because $x_t\in \X$). Everything rests on two instances of the same expansion,
+using $w_t-x_t=t\eta+S$, $\sca{\eta}{S}=\beta$ and $\sca{\eta}{P}=\gamma$:
+\begin{align}
+ \sca{w_t-x_t}{\,w-x_t}&=\sca{t\eta+S}{S}\;=\;t\beta+\norm S^2,\label{eq:expandw}\\
+ N\;:=\;\sca{w_t-x_t}{\,p-x_t}&=\sca{t\eta+S}{P+S}\;=\;t\gamma+t\beta+\sca{S}{P}+\norm S^2 .
+ \label{eq:expandp}
+\end{align}
+The ball $\B(w_t,D)$ is the tangent ball of radius $D$ at $x_t$ in the direction $v$ and avoids
+$\X$; apply Lemma~\ref{lem:dicho}.
+
+\emph{The case $T=\infty$ is impossible.} By Lemma~\ref{lem:dicho}(i),
+$\X\subseteq K:=\{y\mid\sca{v}{y-x_t}\le0\}$; $K$ is closed and convex, so
+$\cconv \X\subseteq K$, and in particular $\sca{w_t-x_t}{w-x_t}\le0$. By \eqref{eq:expandw}
+this forces $t\beta+\norm S^2\le0$, hence $S=0$, i.e.\ $x_t=w$ --- contradicting $x_t\in \X$,
+$w\notin \X$.
+
+\emph{The case $T<\infty$, and the capture of $p$.} By Lemma~\ref{lem:dicho}(ii),
+$c_T:=x_t+Tv\in\Cx$ with $d(c_T)=T\ge D$. By Lemmas~\ref{lem:swallow} and~\ref{lem:one} it
+remains to check
+\begin{equation}\label{eq:goal}
+ \norm{p-x_t}^2\;<\;2T\sca{v}{p-x_t}\;=\;\frac{2T}{D}\,N .
+\end{equation}
+First, $N\ge0$: by Cauchy--Schwarz $\sca{S}{P}\ge-\norm S\norm P$, by
+$(\norm S-\tfrac12\norm P)^2\ge0$ we have $\norm S^2-\norm S\norm P\ge-\tfrac14\norm P^2$, and
+$\norm P^2\le 2t\gamma$ by the choice of $t$; hence
+\[
+ N\;\ge\;t\gamma+t\beta-\tfrac14\norm P^2\;\ge\;t\gamma-\tfrac12\,t\gamma\;>\;0 .
+\]
+Consequently $\tfrac{2T}{D}N\ge2N$, and it suffices to compare $2N$ with
+$\norm{p-x_t}^2=\norm{P+S}^2=\norm P^2+2\sca{S}{P}+\norm S^2$. The cross terms cancel
+\emph{exactly} against \eqref{eq:expandp}:
+\[
+ 2N-\norm{p-x_t}^2\;=\;2t\gamma+2t\beta+\norm S^2-\norm P^2
+ \;\ge\;2t\gamma-\norm P^2\;=\;2\gamma\;>\;0 .
+\]
+This proves \eqref{eq:goal}; so $p\in\B(c_T,d(c_T))$ with $c_T\in\Cx$, and Lemma~\ref{lem:one}
+finishes the proof.
+\end{proof}
+
+\begin{remark}[on the final limit step in \cite{Bia}]\label{rem:swallow}
+The proofs of Propositions~3 and~4 in \cite{Bia} conclude with: \emph{``For any $p$ in $L^{+}$
+and a sequence of points $c_n\in\Cx$ with $\norm{c_n}\to\infty$, $c_n/\norm{c_n}\to\eta$ we will
+have $d(c_n)>\norm{p-c_n}$ for $n$ large enough.''} The two stated properties of the sequence
+are not by themselves sufficient for the conclusion: writing $c_n=s_nu_n$ with $s_n\to\infty$,
+$u_n\to\eta$, the available lower bound $d(c_n)\ge\sca{\eta}{c_n}$ beats
+$\norm{p-c_n}\approx s_n-\sca{p}{u_n}$ only if $s_n(1-\sca{u_n}{\eta})$ stays small, which the
+hypotheses do not guarantee for an \emph{arbitrary} such sequence. The sequences actually
+\emph{constructed} in the paper do satisfy the conclusion, but proving it requires retaining the
+tangency data of the maximal balls (tangency point and radius), which is what the proof above
+does via Lemma~\ref{lem:swallow}. This is a typical example of a step that is morally right but
+that a proof assistant (correctly) refuses without the extra data. Strikingly, once that data is
+kept \emph{exactly}, all asymptotics evaporate: the cross terms $\sca{S}{P}$ cancel between the
+two sides of \eqref{eq:goal}, a single explicit value of $t$ suffices, and neither the limit
+$t\to\infty$ nor the coordinate estimates for $x_t$ in the proof of \cite[Proposition~4]{Bia}
+(nor even the nearest point of $w$ itself) are needed. We found this simplification only while
+machine-checking the proof.
+\end{remark}
+
+\begin{remark}[status of Proposition 3 and Motzkin's theorem]\label{rem:motzkin}
+By observation (A) above, \cite[Proposition~3]{Bia} is a special case of
+Theorem~\ref{thm:unified}; the formalization therefore does not state it separately, and
+Motzkin's theorem (closed Chebyshev subsets of $\R^n$ are convex) leaves the dependency graph of
+Theorem~6 entirely. We note that once $\Cx\subseteq\overline{\Mx}$ is available
+(Appendix~\ref{app:fremlin}), Motzkin's theorem falls out for free, by the argument of
+Proposition~\ref{prop:two}: if $\Mx=\emptyset$ then $\Cx=\emptyset$, so for any
+$p\in\conv\X\setminus\X$ the dichotomy (Lemma~\ref{lem:dicho}(iii)) cannot terminate at a maximal
+ball, hence produces a half-space through a nearest point separating $p$ from $\X$ ---
+contradicting $p\in\conv \X$ as in Proposition~\ref{prop:two}. Hence a non-convex closed set has
+points with at least two nearest points. We plan to include this as a corollary in the
+formalization since it is of independent interest.
+\end{remark}
+
+\section{Corollary 5: a one-shot proof}\label{sec:cor5}
+
+\begin{remark}
+\cite[Corollary~5]{Bia} (every $p\in\cconv\X\setminus \X$ is reconstructible) is justified by
+``any supporting hyperplane $L$ of $\cconv \X$ with $p\in L$ will raise a sequence of balls as
+in the proof of Proposition~4''. Two points need attention. First, this invokes the
+\emph{construction} inside the proof of Proposition~4 rather than its statement; moreover the
+balls of that construction capture the open half-space $L^{+}$, while $p$ lies \emph{on} $L$, so
+the capture of $p$ itself needs a separate argument. Second, the existence of a supporting
+hyperplane through a boundary point requires a (standard but nonempty) argument when
+$\cconv \X$ has empty interior. Both points are easy to settle, and in fact no limit
+$t\to\infty$ is needed at all:
+\end{remark}
+
+\begin{corollary}[{\cite[Corollary~5]{Bia}}]\label{cor:five}
+Every $p\in\cconv \X\setminus \X$ is reconstructible.
+\end{corollary}
+
+\begin{proof}
+If $p\in\conv \X$, apply Proposition~\ref{prop:two}. So assume $p\in\cconv\X\setminus\conv\X$.
+
+\emph{A supporting hyperplane through $p$.} If $\operatorname{int}\conv \X\neq\emptyset$ then
+$\operatorname{int}\cconv\X=\operatorname{int}\conv \X\subseteq\conv\X$, so $p$ lies on the
+boundary of the closed convex set $\cconv \X$ and a supporting hyperplane
+$L=\{\sca{\eta}{\cdot}=c\}$ through $p$ exists by standard separation. If
+$\operatorname{int}\conv \X=\emptyset$, then $\cconv \X$ lies in a proper affine subspace $A$;
+any unit $\eta$ orthogonal to the direction of $A$ gives a hyperplane through $p$ containing
+$\cconv\X$, which is in particular supporting. In both cases, after translation $c=0$,
+\[
+ \X\subseteq\{\sca{\eta}{\cdot}\le0\},\qquad \sca{\eta}{p}=0,\qquad p\in\cconv\X,\qquad
+ p\notin \X .
+\]
+
+\emph{One-shot capture.} Fix any $t>0$ (say $t=1$) and run the construction of
+Theorem~\ref{thm:unified} with defect witness $w:=p$ \emph{and target point $p$ itself}: let
+$x_t\in m(p+t\eta)$, $D=d(p+t\eta)$, $v=(p+t\eta-x_t)/D$, and $S:=p-x_t\neq0$. The case
+$T=\infty$ is impossible exactly as before (it would force $x_t=w=p\notin \X$). If $T<\infty$
+we get $c_T\in\Cx$, $d(c_T)=T\ge D$, and the membership criterion for $p$ reads
+\[
+ 2T\sca{v}{p-x_t}\;\ge\;\frac{2T}{D}\Bigl(t\sca{\eta}{S}+\norm S^2\Bigr)
+ \;\ge\;2\norm S^2\;>\;\norm S^2=\norm{p-x_t}^2,
+\]
+using $\sca{\eta}{S}=-\sca{\eta}{x_t}\ge0$ and $T\ge D$. So $p\in\B(c_T,d(c_T))$, and
+Lemma~\ref{lem:one} concludes. (No limit in $t$ was required; in the Lean development this case
+and Theorem~\ref{thm:unified} are two instances of one lemma, with the hypotheses
+$\sca{\eta}{p}\ge c$ and $\norm{p-w}^2\le 2t(\sca{\eta}{p}-c)$.)
+\end{proof}
+
+\section{Theorem 6}\label{sec:thm6}
+
+\subsection{The backward implication}
+
+Suppose $E\setminus \X\subseteq\cconv\X\cup\bigcup_{L\in\mathcal L}L^{+}$. Every
+$p\in E\setminus\X$ then lies either in $\cconv \X$ (Corollary~\ref{cor:five}) or in $L^{+}$ for
+some defective supporting hyperplane $L$ (Theorem~\ref{thm:unified}); in both cases $p$ is
+reconstructible. \qed
+
+\subsection{The forward implication: a gap and its repair}\label{sec:forward}
+
+The argument sketched in \cite{Bia} is: given a reconstructible $p\notin\conv \X$ with
+$p\in\B(a,d(a))$, $a\in\Mx$, pick $q\in m(a)$, connect $p$ and $q$ inside the ball, let
+$[\bar a,\bar b[\,\subseteq\,]p,q[$ be the part of the segment inside $\cconv \X$, observe
+$\bar a\in(\cconv\X\cap L)\setminus \X$ for any supporting $L\ni\bar a$, and finally ``pick $L$
+to be a hyperplane that separates $p$ and $\cconv\X$''.
+
+Two distinct difficulties arise when one tries to make this precise.
+
+\begin{example}[the interval may not exist]\label{ex:twopoints}
+Let $\X=\{(0,1),(0,-1)\}\subseteq\R^2$. Then $\Mx$ is the horizontal axis; take $a=(1,0)$,
+$d(a)=\sqrt2$, and $p=(2,0)\in\B(a,\sqrt2)$, $p\notin\cconv\X=\{0\}\times[-1,1]$. For either
+choice of $q\in m(a)=\{(0,\pm1)\}$ the open segment $]p,q[$ meets the vertical axis only in the
+limit $q$ itself, so $]p,q[\,\cap\,\cconv\X=\emptyset$: the interval $[\bar a,\bar b[$ of the
+proof is empty. (The theorem itself is fine here: $L=\{x_1=0\}$ is defective --- its hull section
+is the segment, its $\X$-section two points --- and $p\in L^{+}$.)
+\end{example}
+
+\begin{example}[grazing]\label{ex:grazing}
+Even when the entry point $\bar a$ exists, there need not be \emph{any} supporting hyperplane
+through $\bar a$ having $p$ strictly on its open side. If the boundary of $\cconv\X$ near
+$\bar a$ looks like the parabola $y=x^2$ near the origin and $p=(1,0)$, the unique supporting
+line at $\bar a=(0,0)$ is $\{y=0\}$, which contains $p$ rather than separating it. So
+``a hyperplane through $\bar a$ separating $p$ and $\cconv \X$'' may simply not exist, and the
+two requirements on $L$ (defect witnessed at $\bar a\in L$; $p\in L^{+}$) cannot in general be
+met by one hyperplane chosen this way.
+\end{example}
+
+The repair below produces the defect witness and the strict separation \emph{from the same
+metric-projection construction}, using the second nearest point of $a$ (which the sketch in
+\cite{Bia} never uses --- note that Example~\ref{ex:twopoints} shows one tangency point is not
+enough\,!). Recall that in a finite-dimensional space the metric projection
+$\pi:E\to\cconv \X$ onto a closed convex set is well defined (existence and uniqueness of the
+nearest point), and is characterized by
+\begin{equation}\label{eq:projchar}
+ z=\pi(b)\iff z\in\cconv\X\ \text{ and }\ \forall x\in\cconv \X:\ \sca{b-z}{x-z}\le0 .
+\end{equation}
+
+\begin{theorem}[forward implication of Theorem~\ref{thm:main}]
+Let $\X$ be closed and nonempty and let $p\in E\setminus\X$ be reconstructible with
+$p\notin\cconv \X$. Then there is a defective supporting hyperplane $L$ of $\cconv\X$ with
+$p\in L^{+}$.
+\end{theorem}
+
+\begin{proof}
+Pick $a\in\Mx$ with $p\in\B:=\B(a,d(a))$ and \emph{two distinct} points $q,q'\in m(a)$, and set
+\[
+ q'':=\tfrac12(q+q') .
+\]
+By the parallelogram identity,
+$\norm{a-q''}^2=d(a)^2-\tfrac14\norm{q-q'}^2<d(a)^2$, so $q''$ lies in the \emph{open} ball
+$\B\subseteq E\setminus \X$; in particular $q''\notin \X$, while
+$q''\in\conv\X\subseteq\cconv\X$.
+
+Both endpoints of the segment $[p,q'']$ lie in the open convex set $\B$, hence so does the whole
+segment. Since $q''\in\cconv \X$ and $p\notin\cconv\X$, and $\cconv\X$ is closed, the segment
+has a \emph{first} point of $\cconv\X$ as seen from $p$: there is
+$\bar a\in[p,q'']\cap\cconv \X$ with
+\[
+ [p,\bar a[\;\cap\;\cconv \X=\emptyset,\qquad \bar a\neq p .
+\]
+Note $\bar a\in\B$, so $\bar a\notin \X$. Let $u:=(p-\bar a)/\norm{p-\bar a}$.
+
+For $b\in[p,\bar a[$ write $z_b:=\pi(b)$ and $g_b:=\norm{b-z_b}=\dist(b,\cconv\X)>0$. Since
+$\bar a\in\cconv \X$,
+\[
+ \norm{z_b-\bar a}\le\norm{z_b-b}+\norm{b-\bar a}\le 2\norm{b-\bar a}\xrightarrow[b\to\bar a]{}0 .
+\]
+As $\bar a\notin \X$ and $\X$ is closed, we may fix $b\in[p,\bar a[$ with $z_b\notin \X$.
+
+Now define the hyperplane by the unit normal $v:=(b-z_b)/g_b$ and level $c:=\sca{v}{z_b}$, i.e.\
+$L:=\{x\mid \sca{v}{x}=c\}$. We check the three required properties.
+
+\emph{$L$ supports $\cconv \X$.} By \eqref{eq:projchar}, $\sca{v}{x-z_b}\le0$ for all
+$x\in\cconv \X$, i.e.\ $\cconv\X\subseteq\{\sca{v}{\cdot}\le c\}$; and $z_b\in\cconv\X\cap L$.
+(A fortiori $\X\subseteq\{\sca{v}{\cdot}\le c\}$.)
+
+\emph{$L$ is defective.} $z_b\in(\cconv \X\cap L)\setminus \X$ by the choice of $b$.
+
+\emph{$p\in L^{+}$.} Since $b$ lies on the segment from $\bar a$ to $p$ we have
+$b-\bar a=\norm{b-\bar a}\,u$ and $p-b=\norm{p-b}\,u$. Using $\sca{v}{\bar a}\le c$
+(as $\bar a\in\cconv\X$),
+\[
+ \sca{v}{u}=\frac{\sca{v}{b-\bar a}}{\norm{b-\bar a}}
+ =\frac{\sca{v}{b-z_b}+\sca{v}{z_b-\bar a}}{\norm{b-\bar a}}
+ \;\ge\;\frac{g_b+0}{\norm{b-\bar a}}\;>\;0 ,
+\]
+hence
+\[
+ \sca{v}{p}-c=\sca{v}{p-z_b}=\sca{v}{p-b}+\sca{v}{b-z_b}
+ =\norm{p-b}\,\sca{v}{u}+g_b\;>\;0 . \qedhere
+\]
+\end{proof}
+
+\begin{remark}
+The proof uses only the metric projection onto a closed convex set and no separation theorems;
+it is insensitive to whether $\cconv\X$ has empty interior. In Example~\ref{ex:twopoints} it
+produces $q''=(0,0)$, $\bar a=(0,0)$, $z_b=(0,0)$ and the defective vertical line, as expected.
+Combining both implications with Corollary~\ref{cor:five} and Theorem~\ref{thm:unified} yields
+Theorem~\ref{thm:main}.
+\end{remark}
+
+\section{Remarks on the formalization}\label{sec:lean}
+
+The development has been carried out in Lean~4 over \texttt{mathlib}, for an arbitrary
+finite-dimensional real inner product space; the definitions ($m$, $\Mx$, $\Cx$,
+reconstructibility) are made for general metric spaces, with the geometric results at the
+inner-product level. The structure mirrors these notes: the toolbox of \S\ref{sec:toolbox},
+then Lemma~\ref{lem:one}, Proposition~\ref{prop:two}, Theorem~\ref{thm:unified},
+Corollary~\ref{cor:five}, and the two implications of Theorem~\ref{thm:main}. As of this
+version, \emph{all of the above is machine-checked} ($\approx1100$ lines in three files;
+the main statement is \texttt{Metric.reconstructible\_iff}). The single classical input
+\eqref{eq:fremlin} ($\Cx\subseteq\overline{\Mx}$) is assumed as an explicitly marked
+placeholder, and Lean's axiom tracker confirms it is the \emph{only} unproved dependency of
+Theorem~\ref{thm:main}; formalizing Appendix~\ref{app:fremlin} to discharge it is the next
+step. The forward implication of Theorem~\ref{thm:main} (\S\ref{sec:forward}) is checked with
+no assumptions at all. We will gladly share the Lean sources; comments on the mathematics in
+these notes, and in particular on Appendix~\ref{app:fremlin}, are very welcome.
+
+\appendix
+
+\section{A Brouwer-free proof that \texorpdfstring{$\Cx\subseteq\overline{\Mx}$}{CX is contained
+in the closure of MX}}\label{app:fremlin}
+
+Throughout, $\X\subseteq E$ is closed and nonempty, $E$ finite-dimensional. We prove: \emph{the
+centre of any maximal ball lies in the closure of $\Mx$.} The strategy: if $c\in\Cx$ had a
+neighbourhood free of $\Mx$, the nearest-point map would be single-valued, hence continuous,
+near $c$; we then inflate the maximal ball by following an explicit Euler polygon that always
+moves directly away from the current nearest point, gaining distance from $\X$ at unit rate up
+to an error controlled by the (uniform) continuity of the nearest-point map; a compactness
+argument upgrades the almost-unit rate to unit rate, producing a ball that strictly contains the
+maximal ball --- a contradiction.
+
+\begin{lemma}\label{lem:footmap}
+Let $K\subseteq E\setminus \X$ be compact with $K\cap\Mx=\emptyset$. Then every $a\in K$ has a
+unique nearest point $P(a)$, and $P$ is uniformly continuous on $K$.
+\end{lemma}
+
+\begin{proof}
+$m(a)\neq\emptyset$ by closedness of $\X$ and finite dimension; single-valuedness on $K$ is the
+assumption. The graph of $m$ is closed (if $a_n\to a$, $x_n\in m(a_n)$, $x_n\to x$, then
+$x\in \X$ and $\norm{a-x}=\lim d(a_n)=d(a)$ by continuity of $d$), and $m$ is locally bounded
+($\norm{x}\le\norm a+d(a)$ for $x\in m(a)$). A single-valued, locally bounded, closed-graph map
+into a finite-dimensional space is continuous (any subsequential limit of $P(a_n)$ lies in
+$m(a)=\{P(a)\}$), and continuity on a compact set is uniform.
+\end{proof}
+
+\begin{lemma}[quadratic gain estimate]\label{lem:danskin}
+Let $a\notin \X$, $x_a\in m(a)$, $v:=(a-x_a)/d(a)$, $h>0$, and let $y\in m(a+hv)$ be arbitrary.
+Then
+\[
+ d(a+hv)^2\;\ge\;(d(a)+h)^2-\frac{h\,\norm{x_a-y}^2}{d(a)} .
+\]
+\end{lemma}
+
+\begin{proof}
+Since $y$ realizes the distance, $d(a+hv)^2=\norm{a+hv-y}^2=\norm{a-y}^2+2h\sca{v}{a-y}+h^2$.
+Now $\norm{a-y}\ge d(a)$, and by the polarization identity
+\[
+ \sca{a-x_a}{a-y}=\tfrac12\bigl(\norm{a-x_a}^2+\norm{a-y}^2-\norm{x_a-y}^2\bigr)
+ \ \ge\ d(a)^2-\tfrac12\norm{x_a-y}^2,
+\]
+so $\sca{v}{a-y}\ge d(a)-\norm{x_a-y}^2/(2d(a))$. Substituting gives the claim.
+\end{proof}
+
+\begin{theorem}\label{thm:fremlinapp}
+$\Cx\subseteq\overline{\Mx}$.
+\end{theorem}
+
+\begin{proof}
+Let $c\in\Cx$, so $R:=d(c)>0$ and $\B(c,R)$ is maximal. Suppose, for contradiction, that
+$\overline\B(c,\varepsilon)\cap\Mx=\emptyset$ for some $\varepsilon\in(0,R)$. Write
+$\ell:=\varepsilon/2$ and $m_0:=R-\ell>0$. By Lemma~\ref{lem:footmap} the nearest-point map $P$
+is single-valued and uniformly continuous on $\overline\B(c,\varepsilon)$; let $\omega$ be a
+modulus, i.e.\ $\norm{P(a)-P(a')}\le\omega(h)$ whenever $a,a'\in\overline\B(c,\varepsilon)$,
+$\norm{a-a'}\le h$, with $\omega(h)\to0$ as $h\to0$.
+
+\emph{The polygon.} Fix $N\in\mathbb N$, $h:=\ell/N$, and define $a_0:=c$ and
+\[
+ a_{k+1}:=a_k+h\,v_k,\qquad v_k:=\frac{a_k-P(a_k)}{d(a_k)}\qquad(k=0,\dots,N-1).
+\]
+By induction $\norm{a_k-c}\le kh\le\ell$, so all nodes stay in $\overline\B(c,\ell)$ and
+$d(a_k)\ge R-\ell=m_0$. By Lemma~\ref{lem:danskin} applied at $a_k$ (with
+$y=P(a_{k+1})$, $\norm{P(a_k)-P(a_{k+1})}\le\omega(h)$),
+\[
+ d(a_{k+1})^2\ \ge\ \bigl(d(a_k)+h\bigr)^2-\frac{h\,\omega(h)^2}{m_0} .
+\]
+Using $\sqrt{A^2-B}\ge A-B/A$ (valid for $0\le B\le A^2$) with $A=d(a_k)+h\ge m_0$:
+\[
+ d(a_{k+1})\ \ge\ d(a_k)+h-\frac{h\,\omega(h)^2}{m_0\,(d(a_k)+h)}
+ \ \ge\ d(a_k)+h\Bigl(1-\frac{\omega(h)^2}{m_0^2}\Bigr),
+\]
+provided $h$ is small enough that $\omega(h)^2\le m_0^2$. Summing over the $N$ steps,
+\[
+ d(a_N)\ \ge\ R+\ell\,\bigl(1-\delta(h)\bigr),\qquad \delta(h):=\frac{\omega(h)^2}{m_0^2}
+ \xrightarrow[h\to0]{}0 .
+\]
+
+\emph{The limit ball.} The endpoints $a_N=a_N^{(h)}$ lie in the compact set
+$\overline\B(c,\ell)$; choosing $h_j\to0$ and passing to a convergent subsequence we obtain
+$w\in\overline\B(c,\ell)$ with (by continuity of $d$)
+\[
+ \norm{w-c}\le\ell,\qquad d(w)\ \ge\ R+\ell .
+\]
+Then $\B(c,R)\subseteq\B(w,d(w))$: for $z\in\B(c,R)$,
+$\norm{z-w}\le\norm{z-c}+\ell<R+\ell\le d(w)$. Since $\B(w,d(w))\subseteq E\setminus\X$,
+maximality of $\B(c,R)$ forces $(w,d(w))=(c,R)$, contradicting $d(w)\ge R+\ell>R$.
+\end{proof}
+
+\begin{remark}
+The proof uses neither Brouwer's fixed point theorem nor existence theory for ODEs (Peano), the
+two standard tools here: the flow ``always move away from your nearest point'' is replaced by
+its Euler polygon, whose per-step loss is controlled by Lemma~\ref{lem:danskin}, and the
+inexact gain rate $1-\delta(h)$ is repaired in the limit by compactness. Together with
+$\Mx\subseteq\Cx$ (Lemma~\ref{lem:maxballs}(c)) this gives \eqref{eq:fremlin}, and, as noted in
+Remark~\ref{rem:motzkin}, Motzkin's theorem on Chebyshev sets follows as a corollary.
+\end{remark}
+
+\begin{thebibliography}{9}
+
+\bibitem{Bia} A.~Bia\l{}o\.zyt, \emph{Sets reconstructible with medial axis}, preprint
+(corrected version).
+
+\bibitem{Fre} D.~Fremlin, \emph{Skeletons and central sets}, Proc.\ London Math.\ Soc.\
+\textbf{74} (1997), no.~3, 701--720.
+
+\bibitem{mathlib} The mathlib Community, \emph{The Lean mathematical library},
+\url{https://github.com/leanprover-community/mathlib4}.
+
+\end{thebibliography}
+
+\end{document}
