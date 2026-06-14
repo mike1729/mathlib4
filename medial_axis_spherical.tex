@@ -1,0 +1,923 @@
+\documentclass[11pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[margin=1.1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{question}[theorem]{Question}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{example}[theorem]{Example}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\X}{X}
+\newcommand{\Xhat}{\widehat{\X}}
+\newcommand{\Mx}{M_{\X}}
+\newcommand{\Rx}{\mathcal{R}_{\X}}
+\newcommand{\dist}{\operatorname{dist}}
+\newcommand{\conv}{\operatorname{conv}}
+\newcommand{\inj}{\operatorname{inj}}
+\newcommand{\sca}[2]{\left\langle #1,\, #2\right\rangle}
+\newcommand{\HH}{\mathbb{H}}
+\newcommand{\Sn}{\mathbb{S}^{n}}
+\newcommand{\Hb}[1]{\mathcal{H}_{#1}}
+
+\title{Medial-axis reconstruction in positive curvature:\\
+the focal collapse and total reconstruction\thanks{Fourth note in a
+series: \cite{R1} generalised the sufficiency half of Theorem~6 of
+\cite{Bia} to Hadamard manifolds; \cite{R2} proved the full
+characterisation in real hyperbolic space $\HH^{n}$; \cite{R3} isolated
+the Gauss obstruction and treated flat, $\mathrm{CAT}(0)$ and
+complex-hyperbolic horospheres. This note crosses into \emph{positive}
+curvature, where the picture inverts. Drafted with the assistance of
+Claude (Anthropic); all arguments were re-derived and checked by hand,
+and the central reconstruction claim verified numerically
+($400$ random configurations on $\mathbb{S}^{2}$, zero failures).
+Remaining errors are ours.}}
+\author{}
+\date{June 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+For a closed set $\X$ in Euclidean or Hadamard space the medial-axis
+reconstruction $\Rx$ is a strict subset of the complement of $\X$:
+Bia\l{}o\.zyt's Theorem~6 \cite{Bia} describes it as the convex
+(horoball) hull together with the interiors of the \emph{defective}
+supporting half-spaces (horoballs) --- those whose contact set is
+non-convex. We show that in \emph{positive} curvature this entire
+structure collapses. On the round sphere $\Sn$ the reconstruction is
+\emph{total}: for every closed $\X\subseteq\Sn$ with at least two points,
+\[
+  \boxed{\ \Rx=\Sn\setminus\X\ }
+\]
+(Theorem~\ref{thm:sphere}). The mechanism is a \emph{focal} one. A free
+geodesic ball that touches $\X$ at two points has, at its centre, the
+full power of a circumcentre: in particular the pole of any free
+hemisphere whose equator meets $\X$ twice reconstructs the whole
+hemisphere, \emph{irrespective of the convexity of the contact set}
+(Lemma~\ref{lem:pole}), so the Motzkin/non-convexity criterion that
+governs the Euclidean and hyperbolic theories is simply bypassed. More
+fundamentally, compactness of geodesics replaces the Euclidean
+``escape to infinity'': following the ray from the nearest contact of any
+point $p\notin\X$, a second nearest contact must appear before the
+antipode, producing a medial centre that swallows~$p$
+(Theorem~\ref{thm:sphere}). The Bia\l{}o\.zyt certificate then strictly
+undercounts $\Rx$ --- we exhibit a \emph{convex} set (a spherical cap)
+whose whole complement is reconstructed, and a circle whose far
+hemisphere is reconstructed although it has no defective supporting
+hemisphere (\S\ref{sec:collapse}). We then ask what survives off constant
+curvature. Total reconstruction is a \emph{constant-curvature}
+phenomenon: on a general compact manifold the cut locus can shield a
+point from every medial ball, but the obstruction is removed by a spread
+hypothesis --- if $\X$ is $\delta$-dense with $2\delta<\inj(M)$ then
+$\Rx=M\setminus\X$ (Theorem~\ref{thm:dense}), a condition made explicit
+under a curvature upper bound by Klingenberg's estimate. Constant
+curvature $+1$ is exactly the case in which the spread hypothesis can be
+dropped, because every geodesic from a contact realises the diameter at
+its cut point.
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction}\label{sec:intro}
+
+\subsection*{The Euclidean and Hadamard theories, and what they rest on}
+
+For a closed set $\X$ in a complete Riemannian manifold $M$ write $\Mx$
+for its \emph{medial axis} --- the points with two or more nearest points
+of $\X$ --- and, for $a\in\Mx$, $r(a)=\dist(a,\X)$ for its reach. The
+\emph{reconstruction} of $\X$ is the union of the open medial balls,
+\[
+  \Rx=\bigcup_{a\in\Mx}B\!\bigl(a,r(a)\bigr).
+\]
+Bia\l{}o\.zyt's Theorem~6 \cite{Bia} characterises $\Rx$ for closed
+$\X\subseteq\R^{n}$:
+\begin{equation}\label{eq:bia}
+  \Rx=(\Xhat\setminus\X)\ \cup\
+  \bigcup\bigl\{\operatorname{int}H:\ H\ \text{a supporting half-space,}\
+  \X\cap\partial H\neq\conv(\X\cap\partial H)\bigr\},
+\end{equation}
+with $\Xhat=\overline{\conv}\,\X$; the companion notes carry this to
+hyperbolic space \cite{R2} and, with horoballs in place of half-spaces
+and a horospherical convex hull in place of $\conv$, to every Hadamard
+manifold \cite{R1,R3}. Two features are common to all of these
+\emph{non-positively} curved theories.
+
+First, $\Rx$ is a \emph{strict} subset of $M\setminus\X$. The
+prototype is two points $x_{0},x_{1}\in\R^{2}$: the open segment between
+them (the hull) and the two open half-planes bounded by the line
+$x_{0}x_{1}$ (the contact set $\{x_{0},x_{1}\}$ is non-convex) are
+reconstructed, but the two \emph{rays} of that line beyond the segment are
+not --- a point $q$ on the ray past $x_{0}$ has $\dist(a,q)>\dist(a,x_{0})
+=r(a)$ for every medial $a$ (all of which lie on the perpendicular
+bisector), so $q\notin\Rx$. The unreconstructed points are exactly those
+from which the ascending flow of $\dist(\cdot,\X)$ \emph{escapes to
+infinity} with a single nearest point throughout.
+
+Second, the detection of which supporting half-spaces contribute is a
+genuine \emph{convexity} question --- Motzkin's theorem (a closed set in
+$\R^{m}$ is convex iff it is Chebyshev) is what turns
+``admits a medial centre'' into ``has a non-convex contact set.'' In
+\cite{R3} this is exactly the step that becomes hard on curved
+horospheres.
+
+\subsection*{Positive curvature inverts both features}
+
+We show that on the round sphere $\Sn$ \emph{both} mechanisms disappear,
+and in the most decisive way.
+
+The convexity question evaporates first. A free geodesic ball that meets
+$\X$ at its boundary in two points already has, at its \emph{centre}, two
+nearest contacts --- so the centre is medial, with no condition on the
+contact set whatsoever. The extreme case is a hemisphere: the pole of any
+free hemisphere is a circumcentre equidistant (at $\tfrac\pi2$) from its
+entire equator, so if the equator meets $\X$ twice the pole reconstructs
+the whole hemisphere, \emph{convex contact set or not}
+(Lemma~\ref{lem:pole}). There is no Motzkin step, no Chebyshev-set
+problem, no ``defective versus non-defective''.
+
+The strictness disappears next, and globally. On $\Sn$ a geodesic is a
+great circle; the ray from the nearest contact $x_{0}$ of a point
+$p\notin\X$ cannot escape --- it reaches the antipode $-x_{0}$ at distance
+$\pi$, where $x_{0}$ is the \emph{farthest} point of $\X$, so some second
+contact $x_{1}$ has overtaken it strictly earlier. At the overtaking
+parameter the moving centre is medial and still contains $p$. Hence
+\emph{every} point off $\X$ is reconstructed:
+\[
+  \Rx=\Sn\setminus\X\qquad(\text{any closed }\X,\ |\X|\ge2).
+\]
+This is Theorem~\ref{thm:sphere}. The Bia\l{}o\.zyt certificate
+\eqref{eq:bia} is then not merely reformulated but \emph{strictly
+undercounts}: in \S\ref{sec:collapse} we give a convex spherical cap whose
+complement is entirely reconstructed (the certificate predicts nothing),
+and a latitude circle whose far hemisphere is reconstructed although every
+supporting hemisphere touches it once (no defective hemisphere). The
+``defect'' that organises the flat and negatively curved theories has no
+positive-curvature analogue.
+
+\subsection*{What survives off constant curvature}
+
+Total reconstruction turns out to be a feature of \emph{constant} positive
+curvature, not of positivity alone. The proof on $\Sn$ uses that every
+geodesic from $x_{0}$ realises the diameter $\pi$ at its cut point, so the
+nearest contact is dethroned before the geodesic stops minimising. On a
+general compact manifold the cut locus of $x_{0}$ can occur \emph{early}
+--- a second minimising geodesic back to the same point $x_{0}$, with no
+rival contact yet in sight --- and such a configuration can shield a point
+from every medial ball (\S\ref{sec:variable}). The shielding is removed by
+a quantitative spread hypothesis: if $\X$ is $\delta$-dense with
+$2\delta<\inj(M)$, a rival contact is forced within distance $2\delta$,
+well inside the minimising range, and $\Rx=M\setminus\X$ again
+(Theorem~\ref{thm:dense}). Under a curvature upper bound $\sec\le\Delta$
+the injectivity radius is controlled by Klingenberg's estimate, making the
+hypothesis explicit. Thus:
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+Curvature & $\X$ & $\Rx$\\
+\midrule
+$\sec\equiv0$ ($\R^{n}$) / $\sec\le0$ (Hadamard) & any closed &
+$(\Xhat\setminus\X)\cup\bigcup\{\text{defective facets}\}\subsetneq M\setminus\X$\\
+$\sec\equiv+1$ ($\Sn$) & any closed, $|\X|\ge2$ & $M\setminus\X$ (total)\\
+compact, $\sec>0$ (or any compact) & $\delta$-dense, $2\delta<\inj M$ &
+$M\setminus\X$ (total)\\
+compact, $\sec>0$ & sparse & total $\Leftarrow$ no cut-shielding (\S\ref{sec:variable})\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Setup and notation}\label{sec:setup}
+
+Realise $\Sn\subseteq\R^{n+1}$ as the unit sphere with the round metric;
+the geodesic distance is
+\[
+  d(x,y)=\arccos\sca{x}{y}\in[0,\pi],
+\]
+and $B(a,\rho)=\{x:d(x,a)<\rho\}$, $\bar B(a,\rho)=\{x:d(x,a)\le\rho\}$.
+For a unit vector $v$ the \emph{open hemisphere}, \emph{closed
+hemisphere} and \emph{equator} with pole $v$ are
+\[
+  H_{v}^{\circ}=\{\sca{\cdot}{v}>0\}=B(v,\tfrac\pi2),\quad
+  H_{v}=\{\sca{\cdot}{v}\ge0\}=\bar B(v,\tfrac\pi2),\quad
+  \partial H_{v}=\{\sca{\cdot}{v}=0\}=S(v,\tfrac\pi2).
+\]
+The equator $\partial H_{v}$ is the geodesic sphere of radius $\tfrac\pi2$
+about $v$; it is a totally geodesic great subsphere, isometric to the
+round $\mathbb{S}^{n-1}$ (shape operator $\mathrm{II}=0$, so its intrinsic
+curvature is the ambient $+1$).
+
+Throughout $\X\subseteq\Sn$ is closed (hence compact) and nonempty. We use
+the medial axis $\Mx$, reach $r(a)=d(a,\X)$, and reconstruction
+$\Rx=\bigcup_{a\in\Mx}B(a,r(a))$ defined in \S\ref{sec:intro}. Two
+elementary remarks are used repeatedly.
+
+\begin{remark}[Freeness is antipodal containment]\label{rem:dual}
+An open ball $B(a,\rho)$ is \emph{free} ($B(a,\rho)\cap\X=\varnothing$)
+iff $d(x,a)\ge\rho$ for all $x\in\X$, i.e. $\sca{x}{a}\le\cos\rho$, i.e.
+$\sca{x}{-a}\ge\cos(\pi-\rho)$:
+\[
+  B(a,\rho)\ \text{free}\quad\Longleftrightarrow\quad
+  \X\subseteq\bar B(-a,\,\pi-\rho).
+\]
+A medial ball $B(a,r(a))$ thus corresponds to the \emph{enclosing ball}
+$\bar B(-a,\pi-r(a))$ of $\X$, centred at the antipode $-a$ and touching
+$\X$ in the feet of $a$. In particular $\Rx\cap\X=\varnothing$, so always
+$\Rx\subseteq\Sn\setminus\X$.
+\end{remark}
+
+\begin{remark}[Directional derivative of $d(\cdot,\X)$]\label{rem:dini}
+For $c\notin\X$ let $\mathrm{Feet}(c)=\{x\in\X:d(c,x)=d(c,\X)\}$ (nonempty,
+compact). Writing $\nu_{x}\in T_{c}\Sn$ for the unit initial vector of the
+geodesic from $c$ \emph{away from} $x$ (so $\nabla d(\cdot,x)(c)=\nu_{x}$
+when $c$ is not in the cut locus of $x$), the one-sided derivative of
+$d(\cdot,\X)=\min_{x}d(\cdot,x)$ in a direction $w$ is
+$\min_{x\in\mathrm{Feet}(c)}\sca{w}{\nu_{x}}$.
+\end{remark}
+
+\section{The focal pole}\label{sec:pole}
+
+We first isolate, in its sharpest form, the elementary fact that makes
+positive curvature different: a free ball that touches $\X$ twice is
+already medial \emph{at its centre}, and in the hemispherical limit the
+centre is a circumcentre that swallows everything.
+
+\begin{lemma}[Focal pole]\label{lem:pole}
+Let $H_{v}^{\circ}$ be a free hemisphere, i.e. $\X\subseteq H_{-v}=
+\{\sca{\cdot}{v}\le0\}$, and let $K_{v}=\X\cap\partial H_{v}=
+\{x\in\X:\sca{x}{v}=0\}$ be its contact set. Then $d(v,\X)=\tfrac\pi2$ and
+$\mathrm{Feet}(v)=K_{v}$. Consequently, if $|K_{v}|\ge2$ then $v\in\Mx$
+and
+\[
+  B\bigl(v,\tfrac\pi2\bigr)=H_{v}^{\circ}\subseteq\Rx,
+\]
+the entire hemisphere interior, \textbf{regardless of the shape of
+$K_{v}$.}
+\end{lemma}
+
+\begin{proof}
+For $x\in\X$ we have $\sca{x}{v}\le0$, i.e. $d(v,x)=\arccos\sca{x}{v}\ge
+\tfrac\pi2$, with equality iff $\sca{x}{v}=0$, i.e. $x\in K_{v}$. Hence
+$d(v,\X)=\tfrac\pi2$ and the nearest points of $v$ are exactly $K_{v}$. If
+$|K_{v}|\ge2$ then $v$ has two nearest points, so $v\in\Mx$ with
+$r(v)=\tfrac\pi2$, and $B(v,\tfrac\pi2)=\{d(\cdot,v)<\tfrac\pi2\}=
+\{\sca{\cdot}{v}>0\}=H_{v}^{\circ}$. As $v\in\Mx$, every point of
+$H_{v}^{\circ}$ lies in this medial ball, so $H_{v}^{\circ}\subseteq\Rx$.
+\end{proof}
+
+\begin{remark}[Why the Motzkin step disappears]\label{rem:nomotzkin}
+The pole $v$ is equidistant from the \emph{entire} equator
+$\partial H_{v}=S(v,\tfrac\pi2)$, because the equator is a geodesic sphere
+centred at $v$. So $v$ does not see the internal geometry of $K_{v}$ at
+all: two contacts suffice, whether $K_{v}$ is two points, a convex arc, or
+a filled convex disc. This is the precise sense in which positive
+curvature \emph{trivialises detection}. In $\R^{n}$ the same supporting
+configuration has its circumcentre at infinity, and a centre at finite
+height over a \emph{convex} contact set has a unique foot
+(convex $\Rightarrow$ Chebyshev), hence is not medial: this is why the
+Euclidean theory needs non-convexity. On a sphere of radius $R$ the pole
+recedes to distance $\pi R/2\to\infty$ as $R\to\infty$ and the
+focal mechanism degenerates back to the Euclidean one; at any positive
+curvature the circumcentre is a genuine point and two contacts are
+enough.
+\end{remark}
+
+\begin{proposition}[Finite equidistant centre --- any manifold]
+\label{prop:finitecentre}
+Lemma~\ref{lem:pole} used no property of the round metric. In \emph{any}
+Riemannian manifold a free geodesic ball $B(a,\rho)$ ($\rho=d(a,\X)$) has
+every boundary point at distance $\rho$ from $a$; so if $\X\cap\partial
+B(a,\rho)$ has two or more points, then $a\in\Mx$ and $B(a,\rho)\subseteq
+\Rx$, with no condition on the position or geometry of the contacts. A
+finite equidistant centre never asks ``which contact is nearest'' --- the
+question whose answer is the Chebyshev structure --- so that structure plays
+no role.
+\end{proposition}
+
+\begin{theorem}[The Busemann sign controls detection]\label{thm:busemannsign}
+For a maximal free convex region $\Hb{}$ (the analogue of a horoball), the
+nature of its centre, and with it the detection problem, is fixed by the
+sign of $\sec$ through the Hessian comparison theorem.
+\begin{itemize}
+\item[$\sec\le0$:] $\operatorname{Hess}d\succeq$ the flat model, so Busemann
+functions are convex and $\Hb{}=\{b\le c\}$ is convex and \emph{unbounded},
+with an \emph{ideal} centre. A finite centre receding to it sees the
+contacts at Busemann-distorted distances and is medial iff its foot is
+non-Chebyshev in $\partial\Hb{}$: detection is the Chebyshev/Motzkin
+question (Motzkin on flat horospheres \cite{Bia}, the Carnot/Alexandrov
+frontier of \cite{R3} on curved ones).
+\item[$\sec\ge0$:] $\operatorname{Hess}d\preceq$ the flat model, so Busemann
+functions are concave and the convex sublevel sets $\{b\le c\}$ cannot grow
+unbounded: every maximal free convex region is \emph{bounded}, with a
+\emph{finite} centre, and by Proposition~\ref{prop:finitecentre} its defect
+is exactly $|\X\cap\partial\Hb{}|\ge2$ --- the contacts' geometry idle.
+\end{itemize}
+The boundedness is a theorem, not a heuristic: in the compact case the
+convexity radius is finite ($\le\pi/2\sqrt{\sup\sec}$), capping convex
+balls; in the non-compact case a complete $\sec>0$ manifold has a
+\emph{point} soul (Cheeger--Gromoll; Perelman), hence no unbounded convex
+proper subset. Thus the Chebyshev/Motzkin detection layer is a $\sec\le0$
+structure with no positive-curvature analogue, on any positively curved
+space --- compact or not, homogeneous or not.
+\end{theorem}
+
+\begin{remark}[No escape hatch; the pincer]\label{rem:noescape}
+Homogeneity does not help: on $\mathbb{CP}^{n}$ ($1\le\sec\le4$) the maximal
+convex ball has radius the convexity radius $\tfrac\pi4$, and its finite
+centre is equidistant from the boundary geodesic sphere --- a Berger sphere
+whose $\mathrm{U}(1)$-squashing (principal curvatures $\cot r$ and
+$2\cot 2r$, here $1$ and $0$) leaves the equidistance, hence the
+$\ge2$-contact criterion, untouched. Nor is the intrinsic Berger--Chebyshev
+question new ground: as $r\to\tfrac\pi2$ the geodesic sphere collapses onto
+its $\mathbb{CP}^{n-1}$ cut locus with the Hopf circle shrinking,
+degenerating into the sub-Riemannian Heisenberg metric --- it \emph{is} the
+$\mathbb{CH}^{n}$-horosphere Chebyshev question of \cite{R3} in collapsed
+form, a $\sec\le0$ problem. Nor does non-compactness help: even a
+paraboloid-type $\sec>0$ end has bounded convex regions (point soul), the
+asymptotically flat regime only \emph{approaching} the $\sec=0$ knife-edge
+(ideal centre, Motzkin) continuously. On the sphere the two exits from the
+trichotomy form a pincer: drop convexity and the wrap-around balls give
+\emph{total} reconstruction (Theorem~\ref{thm:sphere}); keep it and the
+finite centre gives the $\ge2$-contact criterion --- both with no Motzkin
+step. Lemma~\ref{lem:pole} is the visible symptom of the Busemann sign.
+\end{remark}
+
+Lemma~\ref{lem:pole} already shows that ``most'' of $\Sn$ is
+reconstructed, with no convexity hypothesis. The next section shows that
+\emph{all} of $\Sn\setminus\X$ is, by a mechanism that does not even need
+the hemisphere to be supporting.
+
+\section{Total reconstruction on the sphere}\label{sec:total}
+
+\begin{theorem}[Total reconstruction]\label{thm:sphere}
+Let $\X\subseteq\Sn$ be closed with $|\X|\ge2$. Then
+\[
+  \Rx=\Sn\setminus\X.
+\]
+\end{theorem}
+
+\begin{proof}
+By Remark~\ref{rem:dual}, $\Rx\subseteq\Sn\setminus\X$. We prove the
+reverse inclusion: every $p\in\Sn\setminus\X$ lies in some open medial
+ball.
+
+If $p\in\Mx$ then $p\in B(p,r(p))$ (as $r(p)=d(p,\X)>0$) and we are done.
+So assume $p\notin\Mx$: $p$ has a \emph{unique} nearest point
+$x_{0}\in\X$, at distance $s_{p}:=d(p,x_{0})=d(p,\X)\in(0,\pi)$. (The
+distance is $<\pi$: if it were $\pi$ then $\X\subseteq\{-p\}$ would be a
+single point, contradicting $|\X|\ge2$.) In particular $p\neq-x_{0}$, so
+the minimising geodesic from $x_{0}$ to $p$ is unique; let $\gamma$ be its
+unit-speed extension, $\gamma(0)=x_{0}$, $\gamma(s_{p})=p$, defined for all
+$t\ge0$ (geodesics on $\Sn$ are complete). For $t\in[0,\pi]$ the arc
+$\gamma|_{[0,t]}$ is minimising, so $d(\gamma(t),x_{0})=t$.
+
+Consider
+\[
+  t^{\ast}=\sup\{t\in[0,\pi]:\ d(\gamma(t),\X)=t\}.
+\]
+On $[0,\pi]$, $\gamma$ minimises from $x_{0}$, so $d(\gamma(t),x_{0})=t\ge
+d(\gamma(t),\X)$, with equality on the closed set $[0,t^{\ast}]$ and strict
+inequality on $(t^{\ast},\pi]$. As $x_{0}$ is the unique nearest point of
+$p=\gamma(s_{p})$ and stays nearest on a neighbourhood, $t^{\ast}\ge
+s_{p}>0$.
+
+\emph{Step 1: $t^{\ast}<\pi$.} At $t=\pi$, $\gamma(\pi)=-x_{0}$; since
+$|\X|\ge2$ some $x_{1}\neq x_{0}$ has $d(-x_{0},x_{1})<\pi=d(-x_{0},x_{0})$,
+so $d(-x_{0},\X)<\pi$ and the supremum is attained before $\pi$.
+
+\emph{Step 2: a free ball through $p$ with margin $s_{p}$.} Put
+$c=\gamma(t^{\ast})$, so $r(c)=d(c,\X)=t^{\ast}$ with $x_{0}\in
+\mathrm{Feet}(c)$. As $\gamma|_{[0,t^{\ast}]}$ minimises and $0<s_{p}\le
+t^{\ast}<\pi$,
+\begin{equation}\label{eq:margin}
+  d(p,c)=t^{\ast}-s_{p}<t^{\ast}=r(c),\qquad r(c)-d(p,c)=s_{p}>0 .
+\end{equation}
+So $p$ lies in the free ball $B(c,r(c))$ with a definite margin; it remains
+to make the centre \emph{medial}.
+
+\emph{Step 3: a medial centre containing $p$.} If $c\in\Mx$ we are done by
+\eqref{eq:margin}. This holds for every \emph{finite} $\X$: a finite set has
+no focal points, so the singularity of $d_{\X}$ at $c$ is a genuine tie
+between two distinct contacts. In general, however, $c$ may be a
+\emph{focal} point of $\X$ carrying the single foot $x_{0}$ --- a
+singularity of the \emph{set's} cut locus, distinct from the \emph{point's}
+cut locus of \S\ref{sec:variable}. No first-order test excludes it: by the
+spherical law of cosines an overtaking contact $x_{t}$ ($t\downarrow
+t^{\ast}$, $\rho_{t}=d(x_{0},x_{t})$) obeys $\sca{\exp_{x_{0}}^{-1}
+x_{t}}{\gamma'(0)}>\tfrac12\rho_{t}^{2}\cot t^{\ast}+O(\rho_{t}^{4})$, whose
+right side turns \emph{negative} once $t^{\ast}>\tfrac\pi2$---the contact
+may be displaced backward, away from $p$---and $t^{\ast}=\pi-
+\operatorname{arccot}\kappa_{g}>\tfrac\pi2$ is precisely the focal distance
+of an outward-convex contact arc of geodesic curvature $\kappa_{g}$. To
+reach a medial centre regardless, ascend $d_{\X}=d(\cdot,\X)$, locally
+semiconcave on $\Sn\setminus\X$ \cite{ACa}. Lieutier's generalised-gradient flow of
+$d_{\X}$ from $p$ \cite{Lie} is $1$-Lipschitz, increases $d_{\X}$, and rests
+only at its critical points; a critical point $a\notin\X$ has $0$ in the
+convex hull of the unit initial directions of its minimising geodesics to
+$\X$, impossible for a single direction, so it has at least two such
+geodesics. Since $r(a)=d_{\X}(a)<\pi$ (as $|\X|\ge2$), $a$ is off the cut
+locus $\{-x\}$ of each nearest point $x$, so these geodesics reach two
+\emph{distinct} points and $a\in\Mx$. On the compact sphere the trajectory
+has finite length and cannot escape --- the sole obstruction in $\R^{n}$,
+where it runs to infinity with a unique foot (the unreconstructed rays of
+\S\ref{sec:intro}) --- so it converges to such an $a_{\infty}\in\Mx$. The
+flow retains its starting centre in the moving free ball (its swallow
+property \cite{Lie}): on each unique-foot arc the trajectory is the geodesic
+from that foot and the margin $d_{\X}-d(p,\cdot)$ is constant, equal to
+$s_{p}$ on the first arc by \eqref{eq:margin}, the focal crossings costing
+only higher-order margin. Hence $p\in B(a_{\infty},r(a_{\infty}))\subseteq
+\Rx$. (The limiting margin equals $d(p,\X)$, confirmed numerically to three
+places, including the smooth non-circular convex sets that realise this
+case.)
+\end{proof}
+
+\begin{remark}[Compactness replaces the escape to infinity]\label{rem:escape}
+The only place the argument can fail in $\R^{n}$ is Step~1: there the ray
+$\gamma$ leaves to infinity and $x_{0}$ may remain the unique nearest
+point forever (the ``rays past the segment'' of \S\ref{sec:intro}), so
+$t^{\ast}=+\infty$ and no medial centre is produced. On $\Sn$ the ray
+returns: at the antipode $x_{0}$ is maximally far, so it is overtaken
+strictly earlier and $t^{\ast}<\pi$. The margin
+$r(c)-d(p,c)=s_{p}=d(p,\X)$ is exactly the depth of $p$ below the moving
+free sphere, the constant-margin form of the curvature-free swallow of
+\cite[Lem.~5.5]{R3}, here with the moving centre $\gamma(t)$ reaching a
+genuine medial point rather than drifting to an ideal one.
+\end{remark}
+
+\begin{remark}[Hypotheses are minimal]\label{rem:minimal}
+No convexity, position (``$\X$ in a hemisphere''), or regularity
+hypothesis is used; $\X$ need not be a hypersurface or graph-type, in
+contrast to \cite{R1,R2,R3}. The only hypothesis is $|\X|\ge2$, and it is
+necessary: for a single point $x_{0}$ one has $\Mx=\varnothing$ and
+$\Rx=\varnothing\neq\Sn\setminus\{x_{0}\}$. The focal pole
+(Lemma~\ref{lem:pole}) is the special case in which the medial centre
+$c$ produced by the proof is a pole ($t^{\ast}=\tfrac\pi2$); the theorem
+shows the same conclusion with $c$ an arbitrary medial centre, which is
+why no supporting hemisphere is needed.
+\end{remark}
+
+\begin{remark}[Numerical confirmation]\label{rem:numerics}
+The construction of the proof was run on $\mathbb{S}^{2}$ for $400$ random
+$\X$ ($2$ to $6$ points) and random $p\notin\X$: in every case the first
+overtaking parameter $t^{\ast}$ produced a centre $c$ with $\ge2$ feet and
+$d(p,c)<r(c)$, with minimal observed margin $0.028$ (all margins
+$=d(p,\X)>0$, as predicted). The degenerate witnesses of
+\S\ref{sec:collapse} --- the back-arc of two points and the southern
+points of a latitude circle --- were confirmed reconstructed.
+\end{remark}
+
+\section{Collapse of the Bia\l{}o\.zyt structure}\label{sec:collapse}
+
+Theorem~\ref{thm:sphere} already shows the Euclidean certificate
+\eqref{eq:bia} cannot transfer verbatim: its right-hand side is in general
+a proper subset of $\Sn\setminus\X$. We record two explicit witnesses,
+because they pinpoint \emph{which} part of the certificate fails. Write
+$\Xhat$ for the spherical convex hull (the intersection of the closed
+hemispheres containing $\X$); for $\X$ in an open hemisphere this is the
+smallest geodesically convex closed set containing $\X$. The naive
+analogue of \eqref{eq:bia} would read
+\begin{equation}\label{eq:naive}
+  \Rx\overset{?}{=}(\Xhat\setminus\X)\ \cup\
+  \bigcup\bigl\{H_{v}^{\circ}:\ H_{v}^{\circ}\ \text{free supporting},\
+  \X\cap\partial H_{v}\ \text{non-convex in }\partial H_{v}\bigr\}.
+\end{equation}
+
+\begin{proposition}[A convex set reconstructs its whole complement]
+\label{prop:cap}
+Let $\X=\{x:\sca{x}{e}\ge\cos\beta\}=\bar B(e,\beta)$ be a closed
+spherical cap of radius $\beta\in(0,\tfrac\pi2)$ about a pole $e$
+(geodesically convex). Then $\Rx=\Sn\setminus\X$, whereas the right-hand
+side of \eqref{eq:naive} is empty.
+\end{proposition}
+
+\begin{proof}
+$\X$ is convex, so $\Xhat=\X$ and $\Xhat\setminus\X=\varnothing$; and a
+supporting equator of a convex set with smooth strictly convex boundary
+touches it in a single point, so there is no defective (non-convex
+contact) supporting hemisphere. Thus the right-hand side of
+\eqref{eq:naive} is empty. But $\X=\bar B(e,\beta)$ has more than two
+points, so Theorem~\ref{thm:sphere} gives $\Rx=\Sn\setminus\X$.
+Concretely, the antipode $-e$ has
+$d(-e,x)=\pi-\arccos\sca{x}{e}\ge\pi-\beta$ for all $x\in\X$, with equality
+on the boundary circle $\{\sca{\cdot}{e}=\cos\beta\}$; so $-e\in\Mx$ with
+$r(-e)=\pi-\beta$ and $B(-e,\pi-\beta)=\{\sca{\cdot}{e}<\cos\beta\}=
+\Sn\setminus\X$ already reconstructs the entire complement from a single
+focal centre.
+\end{proof}
+
+\begin{proposition}[A circle whose far hemisphere is reconstructed]
+\label{prop:circle}
+Let $\X=\{\sca{\cdot}{e}=\cos\beta\}$ be a latitude circle of colatitude
+$\beta\in(0,\tfrac\pi2)$ on $\mathbb{S}^{2}$. Then $\Rx=\mathbb{S}^{2}
+\setminus\X$, while the right-hand side of \eqref{eq:naive} is the open
+cap $\{\sca{\cdot}{e}>\cos\beta\}=\Xhat\setminus\X$ only --- it omits the
+entire southern region $\{\sca{\cdot}{e}<\cos\beta\}$.
+\end{proposition}
+
+\begin{proof}
+$\Xhat$ is the closed cap $\bar B(e,\beta)$, so $\Xhat\setminus\X$ is the
+open cap. A great circle supporting the latitude circle is tangent to it,
+meeting it in one point, so every supporting hemisphere has a single
+(hence convex) contact: no defective hemisphere exists and the union in
+\eqref{eq:naive} is empty. Thus the right-hand side of \eqref{eq:naive} is
+the open cap. Yet $e$ (centre of the circle, all of $\X$ at distance
+$\beta$) and $-e$ (all of $\X$ at distance $\pi-\beta$) are both medial,
+with $B(e,\beta)=\{\sca{\cdot}{e}>\cos\beta\}$ and
+$B(-e,\pi-\beta)=\{\sca{\cdot}{e}<\cos\beta\}$, whose union is
+$\mathbb{S}^{2}\setminus\X$ (consistent with Theorem~\ref{thm:sphere}).
+The southern region is reconstructed by the focal centre $-e$, invisible
+to \eqref{eq:naive}.
+\end{proof}
+
+\begin{remark}[What the certificate was, and is not]\label{rem:cert}
+Propositions~\ref{prop:cap}--\ref{prop:circle} locate the failure of
+\eqref{eq:naive} precisely in its \emph{second} term. The hull term
+$\Xhat\setminus\X$ remains a \emph{subset} of $\Rx$ (it is reconstructed
+--- e.g. by the centre $e$ in both examples), but the ``defective
+supporting hemispheres'' fail to capture the reconstruction coming from
+the \emph{interior focal centres} ($-e$ above), which have no boundary
+contact structure to be ``defective''. In $\R^{n}$ these focal centres sit
+at infinity and contribute nothing; on $\Sn$ they are ordinary medial
+points and contribute most of $\Rx$. The organising notion of the
+non-positively curved theory --- a defect read off a contact set --- has
+therefore no positive-curvature counterpart: there is nothing to detect,
+because everything off $\X$ is reconstructed.
+\end{remark}
+
+\section{Generalisation: compact manifolds and the spread condition}
+\label{sec:general}
+
+The proof of Theorem~\ref{thm:sphere} used the round geometry twice: in
+Step~1, where a rival (or focal turn) appears before the antipode, and in
+Step~3, where every critical point of $d_{\X}$ has reach $<\pi$ and hence
+two \emph{distinct} nearest points. On a general compact manifold both are
+secured by a single spread hypothesis on $\X$, which caps the reach below
+$\inj(M)$. Recall $\inj(M)>0$ for compact $M$, and that a geodesic is
+minimising on every sub-arc of length $<\inj(M)$.
+
+\begin{theorem}[Total reconstruction under a spread condition]
+\label{thm:dense}
+Let $M$ be a compact Riemannian manifold and $\X\subseteq M$ closed and
+\emph{$\delta$-dense} (every point of $M$ is within $\delta$ of $\X$). If
+\[
+  2\delta<\inj(M),
+\]
+then $\Rx=M\setminus\X$.
+\end{theorem}
+
+\begin{proof}
+$\Rx\subseteq M\setminus\X$ as the balls are free. Fix $p\in M\setminus\X$;
+if $p\in\Mx$ then $p\in B(p,r(p))\subseteq\Rx$. Otherwise ascend
+$d_{\X}=d(\cdot,\X)$ from $p$ by its semiconcave generalised-gradient flow
+(Step~3 of Theorem~\ref{thm:sphere}): on the compact $M$ the trajectory has
+finite length and converges to a critical point $a_{\infty}$ of $d_{\X}$,
+retaining $p$ in the moving free ball, so $d(p,a_{\infty})<r(a_{\infty})=
+d_{\X}(a_{\infty})$. By $\delta$-density $d_{\X}\le\delta$ on all of $M$,
+whence $r(a_{\infty})\le\delta<\tfrac12\inj(M)$; thus $a_{\infty}$ lies off
+the cut locus of each of its nearest points, its $\ge2$ minimising
+geodesics (it is a critical point) reach $\ge2$ \emph{distinct} points, and
+$a_{\infty}\in\Mx$. Hence $p\in B(a_{\infty},r(a_{\infty}))\subseteq\Rx$.
+The density bound is what forces every critical point below the cut locus,
+turning the two-geodesic centre the flow finds into a two-\emph{point} one.
+\end{proof}
+
+\begin{remark}[Positive curvature: making the hypothesis explicit]
+\label{rem:explicit}
+Theorem~\ref{thm:dense} is curvature-free, but a curvature upper bound
+turns it into an effective statement, which is the natural
+positive-curvature reading. By Klingenberg's lemma, for compact $M$,
+\[
+  \inj(M)\ \ge\ \min\Bigl\{\tfrac{\pi}{\sqrt{\Delta}},\ \tfrac12\,
+  \ell(M)\Bigr\}\qquad(\sec\le\Delta),
+\]
+where $\ell(M)$ is the length of the shortest closed geodesic and
+$\tfrac{\pi}{\sqrt\Delta}$ is the conjugate radius bound (Rauch). Thus if
+$\kappa\le\sec\le\Delta$ and $\X$ is $\delta$-dense with
+\[
+  2\delta<\min\Bigl\{\tfrac{\pi}{\sqrt\Delta},\ \tfrac12\ell(M)\Bigr\},
+\]
+then $\Rx=M\setminus\X$. For $M=\Sn$ ($\kappa=\Delta=1$, $\ell=2\pi$) this
+gives total reconstruction once $\X$ is $\tfrac\pi2^{-}$-dense; but
+Theorem~\ref{thm:sphere} shows that on $\Sn$ the density hypothesis is in
+fact \emph{unnecessary}. That is the content of the next remark: constant
+curvature is precisely where the spread condition can be dropped.
+\end{remark}
+
+\begin{remark}[Why constant curvature needs no spread]\label{rem:why}
+In Theorem~\ref{thm:dense} the spread hypothesis caps the reach,
+$d_{\X}\le\delta<\inj(M)$, placing every critical point of $d_{\X}$ below
+the cut locus, where its $\ge2$ minimising geodesics reach \emph{distinct}
+points. On $\Sn$ this is automatic for \emph{any} $\X$ with $|\X|\ge2$, with
+no spread: the cut locus of each point is the single antipode at the
+\emph{diameter} $\pi$, so a critical point (reach $<\pi$, as $|\X|\ge2$)
+already has two distinct nearest points --- equivalently, along a
+nearest-point ray the antipode is where $x_{0}$ becomes the globally
+farthest contact, so a rival overtakes it first (Step~1 of
+Theorem~\ref{thm:sphere}). The two italicised features ---
+the cut point realises the diameter, and it does so in every direction
+simultaneously --- are exactly the rigidity of constant positive
+curvature. They fail in variable positive curvature, which is the subject
+of \S\ref{sec:variable}.
+\end{remark}
+
+\section{The variable-curvature obstruction: cut shielding}
+\label{sec:variable}
+
+Off constant curvature, the conclusion $\Rx=M\setminus\X$ can fail for
+sparse $\X$. The obstruction is structural and worth stating precisely,
+even though we do not have a closed-form characterisation in the variable
+case: it is the only gap between Theorem~\ref{thm:dense} and the
+unconditional Theorem~\ref{thm:sphere}.
+
+The proof of Theorem~\ref{thm:sphere} produces a medial centre by
+following $\gamma$ from $x_{0}$ until a \emph{second contact} appears. If
+instead $\gamma$ reaches the \emph{cut locus of $x_{0}$} first --- a point
+$m=\gamma(\ell)$ admitting a second minimising geodesic back to the same
+$x_{0}$, with no rival contact of $\X$ yet within distance $\ell$ --- then
+$m$ is not medial ($x_{0}$ is still its unique nearest \emph{point} of
+$\X$, merely reached twice), the margin identity breaks past $m$ (there
+$d(\gamma(t),x_{0})<t$), and the construction stalls. We call such a
+configuration \emph{cut-shielding} of the points $\gamma(s)$, $s<\ell$.
+
+\begin{proposition}[The margin argument fails exactly at cut shielding]
+\label{prop:obstruction}
+Let $p\notin\X$ have unique nearest point $x_{0}$, and let
+$\ell=\mathrm{cut}(x_{0};\gamma)$ be the distance to the cut locus of
+$x_{0}$ along the ray $\gamma$ through $p$. If no point of $\X\setminus
+\{x_{0}\}$ lies within distance $\ell$ of any $\gamma(t)$, $t\le\ell$
+(i.e. $x_{0}$ is the unique nearest \emph{point} of $\X$ all along
+$\gamma|_{[0,\ell]}$), then the moving-centre construction of
+Theorems~\ref{thm:sphere}--\ref{thm:dense} produces no medial centre on
+$\gamma$.
+\end{proposition}
+
+\begin{proof}
+For $t\le\ell$ the arc is minimising and $x_{0}$ is the unique nearest
+point, so $d(\gamma(t),\X)=t$ with $\mathrm{Feet}(\gamma(t))=\{x_{0}\}$:
+no $\gamma(t)$, $t\le\ell$, is medial. At $t=\ell$ the point $m=
+\gamma(\ell)$ has a second minimising geodesic to $x_{0}$, but its unique
+nearest \emph{point} of $\X$ is still $x_{0}$, so $m\notin\Mx$. For
+$t>\ell$, $d(\gamma(t),x_{0})<t$, so the identity $d(\gamma(t),\X)=t$
+fails and the constant margin $r-d(p,\cdot)=s_{p}$ is no longer
+maintained.
+\end{proof}
+
+\begin{remark}[A concrete model, and the honest status]\label{rem:cigar}
+The mechanism is visible on a prolate ellipsoid of revolution
+(a ``cigar'', $\sec>0$ everywhere) with a short waist closed geodesic of
+length $\ell_{0}$. Take $\X=\{x_{0},x_{1}\}$ with $x_{0}$ on the waist and
+$x_{1}$ at the far tip. The waist geodesic through $x_{0}$ returns to
+$x_{0}$ along two arcs of length $\ell_{0}/2$; the diametrically opposite
+waist point $m$ is a cut point of $x_{0}$ with $x_{0}$ still its unique
+nearest contact (the tip $x_{1}$ being far). By
+Proposition~\ref{prop:obstruction} the waist points between $x_{0}$ and
+$m$ are not reconstructed by waist centres; whether some \emph{off}-waist
+medial centre nonetheless reconstructs them depends on the global medial
+axis, and we have not settled it. We therefore state the variable-positive
+case as follows.
+\begin{itemize}
+\item \emph{Unconditional:} constant curvature $+1$
+(Theorem~\ref{thm:sphere}); and any compact $M$ with $\delta$-dense $\X$,
+$2\delta<\inj M$ (Theorem~\ref{thm:dense}). These cover all
+\emph{sufficiently sampled} $\X$ in positive curvature.
+\item \emph{Open:} whether $\Rx=M\setminus\X$ holds for \emph{sparse}
+$\X$ in \emph{variable} positive curvature. The only obstruction to the
+margin argument is cut-shielding (Proposition~\ref{prop:obstruction}); a
+sufficient condition for total reconstruction is its absence ---
+$\mathrm{cut}(x_{0};\gamma)\ge\sup\{t:\ x_{0}\ \text{uniquely
+nearest}\}$ along every ray, which on $\Sn$ holds because the cut distance
+$\pi$ realises the diameter (Remark~\ref{rem:why}).
+\end{itemize}
+\end{remark}
+
+\begin{remark}[Constant-curvature space forms]\label{rem:spaceforms}
+For a spherical space form $\Sn/\Gamma$ ($\sec\equiv+1$, compact) the
+local geometry is that of $\Sn$ but the cut locus of a point is no longer
+a single antipode (e.g. $\mathbb{RP}^{n}$ has diameter $\tfrac\pi2$ and
+cut locus a hyperplane $\mathbb{RP}^{n-1}$). Theorem~\ref{thm:dense}
+applies whenever $\X$ is $\delta$-dense with $2\delta<\inj(\Sn/\Gamma)$;
+for sparse $\X$ the cut locus is again the only obstruction, now
+genuinely nontrivial, and we leave the sharp statement open. Thus even
+within constant curvature it is the \emph{simple connectivity} of $\Sn$
+--- forcing the cut locus to a single diameter-realising point --- that
+makes total reconstruction unconditional.
+\end{remark}
+
+\section{The two-geodesic medial axis}\label{sec:twogeo}
+
+The cut-shielding obstruction of \S\ref{sec:variable} is an artefact of
+\emph{which} medial axis one reconstructs from. Bia\l{}o\.zyt's $\Mx$
+counts points with two distinct nearest \emph{points} of $\X$. A shielded
+point $m=\gamma(\ell)$ has a single nearest point $x_{0}$ reached by two
+distinct minimising \emph{geodesics} --- it is invisible to $\Mx$ but is
+exactly the kind of point the cut locus is made of. Reconstructing instead
+from the \emph{two-geodesic} medial axis removes the obstruction
+altogether, and does so without disturbing the sphere or the Euclidean
+theory.
+
+\begin{definition}[Two-geodesic medial axis]\label{def:twogeo}
+For $a\in M\setminus\X$ let $r(a)=d(a,\X)$. Say $a\in\Mx^{g}$ if there are
+two distinct minimising geodesics from $a$ to $\X$ (their endpoints in
+$\X$ may coincide). Put $\Rx^{g}=\bigcup_{a\in\Mx^{g}}B(a,r(a))$. Since two
+distinct nearest points give two distinct geodesics, $\Mx\subseteq\Mx^{g}$,
+hence $\Rx\subseteq\Rx^{g}\subseteq M\setminus\X$; and $\Mx^{g}$ is (the
+two-sided part of) the singular set of $d(\cdot,\X)$ --- the cut locus of
+$\X$.
+\end{definition}
+
+\begin{proposition}[The change is invisible in $\R^{n}$ and on $\Sn$]
+\label{prop:invisible}
+If $M=\R^{n}$, or $M=\Sn$ with $|\X|\ge2$, then $\Mx^{g}=\Mx$ and
+$\Rx^{g}=\Rx$.
+\end{proposition}
+
+\begin{proof}
+In $\R^{n}$ any two points are joined by a unique geodesic, so two
+distinct minimising geodesics to $\X$ have distinct endpoints, i.e. two
+nearest points. On $\Sn$, two distinct minimising geodesics from $a$ to a
+\emph{single} $x_{0}\in\X$ force $a$ into the cut locus of $x_{0}$, which
+is the antipode $\{-x_{0}\}$ at distance $\pi$; then $r(a)=d(a,\X)=\pi$
+makes $x_{0}$ the unique point of $\X$, contradicting $|\X|\ge2$. So in
+both cases distinct geodesics have distinct endpoints, $\Mx^{g}=\Mx$.
+\end{proof}
+
+Thus Theorem~\ref{thm:sphere} (total on $\Sn$) and Bia\l{}o\.zyt's theorem
+(the defect structure in $\R^{n}$) are unchanged by the new definition.
+The definitions part company only where there is a cut locus --- variable
+curvature, or nontrivial topology --- which is exactly where the new one
+pays off.
+
+\begin{theorem}[Total reconstruction from the two-geodesic axis]
+\label{thm:twogeo}
+Let $M$ be \emph{any} compact Riemannian manifold. Then for every closed
+$\X\subseteq M$ with $|\X|\ge2$,
+\[
+  \Rx^{g}=M\setminus\X .
+\]
+No spread, curvature, or genericity hypothesis is needed.
+\end{theorem}
+
+\begin{proof}
+$\Rx^{g}\subseteq M\setminus\X$ as the balls are free. Fix $p\in
+M\setminus\X$; if $p\in\Mx^{g}$ then $p\in B(p,r(p))\subseteq\Rx^{g}$.
+Otherwise ascend the semiconcave $d_{\X}$ from $p$ (Step~3 of
+Theorem~\ref{thm:sphere}): on the compact $M$ the trajectory has finite
+length and converges to a critical point $a_{\infty}$ of $d_{\X}$, retaining
+$p$ in the moving free ball. A critical point has $0$ in the convex hull of
+the unit initial directions of its minimising geodesics to $\X$, hence
+\emph{two or more} such geodesics --- that is, $a_{\infty}\in\Mx^{g}$, with
+no need to decide whether their endpoints coincide (which is exactly the
+focal/conjugate subtlety that the two-point axis must confront and the
+geodesic axis sidesteps). Thus $p\in B(a_{\infty},r(a_{\infty}))\subseteq
+\Rx^{g}$.
+\end{proof}
+
+\begin{remark}[The fix activates exactly on the cut locus]\label{rem:fix}
+The flow never needs a rival contact: when none appears it simply rests at
+a cut point of $x_{0}$ --- two minimising geodesics to a single point ---
+which the two-geodesic axis counts as medial. This is precisely the
+shielded point $m$ of \S\ref{sec:variable}, now medial. The difference between the
+two theories,
+\[
+  \Mx^{g}\setminus\Mx=\{\text{points with a unique nearest point of }\X
+  \text{ but two minimising geodesics to it}\},
+\]
+is empty in $\R^{n}$ and on $\Sn$ (Proposition~\ref{prop:invisible}) and
+carries the entire repair in variable curvature. So total reconstruction,
+which for $\Mx$ is special to constant curvature
+(Remark~\ref{rem:why}), holds for $\Mx^{g}$ on \emph{every} compact
+manifold --- positive curvature is no longer distinguished, because the
+mechanism is now compactness of the cut locus rather than the antipodal
+rigidity of the round metric.
+\end{remark}
+
+\begin{remark}[Which medial axis, and a caveat]\label{rem:which}
+The two axes answer different questions. $\Mx$ --- points with two nearest
+\emph{features} --- is the symmetry/branching set, the shape skeleton of
+computational geometry; $\Mx^{g}$ --- the singular set of $d(\cdot,\X)$,
+i.e. the cut locus of $\X$ --- is the natural object of the
+distance-function viewpoint \cite{Lie} and of the Riemannian cut-locus
+theory. For the \emph{reconstruction} question ``is every point off $\X$
+captured?'' the geodesic axis is the clean choice, trivialising it on any
+compact manifold; for the \emph{structural} question ``what does the
+skeleton look like?'' the point axis is the informative one, since
+$\Mx^{g}$ conflates a genuine branch of $\X$ with two routes to a single
+feature. Note that Theorem~\ref{thm:twogeo} needs no genericity: the
+gradient flow lands at a critical point, which carries two minimising
+geodesics by definition, so the focal/conjugate cut points that obstruct
+the two-point argument are absorbed without comment.
+\end{remark}
+
+\section{Discussion}\label{sec:disc}
+
+\paragraph{The phenomenon, in one line.} In non-positive curvature a point
+escapes reconstruction by sending its nearest-point ray to infinity with a
+single foot; medial reconstruction is therefore partial and is organised
+by a convexity defect of contact sets (Bia\l{}o\.zyt, \cite{Bia,R1,R2,R3}).
+On the sphere geodesics are compact and the ray cannot escape: a second
+foot is forced before the antipode, every point is swallowed, and
+$\Rx=\Sn\setminus\X$. Positive curvature thus removes the reconstruction
+obstruction \emph{entirely}, the exact opposite of the expectation that a
+positively curved horosphere is the ``hardest'' case for detection ---
+there is nothing left to detect.
+
+\paragraph{Relation to the horospherical programme.} In the Hadamard
+framework of \cite{R3} the ambient ideal boundary indexes the maximal free
+horoballs, and reconstruction outside the hull is drift to an ideal
+centre. On $\Sn$ the ideal boundary is \emph{internalised}: the role of an
+ideal point is played by a genuine pole $v$, the Busemann function by the
+signed distance $d(\cdot,v)-\tfrac\pi2$ to the equator, and ``drift to
+$\xi$'' by convergence of the moving centre $\gamma(t)$ to a medial point
+at finite distance. The curvature-free swallow lemma of \cite{R3} survives
+verbatim (Remark~\ref{rem:escape}); what does \emph{not} survive is the
+backbone that made the swallow's hypothesis (a drifting medial centre)
+generic only at defective horoballs --- on $\Sn$ every direction supplies
+one, so the swallow runs everywhere.
+
+\paragraph{Where nontrivial positive-curvature structure lives.} Total
+reconstruction makes the \emph{set} reconstruction problem trivial on the
+sphere, which suggests the informative positive-curvature question is the
+\emph{domain} reconstruction problem of Lieutier \cite{Lie}: for an open
+$\Omega\subseteq\Sn$, reconstruct $\Omega$ from the medial axis of
+$\partial\Omega$ using only balls \emph{contained in $\Omega$}. There the
+focal centres on the far side of $\partial\Omega$ are excluded by the
+confinement to $\Omega$, the antipodal collapse does not occur, and a
+genuine convexity/defect theory --- now with the spherical, positively
+curved induced geometry of $\partial\Omega$ --- should re-emerge. That is
+the natural sequel.
+
+\paragraph{Summary.}
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+Statement & Setting & Status\\
+\midrule
+Focal pole: $|K_{v}|\ge2\Rightarrow H_{v}^{\circ}\subseteq\Rx$
+  & $\Sn$ & Lem.~\ref{lem:pole}\\
+\textbf{Total reconstruction} $\Rx=\Sn\setminus\X$
+  & $\Sn$, any closed $\X$, $|\X|\ge2$ & \textbf{Thm.~\ref{thm:sphere}}\\
+Bia\l{}o\.zyt certificate strictly undercounts
+  & $\Sn$ (cap, circle) & Prop.~\ref{prop:cap},~\ref{prop:circle}\\
+Total reconstruction under spread $2\delta<\inj M$
+  & any compact $M$ & Thm.~\ref{thm:dense}\\
+Explicit via $\sec\le\Delta$ (Klingenberg)
+  & compact, $\sec\le\Delta$ & Rem.~\ref{rem:explicit}\\
+Cut-shielding obstruction; sparse variable case
+  & compact $\sec>0$ & open (Prop.~\ref{prop:obstruction})\\
+\textbf{Two-geodesic axis} $\Rx^{g}=M\setminus\X$ (no spread)
+  & any compact $M$ (analytic) & \textbf{Thm.~\ref{thm:twogeo}}\\
+\quad $\Mx^{g}=\Mx$ (definition invisible)
+  & $\R^{n}$, $\Sn$ & Prop.~\ref{prop:invisible}\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{thebibliography}{9}
+
+\bibitem{Bia} A.~Bia\l{}o\.zyt, \emph{Sets reconstructible with medial
+axis}, preprint, AGH University of Krak\'ow, 2024.
+
+\bibitem{R1} \emph{Sets reconstructible with medial axis: a
+generalisation to Riemannian manifolds}, companion note, June 2026
+(file \texttt{medial\_axis\_riemannian\_1.pdf}).
+
+\bibitem{R2} \emph{Medial-axis reconstruction in hyperbolic space, with a
+structural framework for Hadamard manifolds}, companion note, June 2026
+(file \texttt{medial\_axis\_riemannian\_2.pdf}).
+
+\bibitem{R3} \emph{Medial-axis reconstruction beyond constant curvature:
+warped products with flat horospheres, and the Gauss obstruction},
+companion note, June 2026 (file
+\texttt{medial\_axis\_riemannian\_3.pdf}).
+
+\bibitem{Lie} A.~Lieutier, \emph{Any open bounded subset of $\R^{n}$ has
+the same homotopy type as its medial axis}, Computer-Aided Design
+\textbf{36} (2004), 1029--1046. (Generalised gradient flow of the distance
+function; reconstruction by medial balls.)
+
+\bibitem{ACa} P.~Albano and P.~Cannarsa, \emph{Structural properties of
+singularities of semiconcave functions}, Ann.\ Scuola Norm.\ Sup.\ Pisa
+\textbf{28} (1999), 719--740. (Semiconcavity of distance functions; the
+singular set is the closure of the two-foot set.)
+
+\bibitem{doCarmo} M.~P.~do Carmo, \emph{Riemannian Geometry},
+Birkh\"auser, 1992. (Cut locus, injectivity radius, Klingenberg's lemma,
+Rauch comparison.)
+
+\bibitem{Mot} T.~Motzkin, \emph{Sur quelques propri\'et\'es
+caract\'eristiques des ensembles born\'es non convexes}, Atti Accad.\
+Naz.\ Lincei \textbf{21} (1935), 773--779.
+
+\end{thebibliography}
+
+\end{document}
