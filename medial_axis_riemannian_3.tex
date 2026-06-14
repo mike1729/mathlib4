@@ -1,0 +1,1342 @@
+\documentclass[11pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[margin=1.1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{question}[theorem]{Question}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{example}[theorem]{Example}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\X}{X}
+\newcommand{\Xhat}{\widehat{\X}}
+\newcommand{\Mx}{M_{\X}}
+\newcommand{\Rx}{\mathcal{R}_{\X}}
+\newcommand{\Hb}[1]{\mathcal{H}_{#1}}
+\newcommand{\Sb}[1]{S_{#1}}
+\newcommand{\dist}{\operatorname{dist}}
+\newcommand{\conv}{\operatorname{conv}}
+\newcommand{\hconv}{\operatorname{hconv}}
+\newcommand{\Mf}{M_{f}}
+\newcommand{\bdry}{\partial_{\infty}}
+\newcommand{\sca}[2]{\left\langle #1,\, #2\right\rangle}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\HH}{\mathbb{H}}
+
+\title{Medial-axis reconstruction in Hadamard manifolds:\\
+a faithful, curvature-free characterization\thanks{Third note in a
+series: \cite{R1} generalised the sufficiency half of Theorem~6 of
+\cite{Bia} to Hadamard manifolds; \cite{R2} proved the full
+characterisation in real hyperbolic space $\HH^{n}$; the Euclidean
+case is formalised in \cite{Notes}. Drafted with the assistance of
+Claude (Anthropic); all arguments were re-derived and checked by hand,
+and every numerical claim verified directly. Remaining errors are
+ours.}}
+\author{}
+\date{June 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+For a closed set $X$ in a complete Riemannian manifold, the
+\emph{reconstruction} $\Rx=\bigcup_{a\in\Mx}B(a,r(a))$ is the union of
+the open medial balls. Bia\l{}o\.zyt's Theorem~6 characterises $\Rx$
+for $X\subseteq\R^{n}$, and a companion note settled real hyperbolic
+space; we prove a faithful, unconditional analogue valid in
+\emph{every} Hadamard manifold and for \emph{every} closed set:
+\[
+  \Rx=(\Xhat\setminus X)\ \cup\
+  \bigcup\bigl\{\operatorname{int}\Hb{}:\ X\cap\partial\Hb{}\neq
+  \hconv(X\cap\partial\Hb{})\bigr\},
+\]
+where $\Xhat$ is the horoball hull and $\hconv$ is the convex hull cut
+out by the ambient \emph{Busemann tilts}. The defect certificate ---
+the contact set differs from its horoball hull --- is decidable from
+$X$ and the geometry of $M$, with the medial axis absent; it is
+$\conv$ on flat horospheres (recovering Theorem~6 verbatim) and the
+Carnot hull on homogeneous ones. Both analytic inputs are
+curvature-free: a deepest-shadow necessity (Danskin's theorem) and a
+swallow lemma using only horofunction convergence. The unconditional
+\emph{dynamical} form --- defectiveness read off the medial axis ---
+is an immediate consequence of the curvature-free trichotomy; the
+theorem above upgrades its certificate to a faithful, $\Mx$-free one.
+The remainder of the note makes ``defective'' concrete across a
+hierarchy of horospheres governed by the Gauss equation
+$K_{S}=K_{M}+\det\mathrm{II}$: flat (warped products $\Mf$ of variable,
+pinched curvature --- the first reconstruction theorem beyond constant
+curvature), $\mathrm{CAT}(0)$ (warped over a Hadamard fibre), and
+positively curved (the Heisenberg horosphere of $\mathbb{CH}^{2}$).
+\end{abstract}
+
+\tableofcontents
+
+\bigskip
+\noindent\textbf{Part I} develops the main theorem; \textbf{Part II}
+makes its defect certificate concrete across the curvature hierarchy.
+
+\section{Introduction}\label{sec:intro}
+
+For a closed set $\X$ in a complete Riemannian manifold $M$ write
+$\Mx$ for its \emph{medial axis} (the points with two or more nearest
+points of $\X$), $r(a)=\dist(a,\X)$ for the reach of a centre
+$a\in\Mx$, and
+\[
+  \Rx=\bigcup_{a\in\Mx}B\!\left(a,r(a)\right)
+\]
+for the \emph{reconstruction} of $\X$: the union of the open medial
+balls. Bia\l{}o\.zyt's Theorem~6 \cite{Bia} characterises $\Rx$ for
+closed $\X\subseteq\R^{n}$: with $\Xhat=\overline{\conv}\,\X$,
+\[
+  \Rx=(\Xhat\setminus\X)\cup\bigcup\bigl\{\operatorname{int}H:\
+  H\ \text{a supporting halfspace},\
+  \X\cap\partial H\neq\conv(\X\cap\partial H)\bigr\}.
+\]
+A companion note \cite{R2} proved the analogue in real hyperbolic
+space: for a graph-type closed $\X\subseteq\HH^{n}$,
+\begin{equation}\label{eq:hyp-main}
+  \Rx=(\Xhat\setminus\X)\ \cup\
+  \bigcup\bigl\{\Hb{}\ \text{maximal free, horospherically
+  defective}\bigr\},
+\end{equation}
+where $\Xhat$ is the horoball hull and a maximal free horoball $\Hb{}$
+is \emph{horospherically defective} when its contact set
+$\Hb{}\cap\X$ is non-convex inside the intrinsically flat horosphere
+$\partial\Hb{}\cong\E^{n-1}$.
+
+\subsection*{What was special about hyperbolic space}
+
+The proof of \eqref{eq:hyp-main} reads the geometry of a horoball
+$\Hb{}=\{z>1\}$ (upper half-space model) through its flat horosphere
+$\{z=1\}\cong\E^{n-1}$. Two facts do all the work.
+\begin{enumerate}[label=(\alph*)]
+\item For a high centre $a=(\alpha,t)$, the cosine rule
+$\cosh d(a,q)=1+\tfrac{1}{2t}\bigl(|\alpha-\kappa|^{2}+(t-1)^{2}\bigr)$
+for $q=(\kappa,1)$ is monotone in the \emph{Euclidean} distance
+$|\alpha-\kappa|$; so the feet of $a$ are the Euclidean nearest
+contacts, and $a$ is medial exactly when its lateral position $\alpha$
+has two or more nearest contacts.
+\item \textbf{Motzkin's theorem}: a closed set in $\E^{n-1}$ is convex
+iff it is Chebyshev. Hence a contact set admits a medial centre iff it
+is non-convex.
+\end{enumerate}
+Both facts use that horospheres of $\HH^{n}$ are \emph{flat}, and the
+normalisation ``WLOG $\Hb{}=\{z>1\}$'' uses that
+$\operatorname{Isom}(\HH^{n})$ acts transitively on horoballs. These
+are precisely the two properties that fail off constant curvature. The
+Gauss equation makes the failure quantitative: a horosphere $S$ has
+intrinsic curvature $K_{S}=K_{M}+\det(\mathrm{II})$, which vanishes in
+$\HH^{n}$ (umbilic, $K_{M}=-1$) but is in general nonzero and can even
+be positive under pinching, so horospheres need not be
+$\mathrm{CAT}(0)$ and Motzkin can fail.
+
+\subsection*{The main theorem}
+
+The characterization nonetheless survives in full generality, once the
+right notion of ``defective'' is found. Reconstruction rests on a
+\emph{curvature-free backbone} --- a completeness inclusion, a
+rigidity statement, a drift theorem through the horofunction boundary,
+and a structure trichotomy --- valid in every Hadamard manifold
+(\S\ref{sec:backbone}). The backbone reduces the problem, outside the
+hull, to drift into a maximal free horoball; the only remaining task is
+to certify \emph{which} horoballs are reached, from $X$ alone. The
+correct certificate is not metric. For a maximal free horoball $\Hb{}$
+at $\xi$, let $\hconv(K)$ be the convex hull of $K\subseteq\partial\Hb{}$
+with respect to the \emph{Busemann tilts} of $M$ --- the trace on
+$\partial\Hb{}$ of the intersection of the (tilted) horoballs
+containing $K$ (Definition~\ref{def:hconv}). This hull exists in every
+Hadamard manifold, needs no horosphere metric and no homogeneity, and
+equals $\conv$ on a flat horosphere and the Carnot hull on a
+homogeneous one. With it:
+
+\begin{quote}
+\textbf{Theorems~\ref{thm:faithful}--\ref{thm:faithful-nc}.} For every
+Hadamard manifold $M$ and every closed $\X\subseteq M$,
+\[
+  \Rx=(\Xhat\setminus X)\ \cup\
+  \bigcup\bigl\{\operatorname{int}\Hb{}:\ X\cap\partial\Hb{}\neq
+  \hconv(X\cap\partial\Hb{})\bigr\}.
+\]
+\end{quote}
+
+This is a \emph{faithful} analogue of Theorem~6: its defect
+certificate --- the contact set differs from its horoball hull --- is
+decidable from $X$ and the geometry of $M$, with the medial axis
+$\Mx$ absent from the right-hand side, exactly as
+``$X\cap L\neq\conv(X\cap L)$'' is in $\R^{n}$. The two analytic inputs
+are curvature-free: necessity is Danskin's first-order condition for
+the depth functional --- the deepest free horoball over $p$ has a
+non-horoconvex contact set (\S\ref{sec:hconv}) --- and sufficiency is a
+\emph{swallow} lemma that uses only horofunction convergence
+(Lemma~\ref{lem:swallow}), no curvature bound. Reading defectiveness
+\emph{dynamically} --- $\Hb{}$ admits medial centres drifting to $\xi$
+--- gives an unconditional characterization for free from the
+trichotomy alone (Theorem~\ref{thm:fullgen}); the theorem above is the
+upgrade that removes $\Mx$ from the certificate.
+
+\subsection*{Making ``defective'' concrete}
+
+The certificate is intrinsic to $M$, but reading it as a property of
+the \emph{horosphere} --- a metric convexity, as in Theorem~6 ---
+requires localisation (the feet of a high centre are the
+intrinsic-nearest contacts) and confronts the Gauss obstruction.
+Part~II carries this out across the curvature hierarchy of horospheres.
+The pivot is a family of Hadamard manifolds that is non-homogeneous and
+of non-constant, two-sidedly pinched curvature, yet whose horospheres
+remain flat: the warped products
+$\Mf=(\R\times\R^{n-1},\,dt^{2}+f(t)^{2}g_{\E})$ with $f$ positive,
+convex and decreasing to $0$ (\S\ref{sec:warp}). On $\Mf$ the entire
+hyperbolic dictionary goes through verbatim --- feet are exactly the
+Euclidean nearest contacts (\S\ref{sec:dict}) --- and the
+reconstruction dichotomy ``$\Rx\neq\varnothing$ iff the contact set is
+non-convex'' holds exactly as in $\HH^{n}$ (\S\ref{sec:recon}), the
+warp entering only through a discrimination weight. This is the first
+genuinely non-constant-curvature case; the one new effect is that the
+up/down symmetry of horoballs breaks (Remark~\ref{rem:asym}). Warping
+over a \emph{curved} Hadamard fibre then produces $\mathrm{CAT}(0)$
+horospheres, on which the sharpness half of the dichotomy is
+unconditional (\S\ref{sec:curved}); and the Heisenberg horosphere of
+$\mathbb{CH}^{2}$ gives the first reconstruction theorem on a
+\emph{positively} curved horosphere (\S\ref{sec:ch2}). The genuine
+frontier --- non-$\mathrm{CAT}(0)$ horospheres in general --- is
+isolated in \S\ref{sec:frontier}.
+
+\bigskip
+\begin{center}\textsc{Part I. The main theorem}\end{center}
+
+\section{The curvature-free backbone}\label{sec:backbone}
+
+We isolate, once, the part of the theory that uses no curvature
+computation beyond $\sec\le0$. Throughout, $M$ is a Hadamard manifold
+(complete, simply connected, $\sec\le0$), $\X\subseteq M$ closed, and
+$\Xhat$ its horoball hull (the complement of the union of all open
+free horoballs).
+
+\begin{theorem}[Reconstruction engine; {\cite{R1,R2}}]
+\label{thm:engine}
+For every Hadamard manifold $M$ and closed $\X\subseteq M$:
+\begin{enumerate}[label=\textup{(\arabic*)}]
+\item \emph{(Hull.)} $\Xhat\setminus\X\subseteq\Rx$
+  \cite[Thm.~3.1]{R1}.
+\item \emph{(Rigidity.)} For $a\in\Mx$ and any foot $q$, no inflation
+  $B(a',r')\supsetneq B(a,r(a))$ with $a'$ on the ray from $q$ through
+  $a$ is free; medial centres cannot be escaped along a foot-geodesic.
+\item \emph{(Drift.)} If $p\in\Rx\setminus\Xhat$ then a sequence of
+  medial centres reconstructing $p$ drifts to an ideal point
+  $\xi\in\bdry M$ and is captured by the maximal free horoball at
+  $\xi$ through $p$, whose horosphere absorbs the feet
+  \cite[II.8.13]{BH}.
+\item \emph{(Trichotomy.)} Every $p\in M\setminus\X$ is of exactly one
+  type: hull, drift, or ray-escape; there is no residual case.
+\end{enumerate}
+\end{theorem}
+
+Items (1)--(4) are proved for general Hadamard $M$ in \cite{R1,R2} and
+quoted here unchanged. The reduction they achieve is: \emph{outside the
+hull, reconstruction $\Leftrightarrow$ the drift horoball is reached by
+medial centres.} What remains is to turn ``reached by medial centres''
+into a certificate read from $X$ alone.
+
+\subsection{The swallow, and the dynamical characterization}
+
+The sufficiency direction --- a reached horoball is reconstructed in
+full --- is curvature-free. Call a maximal free horoball $\Hb{}$ with
+ideal centre $\xi$ \emph{defective} if $X$ admits medial centres
+$a_{k}\in\Mx$ converging to $\xi$ (equivalently $b_{\xi}(a_{k})\to
+-\infty$: the centres drift into $\Hb{}$ toward $\xi$); the drift is
+\emph{anchored} if the nearest contacts of the $a_{k}$ stay bounded,
+and $\Hb{}$ is \emph{anchored defective} if it admits an anchored
+drift.
+
+\begin{lemma}[Swallow, curvature-free]\label{lem:swallow}
+Let $M$ be \emph{any} Hadamard manifold and $\Hb{}$ an anchored
+defective maximal free horoball. Then $\operatorname{int}\Hb{}
+\subseteq\Rx$.
+\end{lemma}
+
+\begin{proof}
+Normalise $b:=b_{\xi}$ so $\Hb{}=\{b<0\}$, $X\subseteq\{b\ge0\}$, and
+fix a basepoint $o\in\partial\Hb{}$ (so $b(o)=0$). Drift to $\xi$ is
+convergence in the horofunction compactification \cite[II.8.13]{BH}:
+for every fixed $y$, $d(y,a_{k})-d(o,a_{k})\to b(y)-b(o)=b(y)$. Let
+$x_{k}$ be a nearest contact of $a_{k}$, $r(a_{k})=d(a_{k},x_{k})$; by
+anchoring, after a subsequence $x_{k}\to x_{\infty}\in X$.
+
+\emph{Ascent.} For any contact $y$ with $b(y)=\delta$,
+$r(a_{k})\le d(a_{k},y)$, so $d(a_{k},x_{k})-d(o,a_{k})\le
+d(a_{k},y)-d(o,a_{k})\to\delta$; as $\inf_{X}b=0$ at a maximal free
+horoball, $\delta\downarrow0$ gives
+$\lim_k[d(a_{k},x_{k})-d(o,a_{k})]\le 0$. Since
+$d(a_{k},x_{k})-d(o,a_{k})\to b(x_{\infty})$ (because $x_{k}\to
+x_{\infty}$ and $b$ is the limit horofunction) and $b(x_{\infty})\ge0$,
+we get $b(x_{\infty})=0$.
+
+\emph{Swallow.} For $p\in\operatorname{int}\Hb{}$, $\tau_{p}:=-b(p)>0$,
+\[
+  d(p,a_{k})-r(a_{k})=\bigl[d(p,a_{k})-d(o,a_{k})\bigr]
+  -\bigl[d(x_{k},a_{k})-d(o,a_{k})\bigr]
+  \ \longrightarrow\ b(p)-b(x_{\infty})=-\tau_{p}<0 .
+\]
+So $d(p,a_{k})<r(a_{k})$ for large $k$: $p\in B(a_{k},r(a_{k}))$ with
+$a_{k}\in\Mx$, hence $p\in\Rx$. \emph{No curvature bound is used.}
+\end{proof}
+
+\begin{theorem}[Characterization, dynamical form]\label{thm:fullgen}
+Let $M$ be \emph{any} Hadamard manifold and $X\subseteq M$ an arbitrary
+closed set. With no further hypothesis,
+\[
+  \Rx\setminus\Xhat\ \subseteq\
+  \bigcup\{\operatorname{int}\Hb{}:\Hb{}\ \text{maximal free and
+  defective}\}\qquad\text{and}\qquad \Xhat\setminus X\subseteq\Rx ,
+\]
+and $\operatorname{int}\Hb{}\subseteq\Rx$ for every anchored defective
+$\Hb{}$ (Lemma~\ref{lem:swallow}). Consequently, whenever every
+defective horoball is anchored or $\sec\le-a^{2}<0$,
+\[
+  \Rx=(\Xhat\setminus X)\ \cup\
+  \bigcup\bigl\{\operatorname{int}\Hb{}:\Hb{}\ \text{maximal free and
+  defective}\bigr\} .
+\]
+This holds in particular for every compact $X$ (any Hadamard $M$), in
+the flat case $M=\R^{n}$, and under pinching $\sec\le-a^{2}<0$ --- so
+it contains Bia\l{}o\.zyt's Theorem~6 and the pinched theorem as
+special cases.
+\end{theorem}
+
+\begin{proof}
+Each medial ball $B(a,r(a))$ misses $X$, so $\Rx\cap X=\varnothing$;
+every open free horoball is disjoint from $\Xhat$, so the right-hand
+terms meet neither $X$ nor each other.
+
+\emph{Inclusion ``$\subseteq$''.} Let $p\in\Rx\setminus\Xhat$ (if
+instead $p\in\Xhat$ then $p\in\Xhat\setminus X$, as $p\notin X$). By
+the trichotomy (Theorem~\ref{thm:engine}(4)) $p$ is hull, drift, or
+ray-escape; it is not hull, and not ray-escape (a ray-escape point is
+uniquely footed along its escaping ray, hence unreconstructed by
+rigidity, Theorem~\ref{thm:engine}(2)). So $p$ is of drift type: its
+reconstructing medial centres drift to some $\xi$ with $p$ in the
+maximal free horoball $\Hb{}$ at $\xi$ (Theorem~\ref{thm:engine}(3)),
+which they witness defective, and $p\in\operatorname{int}\Hb{}$. The
+hull inclusion $\Xhat\setminus X\subseteq\Rx$ is completeness
+\cite[Thm.~3.1]{R1}.
+
+\emph{Inclusion ``$\supseteq$'' (under the stated condition).} For an
+anchored defective $\Hb{}$, $\operatorname{int}\Hb{}\subseteq\Rx$ by
+Lemma~\ref{lem:swallow}; under $\sec\le-a^{2}<0$ the same holds for
+every defective $\Hb{}$, since horospheres then contract toward $\xi$
+(Heintze--Im Hof \cite{HIH}) and the swallow margin survives even when
+the nearest contacts escape. Compactness of $X$ forces all contacts,
+hence every drift, to be anchored; in $\R^{n}$ a defective halfspace
+admits an anchored drift over its Motzkin bisector. Combined with
+``$\subseteq$'' this is the boxed equality.
+\end{proof}
+
+The dynamical certificate refers to the medial axis, so
+Theorem~\ref{thm:fullgen} is an unconditional \emph{skeleton} rather
+than a faithful Theorem-6 analogue: it shows $\Rx$ is always the hull
+together with a union of defective-horoball interiors, and isolates the
+remaining task --- a certificate decidable from $X$. That is the work
+of the next section.
+
+\section{The horospherical convex hull, and the main theorem}
+\label{sec:hconv}
+
+The faithful certificate replaces ``$\Hb{}$ is reached by medial
+centres'' with ``the contact set differs from its hull,'' the hull
+taken with respect to the Busemann geometry of $M$. We construct it,
+prove its one structural lemma, and obtain the characterization.
+
+\begin{definition}[Horospherical convex hull]\label{def:hconv}
+Let $\Hb{}$ be a maximal free horoball at $\xi$, with horosphere
+$S=\partial\Hb{}$. For an ideal direction $u$ (a path
+$\xi_{\varepsilon}\to\xi$ in $\bdry M$), let
+$L_{u}(y)=\frac{d}{d\varepsilon}\big|_{0^{+}}b_{\xi_{\varepsilon}}(y)$
+be the one-sided derivative of the Busemann function (it exists, $b$
+being convex in $\xi$). The \emph{horospherical convex hull} of
+$K\subseteq S$ is
+\[
+  \hconv(K)=\bigl\{\sigma\in S:\ L_{u}(\sigma)\ge
+  \textstyle\inf_{K}L_{u}\ \text{for every }u\bigr\},
+\]
+the points not separable below $K$ by any Busemann tilt. Equivalently,
+$\hconv(K)$ is the trace on $S$ of the \emph{horoball hull} of $K$ ---
+the intersection of the tilted horoballs containing $K$, since a tilted
+horoball $\{b_{\xi_{\varepsilon}}\ge c\}$ contains $K$ iff
+$c\le\inf_{K}b_{\xi_{\varepsilon}}$, and $\sigma$ lies in all of them
+iff $L_{u}(\sigma)\ge\inf_{K}L_{u}$ for every $u$. So $\hconv$ is a
+genuine \emph{hull}, built from the Busemann geometry of $M$ alone,
+with $\Mx$ absent: the certificate $X\cap\partial\Hb{}\neq
+\hconv(X\cap\partial\Hb{})$ reads literally as ``the contact set
+differs from its hull.'' On a flat horosphere horoballs are
+halfspaces, $L_{u}(y)=\langle y,u\rangle$, and $\hconv=\conv$ ---
+recovering Bia\l{}o\.zyt's $X\cap L\neq\conv(X\cap L)$ verbatim; on a
+homogeneous horosphere it is the Carnot convex hull.
+\end{definition}
+
+\begin{lemma}[Tilt functionals are axial invariants]\label{lem:Lu-axial}
+For any ideal point $\xi$ and tilt $u$, the functional $L_{u}$ is
+constant along every geodesic ray $\gamma$ asymptotic to $\xi$:
+$L_{u}(\gamma(t))=L_{u}(\gamma(0))$ for all $t$. In particular, for a
+point $p$ over a horosphere foot $\sigma(p)$ on the axis to $\xi$,
+$L_{u}(p)=L_{u}(\sigma(p))$.
+\end{lemma}
+
+\begin{proof}
+The Busemann gradient along $\gamma$ is the inward radial field,
+$\nabla b_{\xi}(\gamma(t))=-\dot\gamma(t)$, so
+$\frac{d}{dt}b_{\xi_{\varepsilon}}(\gamma(t))=\langle\nabla
+b_{\xi_{\varepsilon}}(\gamma(t)),\dot\gamma(t)\rangle$ takes, at
+$\varepsilon=0$, the value $-1$ --- the minimum of an inner product of
+two unit vectors ($|\nabla b_{\xi_{\varepsilon}}|\equiv1$,
+$|\dot\gamma|=1$). An inner extremum has vanishing
+$\varepsilon$-derivative, so, exchanging the smooth mixed derivatives,
+\[
+  \frac{d}{dt}L_{u}(\gamma(t))
+  =\frac{d}{d\varepsilon}\Big|_{0}\frac{d}{dt}
+  b_{\xi_{\varepsilon}}(\gamma(t))=0,
+\]
+and $L_{u}\circ\gamma$ is constant. In $\R^{n}$,
+$L_{u}(y)=\langle y,u^{\perp}\rangle$ with $u^{\perp}\perp\xi$, visibly
+constant along the $\xi$-axis.
+\end{proof}
+
+\begin{theorem}[Faithful, unconditional --- compact $X$]
+\label{thm:faithful}
+Let $M$ be \emph{any} Hadamard manifold and $X\subseteq M$ compact.
+Then
+\[
+  \boxed{\ \Rx=(\Xhat\setminus X)\ \cup\
+  \bigcup\bigl\{\operatorname{int}\Hb{}:\ X\cap\partial\Hb{}\neq
+  \hconv(X\cap\partial\Hb{})\bigr\}\ },
+\]
+the defect certificate --- the contact set is not horospherically
+convex --- being decidable from $X$ and the geometry of $M$, with
+$\Mx$ absent. It reduces to Bia\l{}o\.zyt's
+$X\cap\partial\Hb{}\neq\conv(\cdot)$ on flat horospheres ($\R^{n}$,
+$\HH^{n}$) and to its Carnot form on homogeneous ones.
+\end{theorem}
+
+\begin{proof}
+\emph{Faithfulness.} Every object on the right is computed from $X$
+and the horoballs of $M$, never from the medial axis: the hull
+$\Xhat$ is the intersection of the free horoballs, the maximal free
+horoballs $\Hb{}$ are determined by $\{\Hb{}\cap X=\varnothing\}$, the
+contact set is $X\cap\partial\Hb{}$, and $\hconv$ is the horoball hull
+of that contact set (Definition~\ref{def:hconv}). So the certificate
+is decidable by looking at $X$ and its hull, with $\Mx$ absent.
+
+\emph{``$\subseteq$''.} The hull term is $\Xhat\setminus X\subseteq\Rx$
+\cite[Thm.~3.1]{R1}. Let $p\in\Rx\setminus\Xhat$ and let $\xi^{\ast}$
+maximise the depth $D(\xi)=\inf_{x\in X}b_{\xi}(x)-b_{\xi}(p)$
+(attained, as $X$ is compact), with deepest free horoball
+$\Hb{}^{\ast}$, contacts $K^{\ast}$, and foot $\sigma(p)$ of $p$ on
+$\partial\Hb{}^{\ast}$. The infimum $\inf_{x}b_{\xi}(x)$ is attained on
+$K^{\ast}$, so by Danskin's theorem the one-sided derivative of $D$
+along a tilt $u$ is $\inf_{K^{\ast}}L_{u}-L_{u}(\sigma(p))$
+(Lemma~\ref{lem:Lu-axial} gives $L_{u}(p)=L_{u}(\sigma(p))$, as $p$ and
+$\sigma(p)$ lie on one ray to $\xi^{\ast}$); maximality forces it
+$\le0$ for every $u$, i.e.\ $\sigma(p)\in\hconv(K^{\ast})$. And
+$\sigma(p)\notin K^{\ast}$: were $\sigma(p)$ a contact $x_{0}$, every
+$x\in X$ would have $d(p,x)\ge b_{\xi^{\ast}}(x)-b_{\xi^{\ast}}(p)\ge
+D(\xi^{\ast})=d(p,x_{0})$, with equality only along the axis, so
+$x_{0}$ is the unique foot of $p$ and the distance-flow carries $p$ up
+the axis to infinity, contradicting $p\in\Rx$ \cite{Lie}. Hence
+$K^{\ast}\neq\hconv(K^{\ast})$ and $p\in\operatorname{int}\Hb{}^{\ast}$.
+
+\emph{``$\supseteq$''.} Let $\Hb{}$ be maximal free with
+$K:=X\cap\partial\Hb{}\neq\hconv(K)$, and pick
+$\sigma\in\hconv(K)\setminus K$. A centre high over $\sigma$ lies in
+$\operatorname{int}\Hb{}\subseteq M\setminus\Xhat$, so it is not of
+hull type; nor of ray-escape type, for $\hconv$, taken over all tilts
+$\pm u$, surrounds $\sigma$ on every side: escape toward $u$ would need
+every contact behind $\sigma$ ($L_{u}<L_{u}(\sigma)$), whereas the
+$-u$ constraint $L_{-u}(\sigma)\ge\inf_{K}L_{-u}$ gives a contact
+\emph{ahead} ($L_{u}\ge L_{u}(\sigma)$) blocking it. By the trichotomy
+(Theorem~\ref{thm:engine}(4)) the centre is of drift type, so $\Hb{}$
+admits drifting medial centres and is defective; the swallow
+(Lemma~\ref{lem:swallow}, anchored as $X$ is compact, or along the
+medial ray) gives $\operatorname{int}\Hb{}\subseteq\Rx$. \emph{No
+Motzkin or metric convexity in the horosphere is invoked: the
+sufficiency is the curvature-free trichotomy, and $\hconv$ enters only
+as the hull that rules out escape.}
+\end{proof}
+
+The two analytic inputs are both curvature-free: the deepest-shadow is
+Danskin's first-order condition for the depth functional (it is
+\cite{R2}'s lemma for $\HH^{n}$, here recognised as convex
+optimisation valid in any Hadamard manifold, with $\conv$ replaced by
+$\hconv$), and the swallow is Lemma~\ref{lem:swallow}. The remaining
+inputs are orthogonal to curvature: the compactness of $X$ --- removed
+next --- and the regularity of $\xi^{\ast}$ on the ideal boundary,
+where $L_{u}$ is a one-sided derivative.
+
+\begin{theorem}[Faithful, unconditional --- arbitrary closed $X$]
+\label{thm:faithful-nc}
+Theorem~\ref{thm:faithful} holds for \emph{every} closed $X\subseteq M$,
+with $\hconv$ read on the extended contact set
+$\overline{K}=K\cup K_{\infty}$, where $K_{\infty}$ collects the ideal
+points of the horosphere $\partial\Hb{}$ that $X$ approaches
+asymptotically along it. ($\hconv(\overline{K})$ adds to $\hconv(K)$
+exactly the recession directions: $\inf_{\overline K}L_{u}=-\infty$
+wherever $X$ recedes, voiding the constraint, as in Bia\l{}o\.zyt's
+recession cone.) The inclusion ``$\subseteq$'' and the defect
+certificate are unconditional; the equality holds in full whenever the
+radial offset of the drift vanishes --- under any pinching, in the
+flat case, and along a bisector ray, hence for every model in this
+note. The single exception is a purely asymptotic drift
+($K=\varnothing$) in an \emph{inhomogeneous} $\sec\le0$ manifold where
+the offset does not vanish: there only the deep part
+$\{\tau_{p}>\limsup_{k}\mathrm{off}_{k}\}$ of $\operatorname{int}\Hb{}$
+is reconstructed by this drift, the defect itself still detected.
+\end{theorem}
+
+\begin{proof}
+\emph{Necessity, with no compactness.} The depth
+$D(\xi)=\inf_{x\in X}b_{\xi}(x)-b_{\xi}(p)$ is upper semicontinuous on
+the compact ideal boundary $\bdry M$ --- an infimum of the continuous
+maps $\xi\mapsto b_{\xi}(x)$ minus the continuous $b_{\xi}(p)$ --- so it
+attains its maximum at some $\xi^{\ast}$ for any closed $X$, removing
+the single use of compactness in Theorem~\ref{thm:faithful}. At
+$\xi^{\ast}$ the Danskin derivative of $D$ along $u$ is
+$\bigl(\inf_{x\in X^{\ast}}L_{u}(x)\bigr)-L_{u}(\sigma(p))$, where
+$X^{\ast}$ is the set of finite or ideal minimisers of
+$b_{\xi^{\ast}}$ over $\overline{X}$; maximality forces it $\le0$ for
+all $u$, giving $\sigma(p)\in\hconv(\overline{K}^{\ast})$, and
+screening (a finite foot $\sigma(p)\in K^{\ast}$ is the unique nearest
+point of $p$, ideal contacts being infinitely far, so $p$ escapes up
+the axis) gives $\sigma(p)\notin K^{\ast}$. Hence $K^{\ast}\neq
+\hconv(\overline{K}^{\ast})$.
+
+\emph{Sufficiency.} Let $\sigma\in\hconv(\overline{K})\setminus K$. A
+centre high over $\sigma$ lies in
+$\operatorname{int}\Hb{}\subseteq M\setminus\Xhat$, so it is not of
+hull type; nor of ray-escape type, for $\hconv(\overline{K})$, taken
+over all tilts $\pm u$, surrounds $\sigma$ on every side: in any
+candidate escape direction $\eta$ there is an extended contact ahead
+--- a finite one, or an ideal one in $K_{\infty}$ along which $X$
+approaches $\partial\Hb{}$, so the receding ray re-encounters $X$ and
+the distance to $X$ cannot grow without bound. By the trichotomy
+(Theorem~\ref{thm:engine}(4)) the centre is of drift type, so $\Hb{}$
+admits medial centres $a_{k}\to\xi$ and is defective.
+
+It remains to reconstruct $\operatorname{int}\Hb{}$ from such $a_{k}$,
+whose feet may escape to $K_{\infty}$. With $\tau_{k}:=-b(a_{k})$ and a
+basepoint $o\in\partial\Hb{}$: $X\subseteq\{b\ge0\}$ and $1$-Lipschitz
+$b$ give $r(a_{k})\ge\tau_{k}$, while horofunction convergence gives,
+for $p\in\operatorname{int}\Hb{}$,
+$d(p,a_{k})=\tau_{k}+\mathrm{off}_{k}-\tau_{p}+o(1)$, where
+$\mathrm{off}_{k}=d(o,a_{k})+b(a_{k})\ge0$ is the radial offset of
+$a_{k}$. Thus $r(a_{k})-d(p,a_{k})\ge\tau_{p}-\mathrm{off}_{k}-o(1)$.
+When $\sec\le-a^{2}<0$ (asymptotic rays converge) or $M$ is flat
+(Pythagoras) --- hence on $\R^{n}$, $\HH^{n}$, every $\Mf$, and every
+pinched manifold --- $\mathrm{off}_{k}\to0$, so $r-d\to\tau_{p}>0$ and
+$\operatorname{int}\Hb{}\subseteq\Rx$ in full. Equivalently, where the
+horosphere supports a Motzkin (or Carnot) bisector witness one may take
+the $a_{k}$ along the ray over it, $\mathrm{off}_{k}\equiv0$ and feet
+escaping; the valley $\{t=-1/(1+x^{2})\}$ in $\Mf$ ($K=\varnothing$,
+feet $x^{\ast}\to\pm\infty$) is so reconstructed.
+\end{proof}
+
+\subsection{The static reading: localisation and Motzkin}
+\label{sec:static}
+
+Theorems~\ref{thm:faithful}--\ref{thm:faithful-nc} are complete and
+faithful, but their certificate is phrased through the ambient
+$\hconv$. To read it as Theorem~6 does --- a convexity of the contact
+set in the \emph{intrinsic} geometry of the horosphere --- one needs to
+identify $\hconv$ with a metric hull, which requires \emph{localisation}.
+
+\begin{definition}[Defective, static]\label{def:defective}
+A maximal free horoball $\Hb{}$ is \emph{defective} if its contact set
+$X\cap\partial\Hb{}$ is \emph{not Chebyshev} in the intrinsic geometry
+of the horosphere $\partial\Hb{}$: some point of $\partial\Hb{}$ has
+two or more nearest points of the contact set. When $\partial\Hb{}$ is
+flat, Motzkin's theorem (Theorem~\ref{thm:motzkin}) makes this
+equivalent to the contact set being non-convex; on a curved
+horosphere, non-Chebyshev is the correct invariant, in general
+strictly weaker than non-convex.
+\end{definition}
+
+Two comparison facts connect this static notion to the dynamical and
+ambient ones:
+\begin{itemize}
+\item[\textup{(L)}] \emph{Localisation:} among contacts on
+$\partial\Hb{}$, those nearest to a high centre are those nearest in
+the intrinsic metric of $\partial\Hb{}$ --- so a centre is medial iff
+its position has two or more intrinsic-nearest contacts;
+\item[\textup{(NC)}] \emph{No collapse:} the two feet of a drifting
+medial centre converge to \emph{distinct} contacts.
+\end{itemize}
+Under (L) the static $\hconv$ is the metric convex hull and
+``defective'' (Definition~\ref{def:defective}) agrees with the
+ambient certificate of Theorem~\ref{thm:faithful}; (NC), needed only
+for the converse, is automatic where geodesics diverge (flat or
+$\mathrm{CAT}(0)$ horospheres) and can fail where they focus
+(positively curved horospheres). \emph{Motzkin is not part of the
+theorem:} the invariant is non-Chebyshev, read off the two feet;
+Motzkin only restates it as non-convex when the horosphere is flat.
+
+The obstruction to (L), and to a metric reading at all, is the
+intrinsic curvature of the horosphere. Part~II quantifies it (the Gauss
+equation) and then establishes the static certificate concretely on
+flat, $\mathrm{CAT}(0)$, and positively curved horospheres.
+
+\bigskip
+\begin{center}\textsc{Part II. ``Defective'' across the curvature
+hierarchy}\end{center}
+
+\section{The Gauss obstruction}\label{sec:gauss}
+
+\begin{proposition}[Horosphere curvature]\label{prop:gauss}
+Let $S$ be a horosphere in a Hadamard manifold $M$, with (outward)
+shape operator $\mathrm{II}\succeq0$. For a tangent $2$-plane
+$\Pi\subseteq T S$ spanned by an orthonormal pair $u,v$,
+\[
+  K_{S}(\Pi)=K_{M}(\Pi)
+  +\bigl(\mathrm{II}(u,u)\,\mathrm{II}(v,v)-\mathrm{II}(u,v)^{2}\bigr).
+\]
+In $\HH^{n}$ every horosphere is umbilic with $\mathrm{II}=\mathrm{Id}$
+and $K_{M}\equiv-1$, so $K_{S}\equiv0$. Under
+$-b^{2}\le\sec\le-a^{2}<0$ the principal curvatures of every horosphere
+lie in $[a,b]$, hence $K_{S}\in[a^{2}-b^{2},\,b^{2}-a^{2}]$.
+\end{proposition}
+
+\begin{proof}
+The displayed identity is the Gauss equation for the hypersurface
+$S\subseteq M$. Horospheres are limits of geodesic spheres, whose shape
+operators converge to that of the stable Jacobi tensor; the bound
+$\mathrm{II}\in[a,b]\cdot\mathrm{Id}$ (as quadratic forms) under
+$-b^{2}\le\sec\le-a^{2}$ is the Heintze--Im Hof estimate \cite{HIH}.
+Combining $K_{M}(\Pi)\in[-b^{2},-a^{2}]$ with
+$\det(\mathrm{II}|_{\Pi})\in[a^{2},b^{2}]$ gives the stated range.
+\end{proof}
+
+The point is the sign change: when $b>\sqrt{2}\,a$ the upper end
+$b^{2}-a^{2}$ exceeds $a^{2}$ and the interval contains positive
+values, so a horosphere can have positive intrinsic curvature in some
+$2$-planes. On a space of positive curvature, Chebyshev sets need not
+be convex, and the Motzkin equivalence has no reason to hold.
+\emph{This, not the loss of homogeneity, is the essential obstacle.}
+The natural first step is to switch it off: keep the horosphere flat
+while letting the ambient curvature vary. The slices $\{t=c\}$ of the
+warped products below are umbilic with shape operator
+$(f'/f)\,\mathrm{Id}$, and the Gauss equation reads
+$K_{S}=-(f'/f)^{2}+(f'/f)^{2}=0$ for every admissible $f$; constant
+ambient curvature is the strictly stronger requirement
+$(\log f)''=0$. The warped family is thus exactly the room between
+``flat horospheres'' and ``constant curvature.''
+
+\section{Warped products with flat horospheres}\label{sec:warp}
+
+Fix $n\ge2$ and a \emph{warp} $f:\R\to(0,\infty)$ that is smooth,
+strictly convex, strictly decreasing, with $f(t)\to0$ as
+$t\to+\infty$. (Convex, positive and decreasing to $0$ forces
+$f(t)\to+\infty$ as $t\to-\infty$.) Let
+$\Mf=(\R\times\R^{n-1},\,dt^{2}+f(t)^{2}g_{\E})$, with
+$g_{\E}=\sum_{i}(dx^{i})^{2}$.
+
+\begin{proposition}[$\Mf$ is a pinched Hadamard manifold]
+\label{prop:mf-curv}
+$\Mf$ is a complete, simply connected Riemannian manifold. Its
+sectional curvatures are
+\[
+  K(\partial_{t},\partial_{x^{i}})=-\frac{f''}{f}<0,
+  \qquad
+  K(\partial_{x^{i}},\partial_{x^{j}})=-\Bigl(\frac{f'}{f}\Bigr)^{2}<0
+  \quad(i\neq j),
+\]
+and every sectional curvature lies in the convex hull of these two
+values; in particular $\sec<0$, so $\Mf$ is Hadamard. If
+$a^{2}\le f''/f\le b^{2}$ and $a^{2}\le(f'/f)^{2}\le b^{2}$ on all of
+$\R$, then $\Mf$ is pinched: $-b^{2}\le\sec\le-a^{2}$. The curvature is
+non-constant unless $f(t)=Ce^{kt}$, i.e.\ unless $\Mf\cong\HH^{n}$.
+\end{proposition}
+
+\begin{proof}
+$\R\times\R^{n-1}=\R^{n}$ is simply connected, and $g_{f}$ is complete
+because $f$ is bounded below by a positive constant on every compact
+$t$-interval and the $t$-lines have infinite length in both
+directions. The curvature formulas are the standard warped-product
+identities for a one-dimensional base $B=\R$ and flat fibre
+$F=\R^{n-1}$ \cite[Prop.~7.42]{One}:
+\[
+  K(\partial_{t},Y)=-\frac{f''}{f},\qquad
+  K(Y,Z)=\frac{K^{F}-|f'|^{2}}{f^{2}}=-\frac{(f')^{2}}{f^{2}}
+  \quad(Y,Z\ \text{fibre, }K^{F}=0).
+\]
+Because the base is one-dimensional and the fibre flat, the curvature
+operator is diagonal in the splitting
+$T\Mf=\R\partial_{t}\oplus(\text{fibre})$, so every sectional curvature
+is a convex combination of the two displayed eigenvalues; both are
+negative under the standing hypotheses. The pinching is immediate. The
+curvature is constant iff $f''/f=(f'/f)^{2}$, i.e.\ $(\log f)''=0$,
+i.e.\ $f=Ce^{kt}$; then $g_{f}$ is the half-space metric of $\HH^{n}$
+after rescaling.
+\end{proof}
+
+\begin{example}\label{ex:warp}
+$f(t)=e^{-t}(1+\varepsilon e^{-t})$ with $\varepsilon>0$ is admissible.
+Here $-f''/f=-\dfrac{1+4\varepsilon e^{-t}}{1+\varepsilon e^{-t}}$
+ranges over $(-4,-1)$ and $-(f'/f)^{2}=-\Bigl(\dfrac{1+2\varepsilon
+e^{-t}}{1+\varepsilon e^{-t}}\Bigr)^{2}$ over $(-4,-1)$: the manifold
+is pinched $-4\le\sec\le-1$, genuinely non-constant, asymptotically
+hyperbolic of curvature $-1$ as $t\to+\infty$ and $-4$ as
+$t\to-\infty$.
+\end{example}
+
+\begin{proposition}[Flat horospheres]\label{prop:mf-horo}
+Let $\xi^{+}\in\bdry\Mf$ be the ideal endpoint of the upward
+$t$-lines. The Busemann function of $\xi^{+}$ is $b_{\xi^{+}}=-t$ (up
+to an additive constant); consequently the horospheres centred at
+$\xi^{+}$ are exactly the slices $\Sb{c}=\{t=c\}$. Each $\Sb{c}$
+carries the induced metric $f(c)^{2}g_{\E}$ and is therefore
+intrinsically flat, isometric to $\E^{n-1}$. The slices are \emph{not}
+horospheres for any other ideal point: the Busemann function toward the
+downward direction depends on the fibre coordinate (its level sets are
+curved), so $\{t=c\}$ is a flat horosphere for $\xi^{+}$ alone.
+\end{proposition}
+
+\begin{proof}
+Let $\gamma(s)=(s,0)$ be the upward unit-speed $t$-line. For
+$y=(t_{y},x_{y})$, $b_{\xi^{+}}(y)=\lim_{s\to\infty}(d(y,\gamma(s))-s)$.
+By Lemma~\ref{lem:distlaw} below (whose proof is independent of this
+proposition),
+$d(y,\gamma(s))=(s-t_{y})+\dfrac{|x_{y}|^{2}}{2I(t_{y},s)}+o(1)$, and
+$I(t_{y},s)=\int_{t_{y}}^{s}f^{-2}\to\infty$ as $s\to\infty$ because
+$f(t)\to0$ makes $f^{-2}$ non-integrable at $+\infty$. Hence the middle
+term vanishes and $b_{\xi^{+}}(y)=-t_{y}$, independent of $x_{y}$. Its
+level sets are the slices $\{t=c\}$, with induced metric
+$g_{f}|_{t=c}=f(c)^{2}g_{\E}$, a constant multiple of the flat metric.
+Toward the downward axis $\gamma(-s)=(-s,0)$ the same computation gives
+$d(y,(-s,0))-s\to t_{y}+\dfrac{|x_{y}|^{2}}{2\int_{-\infty}^{t_{y}}
+f^{-2}}$, where now $\int_{-\infty}^{t_{y}}f^{-2}$ is \emph{finite}
+(since $f\to\infty$, $f^{-2}$ is integrable at $-\infty$). The
+surviving $|x_{y}|^{2}$-term shows the downward Busemann level sets are
+paraboloidal, not the slices; the slices are horospheres for $\xi^{+}$
+only.
+\end{proof}
+
+\begin{proposition}[Transitivity on horospheres]\label{prop:mf-isom}
+For every $v\in\R^{n-1}$ and every $R\in O(n-1)$, the map
+$(t,x)\mapsto(t,Rx+v)$ is an isometry of $\Mf$ fixing each horosphere
+$\Sb{c}$ setwise and fixing $\xi^{\pm}$. The group of such maps acts
+transitively on each $\Sb{c}$ and by the full group of Euclidean
+isometries on its intrinsic geometry. Reflection of $\R^{n-1}$ across
+any affine hyperplane is likewise an isometry; its fixed-point set is a
+totally geodesic copy of $\Mf$ of one dimension lower.
+\end{proposition}
+
+\begin{proof}
+$g_{f}=dt^{2}+f(t)^{2}g_{\E}$ is invariant under any map acting as the
+identity on $t$ and as a $g_{\E}$-isometry on the fibre, because
+$f(t)^{2}g_{\E}$ is then preserved pointwise. Euclidean isometries of
+$\R^{n-1}$ are exactly such maps and act transitively on each fibre.
+The fixed-point set of the reflection across a hyperplane
+$H\subseteq\R^{n-1}$ is $\R\times H$, the fixed-point set of an
+isometry, hence totally geodesic; with the restricted metric it is
+$M_{f}$ of dimension $\dim H+1$.
+\end{proof}
+
+Homogeneity is thus retained \emph{along} horospheres --- the part the
+dictionary needs (``a centre may sit above any prescribed lateral
+position'') --- while it is lost \emph{across} them: no isometry moves
+$\Sb{0}$ to $\Sb{1}$, since $f(0)\neq f(1)$ scales the intrinsic
+diameter. This is the precise sense in which $\Mf$ relaxes hyperbolic
+homogeneity without touching the flatness of horospheres.
+
+\section{The local dictionary on \texorpdfstring{$\Mf$}{Mf}}
+\label{sec:dict}
+
+The two dictionary facts of $\HH^{n}$ now reappear, the first
+\emph{exactly} and the second through Motzkin on the flat horosphere.
+
+\begin{lemma}[Distance law]\label{lem:distlaw}
+For $a=(t_{a},\alpha)$ and $q=(t_{0},\kappa)$ in $\Mf$ with
+$t_{a}>t_{0}$, the distance $d(a,q)$ depends only on $t_{a},t_{0}$ and
+$\rho:=|\alpha-\kappa|$; the geodesic between them stays in the totally
+geodesic vertical plane through $\alpha,\kappa$; and $d(a,q)$ is a
+strictly increasing function of $\rho$ at every scale. Writing
+$I=I(t_{0},t_{a})=\int_{t_{0}}^{t_{a}}f(t)^{-2}\,dt$, one has the
+rigorous two-sided bound
+\[
+  (t_{a}-t_{0})\ \le\ d(a,q)\ \le\ (t_{a}-t_{0})+\frac{\rho^{2}}{2I}.
+\]
+In particular, for fixed $\rho$ and $t_{a}\to+\infty$ (so
+$I\to\infty$), $d(a,q)=(t_{a}-t_{0})+\dfrac{\rho^{2}}{2I}(1+o(1))
+=(t_{a}-t_{0})+o(1)$.
+\end{lemma}
+
+\begin{proof}
+Dependence on $\rho$ alone is Proposition~\ref{prop:mf-isom}: a fibre
+isometry carries $(\alpha,\kappa)$ to any pair with the same gap.
+Reflection across the hyperplane bisecting $\alpha,\kappa$ fixes the
+vertical plane $P=\R\times(\kappa+\R(\alpha-\kappa))$ pointwise, so $P$
+is totally geodesic and contains the minimiser; the problem is
+two-dimensional, $P\cong(\R^{2},dt^{2}+f^{2}dx^{2})$. Strict
+monotonicity in $\rho$ holds at all scales by first variation: the
+variation field of the endpoint $\alpha$ along the fibre is
+$\partial_{x}/|\partial_{x}|$, and $\partial_{\rho}d=\cos\theta>0$,
+$\theta<\tfrac{\pi}{2}$ being the angle the incoming geodesic makes
+with the outward fibre direction (it approaches from the $\kappa$-side,
+by the reflection symmetry).
+
+Parametrise a $t$-monotone path in $P$ by $t\mapsto(t,x(t))$ with
+$\int_{t_{0}}^{t_{a}}x'=\rho$, of length
+$L[x]=\int_{t_{0}}^{t_{a}}\sqrt{1+f(t)^{2}x'(t)^{2}}\,dt$. The
+integrand is $\ge1$, so $L\ge t_{a}-t_{0}$: the lower bound. For the
+upper bound use the comparison path of constant momentum
+$f^{2}x'\equiv\rho/I$, which satisfies
+$\int x'=\frac{\rho}{I}\int f^{-2}=\rho$; by
+$\sqrt{1+s}\le1+\tfrac{s}{2}$,
+\[
+  d(a,q)\le L=\int_{t_{0}}^{t_{a}}\sqrt{1+\frac{\rho^{2}}{f^{2}I^{2}}}
+  \,dt\le(t_{a}-t_{0})+\frac{\rho^{2}}{2I^{2}}\int_{t_{0}}^{t_{a}}f^{-2}
+  =(t_{a}-t_{0})+\frac{\rho^{2}}{2I}.
+\]
+For the refined asymptotic, Cauchy--Schwarz on \emph{any} path gives
+$\rho^{2}=(\int x')^{2}\le I\int f^{2}x'^{2}$, so along the true
+minimiser $\int f^{2}x'^{2}\ge\rho^{2}/I$; with
+$\sqrt{1+s}\ge1+\tfrac{s}{2}-\tfrac{s^{2}}{8}$ this yields
+$d-(t_{a}-t_{0})\ge\tfrac{\rho^{2}}{2I}-\tfrac18\int(f^{2}x'^{2})^{2}$.
+The quartic is negligible: on the minimiser $f^{2}x'\equiv\rho/I$ is
+constant, so $f^{2}x'^{2}=\rho^{2}/(f^{2}I^{2})\le\rho^{2}/I$ (since
+$f(t)^{-2}\le I$ on $[t_{0},t_{a}]$, $f$ being decreasing), whence
+$\int(f^{2}x'^{2})^{2}\le(\rho^{2}/I)\int f^{2}x'^{2}\le(\rho^{2}/I)^{2}
+=o(\rho^{2}/I)$ as $\rho^{2}/I\to0$. Combined with the upper bound this
+is the stated expansion.
+\end{proof}
+
+\begin{lemma}[Feet are exactly the Euclidean nearest contacts]
+\label{lem:feet}
+Let $\X\subseteq\Mf$ and $a=(t_{a},\alpha)$ with the nearest points of
+$\X$ lying on a horosphere $\Sb{0}=\{t=0\}$ --- e.g.\ $\X=K\subseteq
+\Sb{0}$. Then the feet of $a$ are exactly the points $(0,\kappa)$,
+$\kappa\in K$, minimising the Euclidean distance $|\alpha-\kappa|$.
+Consequently $a\in\Mx$ iff $\alpha$ has two or more Euclidean nearest
+points in $K$, and the medial directions of $K$ are precisely its
+non-Chebyshev points.
+\end{lemma}
+
+\begin{proof}
+By Lemma~\ref{lem:distlaw}, $d(a,(0,\kappa))$ is a strictly increasing
+function of $|\alpha-\kappa|$ for fixed $t_{a},t_{0}=0$; hence its
+minimisers over $\kappa\in K$ are exactly the minimisers of
+$|\alpha-\kappa|$. Multivaluedness of the nearest-point map is
+therefore multivaluedness of Euclidean nearest point in $K$, i.e.\
+$\alpha$ non-Chebyshev for $K$.
+\end{proof}
+
+This is the entire dictionary. The flat-horosphere hypothesis enters
+\emph{only} through Lemma~\ref{lem:feet}; once feet are Euclidean
+nearest contacts, Motzkin supplies the equivalence non-convex
+$\Leftrightarrow$ admits a medial centre, with no further reference to
+the ambient curvature.
+
+\begin{theorem}[Motzkin {\cite{Mot}}]\label{thm:motzkin}
+A nonempty closed set $K\subseteq\E^{N}$ is convex if and only if it is
+Chebyshev (every point has a unique nearest point of $K$).
+\end{theorem}
+
+\section{The reconstruction theorem on \texorpdfstring{$\Mf$}{Mf}}
+\label{sec:recon}
+
+\begin{theorem}[Non-convex contact set reconstructs the thin-end
+horoball]\label{thm:mf-suff}
+Let $K\subseteq\Sb{0}=\{t=0\}$ be closed and non-convex in
+$\Sb{0}\cong\E^{n-1}$, and let $\X\supseteq K$ be any closed set with
+$\X\cap\{t>-\nu\}=K$ for some $\nu>0$ (in particular $\X=K$). Then the
+entire thin-end horoball interior $\{t>0\}$ lies in $\Rx$.
+\end{theorem}
+
+\begin{proof}
+Since $K$ is non-convex it is non-Chebyshev (Motzkin), so there is a
+point $\alpha^{\ast}\in\R^{n-1}$ with two Euclidean nearest points
+$k_{1},k_{2}\in K$ at common distance
+$\rho:=|\alpha^{\ast}-k_{1}|=|\alpha^{\ast}-k_{2}|$, and no point of
+$K$ nearer. For each height $t_{a}>0$ put
+$a_{t_{a}}=(t_{a},\alpha^{\ast})$. By Lemma~\ref{lem:feet} the feet of
+$a_{t_{a}}$ are $(0,k_{1}),(0,k_{2})$, both at ambient distance
+$r(a_{t_{a}})=d(a_{t_{a}},(0,k_{1}))$, so $a_{t_{a}}\in\Mx$ for every
+$t_{a}>0$. (Contacts of $\X$ with $t\le-\nu$ are farther: they add at
+least $\nu$ to the $t$-gap by Lemma~\ref{lem:distlaw}, for $t_{a}$
+large.)
+
+Fix an interior point $p=(t_{p},\pi)$ with $t_{p}>0$. The integrals
+$I(0,t_{a})$ and $I(t_{p},t_{a})$ both tend to $+\infty$ as
+$t_{a}\to+\infty$ (non-integrability of $f^{-2}$ at $+\infty$), so the
+sandwich of Lemma~\ref{lem:distlaw} gives
+\[
+  r(a_{t_{a}})=d(a_{t_{a}},(0,k_{1}))=t_{a}+o(1),
+  \qquad
+  d(p,a_{t_{a}})\le(t_{a}-t_{p})+\frac{|\pi-\alpha^{\ast}|^{2}}
+  {2I(t_{p},t_{a})}=(t_{a}-t_{p})+o(1).
+\]
+Hence $d(p,a_{t_{a}})-r(a_{t_{a}})\le-t_{p}+o(1)\to-t_{p}<0$, so for
+all large $t_{a}$, $p\in B(a_{t_{a}},r(a_{t_{a}}))$ with
+$a_{t_{a}}\in\Mx$, i.e.\ $p\in\Rx$. As $p$ was an arbitrary interior
+point, $\{t>0\}\subseteq\Rx$.
+\end{proof}
+
+\begin{theorem}[Reconstruction of a set on a horosphere]
+\label{thm:mf-sharp}
+Let $\X=K\subseteq\Sb{0}=\{t=0\}$ be closed in $\Mf$.
+\begin{enumerate}[label=\textup{(\alph*)}]
+\item If $K$ is convex in $\Sb{0}\cong\E^{n-1}$, then $\Mx=\varnothing$
+  and $\Rx=\varnothing$.
+\item If $K$ is non-convex, then $\{t>0\}\subseteq\Rx$.
+\end{enumerate}
+In particular $\Rx\neq\varnothing\iff K$ is non-convex, the same
+dichotomy as in $\HH^{n}$ \textup{\cite[``$\X$ on a horosphere'']{R2}}.
+\end{theorem}
+
+\begin{proof}
+(b) is Theorem~\ref{thm:mf-suff}. For (a), suppose $K$ is convex, hence
+Chebyshev in $\E^{n-1}$ (Motzkin). Let $a=(t_{a},\alpha)$ be arbitrary.
+By Lemma~\ref{lem:distlaw}, $d(a,(0,\kappa))$ is a strictly increasing
+function of $|\alpha-\kappa|$ at every height $t_{a}$ --- above, on, or
+below $\Sb{0}$ --- and at every scale, the monotonicity there being
+unconditional. Therefore the nearest point of $a$ in $K$ is the unique
+Euclidean nearest point of $\alpha$ in $K$, which exists and is unique
+by the Chebyshev property. Thus every centre has a unique foot,
+$\Mx=\varnothing$, and $\Rx=\varnothing$.
+\end{proof}
+
+\begin{remark}[Up/down asymmetry]\label{rem:asym}
+Because $f$ is not even in $t$, the manifold is not $t$-reversible. By
+Proposition~\ref{prop:mf-horo} the slices are horospheres for
+$\xi^{+}$ \emph{only}; the slab $\{t<0\}$ is the exterior of the
+horoball $\{t\ge0\}$, not a horoball. So a contact set
+$K\subseteq\Sb{0}$ bounds a genuine flat-horosphere horoball only on
+the upward side $\{t>0\}$, which when defective is reconstructed in
+full (Theorem~\ref{thm:mf-suff}), the upward weight $1/I(0,t_{a})\to0$.
+Toward the downward direction the same $K$ sits on a \emph{curved}
+horosphere (the downward Busemann level sets are paraboloidal), and its
+reconstruction there is governed by that curved horosphere, not the
+flat slice. Concretely, for $K=\{\pm1\}\subseteq\R\subseteq\Sb{0}$ in
+Example~\ref{ex:warp}, the upward horoball $\{t>0\}$ is reconstructed
+in full, while the slab $\{t<0\}$ is not (off-axis points at depth
+escape every axial medial ball) --- as it must be, since the genuine
+downward horoball is the curved one. That a single set presents a flat
+horosphere to one ideal point and a curved horosphere to another is the
+local face of the Gauss obstruction, and it motivates the curved theory
+of \S\ref{sec:curved}--\S\ref{sec:frontier}.
+\end{remark}
+
+\begin{theorem}[Necessity on $\Mf$, unconditional]\label{thm:mf-nec}
+Let $\X\subseteq\Mf$ be closed and $p\in\Rx\setminus\Xhat$. Then $p$
+lies in a maximal free horoball whose contact set is non-convex in its
+flat horosphere (or, toward a downward ideal point, fails to be
+horospherically convex).
+\end{theorem}
+
+\begin{proof}
+This is the necessity half (``$\subseteq$'') of
+Theorem~\ref{thm:faithful}, with Theorem~\ref{thm:faithful-nc} for
+non-compact $\X$, specialised to $\Mf$ --- a curvature-free argument
+requiring no warped-metric Busemann expansion: the depth
+$D(\xi)=\inf_{x\in\X}b_{\xi}(x)-b_{\xi}(p)$ attains its maximum at a
+deepest $\xi^{\ast}$, Danskin's theorem with Lemma~\ref{lem:Lu-axial}
+gives $\sigma(p)\in\hconv(K^{\ast})$, and screening gives
+$\sigma(p)\notin K^{\ast}$, so $K^{\ast}\neq\hconv(K^{\ast})$. When
+$\xi^{\ast}=\xi^{+}$ the horosphere is flat
+(Proposition~\ref{prop:mf-horo}), the tilt functionals are Euclidean,
+and $\hconv=\conv$, so $K^{\ast}\neq\conv(K^{\ast})$: the deepest
+horoball is non-convex in its flat horosphere.
+\end{proof}
+
+\section{Curved horospheres I: warping over a Hadamard fibre}
+\label{sec:curved}
+
+The family $\Mf$ kept horospheres flat by warping over a flat fibre.
+Warping over a \emph{curved} fibre produces genuinely curved
+horospheres while preserving the exact dictionary, as long as the
+curvature stays nonpositive --- so the horospheres are
+$\mathrm{CAT}(0)$. This is the first curved-horosphere case, and it
+locates the next obstruction precisely: the Motzkin equivalence splits
+into an \emph{easy} half (convex $\Rightarrow$ Chebyshev), which
+$\mathrm{CAT}(0)$ supplies for free, and a \emph{hard} half (Chebyshev
+$\Rightarrow$ convex), the Riemannian Chebyshev-set problem.
+
+Let $N$ be a Hadamard manifold of dimension $n-1$ and $f$ as before.
+Set $M_{f,N}=(\R\times N,\,dt^{2}+f(t)^{2}g_{N})$, which reduces to
+$\Mf$ when $N=\E^{n-1}$.
+
+\begin{proposition}[Geometry of $M_{f,N}$]\label{prop:fN}
+$M_{f,N}$ is a Hadamard manifold. Its horospheres centred at $\xi^{+}$
+are the slices $\{t=c\}$, with induced metric $f(c)^{2}g_{N}$: a
+rescaled copy of $N$, hence $\mathrm{CAT}(0)$, of sectional curvature
+$K_{N}/f(c)^{2}$. The ambient sectional curvatures are $-f''/f$ (planes
+through $\partial_{t}$) and $\bigl(K_{N}-(f')^{2}\bigr)/f^{2}\le0$
+(planes tangent to the fibre).
+\end{proposition}
+
+\begin{proof}
+The curvature formulas are O'Neill's for the warped product
+$\R\times_{f}N$ \cite[Prop.~7.42]{One}; $K_{N}\le0$ and $(f')^{2}\ge0$
+make the fibre curvature $\le0$, and $f''>0$ makes the radial curvature
+$<0$. $\R\times N\cong\R^{n}$ is simply connected and complete with
+$\sec\le0$, hence Hadamard. The Busemann computation of
+Proposition~\ref{prop:mf-horo} used only $f\to0$ and gives
+$b_{\xi^{+}}=-t$ and slices $\{t=c\}$ as horospheres here too; their
+induced metric is $f(c)^{2}g_{N}$, a homothety of $N$, with curvature
+scaled by $f(c)^{-2}$.
+\end{proof}
+
+\begin{lemma}[Dictionary over a reflective fibre]\label{lem:fN-dict}
+Suppose every geodesic of $N$ is the fixed-point set of an isometric
+involution of $N$ (call $N$ \emph{geodesically reflective}; this holds
+for $N=\R^{k}\times\HH^{m_{1}}\times\cdots\times\HH^{m_{r}}$, since
+geodesics of a Riemannian product are products of geodesics and each
+factor reflects across a geodesic). For $a=(t_{a},\alpha)$ and
+$q=(t_{0},\kappa)$ the minimising geodesic lies in the totally geodesic
+slab $\R\times\gamma$, where $\gamma$ is the $N$-geodesic through
+$\alpha,\kappa$; consequently
+\[
+  (t_{a}-t_{0})\ \le\ d(a,q)\ \le\
+  (t_{a}-t_{0})+\frac{d_{N}(\alpha,\kappa)^{2}}{2\,I(t_{0},t_{a})},
+\]
+and $d(a,q)$ is a strictly increasing function of the intrinsic
+distance $d_{N}(\alpha,\kappa)$ at every scale and height. Hence the
+feet of a centre are exactly the $d_{N}$-nearest contacts, and a centre
+is medial iff its fibre position has two or more nearest contacts in
+the intrinsic metric of $N$.
+\end{lemma}
+
+\begin{proof}
+The reflection $r_{\gamma}$ of $N$ across $\gamma$ is an isometry
+fixing $\gamma$ pointwise; $\mathrm{id}_{\R}\times r_{\gamma}$ is then
+an isometry of $M_{f,N}$ whose fixed-point set is $\R\times\gamma$,
+hence totally geodesic and containing the minimiser. On
+$\R\times\gamma$ the metric is $dt^{2}+f(t)^{2}\,ds^{2}$ with $s$ the
+$N$-arclength along $\gamma$ --- exactly the two-dimensional warped
+metric of Lemma~\ref{lem:distlaw} with horizontal gap
+$d_{N}(\alpha,\kappa)$ --- so the bounds and strict monotonicity
+transfer verbatim.
+\end{proof}
+
+\begin{theorem}[Reconstruction over a Hadamard fibre]\label{thm:fN}
+Let $N$ be geodesically reflective as in Lemma~\ref{lem:fN-dict} (e.g.\
+$N=\R^{k}\times\HH^{m}$) and $K\subseteq S_{0}=N$ closed.
+\begin{enumerate}[label=\textup{(\alph*)}]
+\item \emph{(Sharpness, unconditional.)} If $K$ is convex in $N$, then
+$\Mx=\varnothing$ and $\Rx=\varnothing$.
+\item \emph{(Sufficiency.)} If $K$ is non-Chebyshev in $N$ --- some
+point has two or more nearest points --- then $\{t>0\}\subseteq\Rx$.
+\end{enumerate}
+Hence $\Rx\neq\varnothing\iff K$ is non-Chebyshev in $N$. If $N$ has
+the \emph{Motzkin property} (every closed non-convex set is
+non-Chebyshev), this reads $\Rx\neq\varnothing\iff K$ non-convex ---
+the hyperbolic dichotomy, now on curved $\mathrm{CAT}(0)$ horospheres.
+\end{theorem}
+
+\begin{proof}
+(a) A convex set in the Hadamard (hence $\mathrm{CAT}(0)$) manifold $N$
+is Chebyshev: nearest-point projection onto a complete convex subset of
+a $\mathrm{CAT}(0)$ space is single-valued \cite[II.2.4]{BH}. By
+Lemma~\ref{lem:fN-dict} the foot of \emph{any} centre
+$a=(t_{a},\alpha)$ is the unique $d_{N}$-nearest contact to $\alpha$
+(the monotonicity holds at every height), so $\Mx=\varnothing$ and
+$\Rx=\varnothing$. (b) A point $\alpha^{\ast}$ with two $d_{N}$-nearest
+contacts $k_{1},k_{2}$ gives, by Lemma~\ref{lem:fN-dict}, a two-footed
+centre $(t_{a},\alpha^{\ast})$ for every $t_{a}>0$; the swallow
+estimate of Theorem~\ref{thm:mf-suff} is purely radial (it uses only
+$I(t_{p},t_{a}),I(0,t_{a})\to\infty$) and transfers, giving
+$\{t>0\}\subseteq\Rx$.
+\end{proof}
+
+Two ingredients carry the sharpness proof: the foot-localisation of
+Lemma~\ref{lem:fN-dict} (proved under geodesic reflectivity, and
+expected asymptotically for any Hadamard fibre), and the
+single-valuedness of projection onto a convex set --- the only place
+the \emph{curvature} of the horosphere enters, and precisely the
+$\mathrm{CAT}(0)$ property. So, granting localisation, the sharpness
+half of the dichotomy survives into curved horospheres exactly as far
+as $\mathrm{CAT}(0)$ reaches. The remaining content --- sufficiency
+from non-convexity --- is the Riemannian Chebyshev-set problem in $N$,
+Motzkin's theorem in $\E^{n-1}$ and open in full generality. The
+reconstruction theorem on $M_{f,N}$ is thus \emph{equivalent} to the
+Motzkin property of the fibre $N$, isolating the entire difficulty in a
+single classical-type question about $N$ alone. Necessity for general
+$\X$ is again the curvature-free deepest-shadow of
+Theorem~\ref{thm:faithful} ($M_{f,N}$ is Hadamard), needing no separate
+shadow lemma; the sharpness statement (a) is unconditional.
+
+\section{Curved horospheres II: complex hyperbolic space}
+\label{sec:ch2}
+
+The first \emph{positively} curved horosphere is the Heisenberg
+horosphere of $\mathbb{CH}^{2}$. Because the complex-hyperbolic
+distance is explicit, localisation --- fact (L) of \S\ref{sec:static},
+elsewhere only expected --- can here be carried out \emph{exactly}, and
+it yields the first reconstruction theorem on a non-$\mathrm{CAT}(0)$
+horosphere.
+
+\paragraph{Horospherical coordinates.} Realise $\mathbb{CH}^{2}$ as the
+negative lines in $(\mathbb{C}^{3},\langle\cdot,\cdot\rangle)$ for the
+second Hermitian form $\langle z,w\rangle=z_{1}\bar w_{3}+z_{2}\bar
+w_{2}+z_{3}\bar w_{1}$ of signature $(2,1)$. A point with Heisenberg
+coordinates $(\zeta,v)\in\mathbb{C}\times\R$ and height $u>0$ lifts to
+\[
+  \psi(\zeta,v,u)=\Bigl(\tfrac{-|\zeta|^{2}-u+iv}{2},\ \zeta,\ 1\Bigr),
+  \qquad \langle\psi,\psi\rangle=-u .
+\]
+The horospheres centred at the distinguished ideal point
+($u\to\infty$) are the slices $\{u=c\}$, each a copy of the Heisenberg
+group $\mathfrak{H}_{3}=\mathbb{C}\times\R$; the horoball is $\{u>c\}$.
+
+\begin{proposition}[Exact distance, and localisation to the Carnot
+metric]\label{prop:ch2}
+For $p=(\zeta,v,u)$ and $p'=(\zeta',v',u')$,
+\[
+  \cosh^{2}\!\tfrac{d(p,p')}{2}
+  =\frac{1}{uu'}\!\left[\Bigl(\tfrac{|\zeta-\zeta'|^{2}+u+u'}{2}\Bigr)^{2}
+  +\Bigl(\tfrac{v-v'}{2}+\operatorname{Im}(\zeta\bar\zeta')\Bigr)^{2}\right].
+\]
+Writing $D=|\zeta_{a}-\zeta_{q}|^{2}$ and
+$V=v_{a}-v_{q}+2\operatorname{Im}(\zeta_{a}\bar\zeta_{q})$, a high
+centre $a=(\zeta_{a},v_{a},u_{a})$ and a contact $q$ on $\{u=u_{0}\}$
+obey the \emph{exact} identity
+\[
+  \cosh^{2}\!\tfrac{d(a,q)}{2}
+  =\frac{u_{a}}{4u_{0}}+\frac{D+u_{0}}{2u_{0}}
+  +\frac{(D+u_{0})^{2}+V^{2}}{4u_{a}u_{0}} .
+\]
+Consequently the feet of a high centre are the contacts of least
+\emph{horizontal} distance $|\zeta_{a}-\zeta_{q}|$, ties broken by
+least $|V|$: the vertical coordinate is suppressed by a factor
+$1/u_{a}$. The horizontal/vertical crossover is at
+$V\sim\sqrt{2u_{a}D}$, so under the parabolic dilation
+$(\zeta,v)\mapsto(\zeta,v/\sqrt{u_{a}})$ the nearest-point structure
+converges to that of the Carnot--Carath\'eodory metric on
+$\mathfrak{H}_{3}$ --- \emph{not} the Riemannian induced metric
+$4|d\zeta|^{2}/u_{0}+\theta^{2}/u_{0}^{2}$, which would weight $V$ at
+order one.
+\end{proposition}
+
+\begin{proof}
+With $\psi_{3}=\psi'_{3}=1$, $\langle\psi,\psi'\rangle=\psi_{1}+\bar
+\psi'_{1}+\zeta\bar\zeta' =-\tfrac{|\zeta-\zeta'|^{2}+u+u'}{2}
++i\bigl(\tfrac{v-v'}{2}+\operatorname{Im}(\zeta\bar\zeta')\bigr)$, and
+$\cosh^{2}(d/2)=\langle\psi,\psi'\rangle\langle\psi',\psi\rangle/
+(\langle\psi,\psi\rangle\langle\psi',\psi'\rangle)
+=|\langle\psi,\psi'\rangle|^{2}/(uu')$, which is the first display. The
+second is its expansion in $u_{a}$ at fixed $u_{0}$ (no approximation:
+$(D+u_{a}+u_{0})^{2}+V^{2}$ over $4u_{a}u_{0}$). The contact dependence
+is $\tfrac{D}{2u_{0}}$ at order $1$ and $\tfrac{V^{2}}{4u_{a}u_{0}}$ at
+order $u_{a}^{-1}$; equating them gives the crossover $V^{2}=2u_{a}D$.
+The induced horosphere metric follows from the infinitesimal form of
+the distance: $ds^{2}=4|d\zeta|^{2}/u_{0}+\theta^{2}/u_{0}^{2}$ with
+$\theta=dv-2\operatorname{Im}(\zeta\,\overline{d\zeta})$. (Numerically,
+as $u_{a}$ runs $3\to1000$ the ambient-nearest of fixed contacts
+migrates from the Riemannian-nearest to the horizontal-nearest, and the
+crossover ratio $V^{\ast}/\sqrt{2u_{a}D}\to1$.)
+\end{proof}
+
+\begin{theorem}[Reconstruction in $\mathbb{CH}^{2}$: sufficiency]
+\label{thm:ch2}
+Let $K$ be a closed contact set on a horosphere $\{u=u_{0}\}$ of
+$\mathbb{CH}^{2}$ that is \emph{graded non-Chebyshev}: some position
+admits two contacts of equal least horizontal distance and equal $V$.
+Then the whole horoball interior $\{u>u_{0}\}$ lies in $\Rx$.
+\end{theorem}
+
+\begin{proof}
+Normalise $u_{0}=1$. Graded non-Chebyshev gives
+$(\zeta^{\ast},v^{\ast})$ and two contacts $q_{1},q_{2}$ with equal
+$D=\delta^{2}$ and equal $V$, hence (Proposition~\ref{prop:ch2})
+equidistant from $a_{t}=(\zeta^{\ast},v^{\ast},t)$ for every $t$, with
+no contact nearer; so $a_{t}$ is medial for all large $t$. For an
+interior point $p=(\zeta_{p},v_{p},u_{p})$, $u_{p}>1$, the distance
+formula gives $\cosh^{2}(d(a_{t},q_{1})/2)=\tfrac{t}{4}+O(1)$ and
+$\cosh^{2}(d(p,a_{t})/2)=\tfrac{t}{4u_{p}}+O(1)$, whence, via
+$\operatorname{arccosh}(x)=\log 2x+o(1)$,
+\[
+  r(a_{t})=d(a_{t},q_{1})=\log t+O(\tfrac1t),\qquad
+  d(p,a_{t})=\log t-\log u_{p}+o(1),
+\]
+so $d(p,a_{t})-r(a_{t})\to-\log u_{p}<0$. Thus $p\in B(a_{t},r(a_{t}))$
+with $a_{t}$ medial for all large $t$, i.e.\ $p\in\Rx$. As $p$ was
+arbitrary, $\{u>1\}\subseteq\Rx$.
+\end{proof}
+
+Proposition~\ref{prop:ch2} settles localisation in $\mathbb{CH}^{2}$
+exactly, with the intrinsic metric the Carnot one, and
+Theorem~\ref{thm:ch2} is, to our knowledge, the first medial-axis
+reconstruction on a positively curved horosphere. The detection
+invariant is graded non-Chebyshev, read off the two feet, so it needs
+no Chebyshev-in-Carnot theory. What remains for the full
+$\mathbb{CH}^{2}$ characterization: necessity (a drifting medial centre
+forces graded non-Chebyshev); the exact reconstructed region for a
+general contact set; and, only for restating ``graded non-Chebyshev''
+as a convexity, the right notion of convexity in $\mathfrak{H}_{3}$
+(horizontal versus Euclidean).
+
+\section{The frontier: non-$\mathrm{CAT}(0)$ horospheres}
+\label{sec:frontier}
+
+The dividing line is now sharp. Over a flat fibre ($\Mf$) the
+dictionary is literally Motzkin; over a nonpositively curved fibre
+($M_{f,N}$, $\mathrm{CAT}(0)$ horospheres) the sharpness half is free
+and the dichotomy reduces to the Chebyshev property of the fibre. The
+first place where even the sharpness half can fail is a
+\emph{positively} curved horosphere --- $K_{S}>0$ in some plane, which
+Proposition~\ref{prop:gauss} permits under pinching and which no warped
+product over a Hadamard fibre can produce.
+
+\paragraph{Rank-one symmetric spaces.} In $\mathbb{CH}^{n}$ (and
+$\mathbb{HH}^{n},\mathbb{OH}^{2}$, Damek--Ricci spaces) the isometry
+group still acts transitively on horoballs, so ``WLOG one horoball''
+survives. But the horosphere is the Heisenberg group
+$\mathfrak{H}_{2n-1}$ with a left-invariant metric \cite{HIH,One,Gol}:
+the geodesic up the axis contracts the $2n-2$ horizontal (contact)
+directions like $e^{-\tau}$ and the one vertical (centre) direction
+like $e^{-2\tau}$ --- the anisotropy behind the $-4\le\sec\le-1$
+pinching of $\mathbb{CH}^{n}$. Its left-invariant metric has sectional
+curvatures of \emph{both} signs (for $\mathfrak{H}_{3}$, Milnor's
+$-\tfrac34$ in the horizontal plane and $+\tfrac14$ in planes through
+the centre \cite{Mil}), so it is not $\mathrm{CAT}(0)$. For $n=2$ both
+dictionary steps are carried out in \S\ref{sec:ch2} --- localisation
+exactly, sufficiency from graded non-Chebyshev. In general $n$,
+localisation should give the same with the anisotropic two-rate
+Heisenberg metric (the analogue of Lemma~\ref{lem:fN-dict} with a
+two-rate contraction in place of the single $1/I$), and detection
+becomes a Chebyshev-set problem in a Carnot group, sensitive to which
+convexity --- Euclidean, geodesic, or horizontal --- one means.
+
+\paragraph{Pinched negative curvature.} Dropping homogeneity, under
+$-b^{2}\le\sec\le-a^{2}$ each horoball must be treated in place, its
+horosphere an Alexandrov space with two-sided curvature bounds
+(Proposition~\ref{prop:gauss}) and $K_{S}$ generically of both signs.
+Localisation becomes a comparison statement --- the discrimination
+weight lies between the Heintze--Im Hof rates $e^{-b\tau}$ and
+$e^{-a\tau}$, from Jacobi-field control of $\mathrm{II}$ --- and
+detection is Motzkin's theorem in an Alexandrov space of indefinite
+curvature, the precise admissible class being the open problem.
+
+\paragraph{The stratification.} The phenomenon is therefore controlled,
+at every level, by a single intrinsic question about the horosphere ---
+whether a contact set with a two-footed centre is non-convex, and
+conversely --- and the curvature of the horosphere governs how much of
+that equivalence survives:
+\begin{itemize}
+\item \emph{flat} ($\Mf$): Motzkin, both halves --- full theorem
+  (\S\ref{sec:recon});
+\item \emph{$\mathrm{CAT}(0)$} ($M_{f,N}$): sharpness free, hard half
+  $=$ Motzkin in $N$ --- sharpness theorem (\S\ref{sec:curved});
+\item \emph{non-$\mathrm{CAT}(0)$} ($\mathbb{CH}^{2}$): localisation
+  and sufficiency via graded non-Chebyshev in the Carnot metric
+  (\S\ref{sec:ch2});
+\item \emph{non-$\mathrm{CAT}(0)$, general} ($\mathbb{CH}^{n}$, $n\ge3$;
+  pinched): two-rate / Alexandrov detection --- open.
+\end{itemize}
+Flat and $\mathrm{CAT}(0)$ horospheres keep the sharpness half
+unconditionally; positive horosphere curvature is the genuine frontier.
+
+\begin{remark}[Prospects for the clean static form]\label{rem:prospects}
+The faithful characterization (Theorems~\ref{thm:faithful}--%
+\ref{thm:faithful-nc}) is already unconditional; what the frontier
+governs is only its \emph{static} reading
+(Definition~\ref{def:defective}) --- ``defective $=$ contact set
+non-Chebyshev in the intrinsic metric.'' Localisation (L) is expected
+throughout the pinched range by Jacobi-field comparison, with one
+subtlety: the intrinsic metric may be sub-Riemannian (Carnot) rather
+than Riemannian --- a refinement of the \emph{definition} of defective,
+not an obstruction, since the invariant is non-Chebyshev, which needs
+only a metric. The genuine nub is no-collapse (NC): on a positively
+curved horosphere the squared intrinsic distance loses $2$-convexity
+past conjugate points, so two feet distinct at every finite height may
+coalesce in the limit. The cure, indicated by the hyperbolic
+experience, is to read defectiveness at \emph{finite height}: two
+distinct feet at each $t$ is all that medial means, and collapse in the
+limit is irrelevant, at the price of a per-height rather than
+closed-form criterion. Whether the closed-form static criterion itself
+survives in full positive-curvature generality reduces to one question:
+\emph{can a limit-collapsing medial centre reconstruct?} The decisive
+test case is $\mathbb{CH}^{2}$, whose single homogeneous Heisenberg
+horosphere makes the computation explicit.
+\end{remark}
+
+\paragraph{Conclusion.} A characterization holds in full generality
+(Theorem~\ref{thm:fullgen}): for every Hadamard manifold and every
+closed set, $\Rx$ is the hull together with the interiors of the
+defective maximal free horoballs, defectiveness read dynamically and
+the proof resting only on the curvature-free trichotomy and a
+curvature-free swallow lemma. Its faithful, $\Mx$-free upgrade
+(Theorems~\ref{thm:faithful}--\ref{thm:faithful-nc}) replaces the
+dynamical certificate by ``the contact set differs from its horoball
+hull $\hconv$,'' which is $\conv$ on flat horospheres (Theorem~6
+verbatim) and unconditional in every Hadamard manifold, necessity being
+Danskin's deepest-shadow and sufficiency the trichotomy. What is
+special to constant curvature is not the theorem but the \emph{static}
+reading of ``defective''; the medial-axis reconstruction phenomenon is
+\emph{not} special to constant curvature, with the curvature of the
+horosphere --- not of the ambient manifold --- governing how concrete
+that static reading can be made. On the warped family $\Mf$ the entire
+hyperbolic dictionary and the reconstruction dichotomy transfer
+verbatim despite variable pinched ambient curvature; warping over a
+curved Hadamard fibre gives $\mathrm{CAT}(0)$ horospheres on which the
+sharpness half remains an unconditional theorem; and the Heisenberg
+horosphere of $\mathbb{CH}^{2}$ gives the first reconstruction theorem
+on a positively curved horosphere. The genuine frontier is detection on
+non-$\mathrm{CAT}(0)$ horospheres in general: a Chebyshev question in a
+Carnot group, or Motzkin's theorem in an Alexandrov space of indefinite
+curvature.
+
+\begin{thebibliography}{9}
+
+\bibitem{Bia} A.~Bia\l{}o\.zyt, \emph{Sets reconstructible with medial
+axis}, preprint, AGH University of Krak\'ow, 2024.
+
+\bibitem{R1} \emph{Sets reconstructible with medial axis: a
+generalisation to Riemannian manifolds}, companion analysis notes,
+June 2026 (file \texttt{medial\_axis\_riemannian\_1.pdf}).
+
+\bibitem{R2} \emph{Medial-axis reconstruction in hyperbolic space,
+with a structural framework for Hadamard manifolds}, companion note,
+June 2026 (file \texttt{medial\_axis\_riemannian\_2.pdf}).
+
+\bibitem{Notes} \emph{Formalization notes on Theorem~6 of
+\cite{Bia}}, June 2026 (files
+\texttt{medial\_formalization\_notes.tex},
+\texttt{medial\_formalization\_plan.md}); Lean~4 formalization on
+branch \texttt{medial-axis}, files
+\texttt{Mathlib/Analysis/Convex/MedialAxis*.lean}.
+
+\bibitem{BH} M.~Bridson and A.~Haefliger, \emph{Metric Spaces of
+Non-Positive Curvature}, Grundlehren 319, Springer, 1999.
+
+\bibitem{One} B.~O'Neill, \emph{Semi-Riemannian Geometry with
+Applications to Relativity}, Pure and Applied Mathematics 103,
+Academic Press, 1983. (Warped-product curvature, Prop.~7.42.)
+
+\bibitem{HIH} E.~Heintze and H.-C.~Im Hof, \emph{Geometry of
+horospheres}, J.\ Differential Geom.\ \textbf{12} (1977), 481--491.
+
+\bibitem{Mil} J.~Milnor, \emph{Curvatures of left invariant metrics on
+Lie groups}, Advances in Math.\ \textbf{21} (1976), 293--329.
+
+\bibitem{Gol} W.~M.~Goldman, \emph{Complex Hyperbolic Geometry}, Oxford
+Mathematical Monographs, Oxford University Press, 1999.
+
+\bibitem{Mot} T.~Motzkin, \emph{Sur quelques propri\'et\'es
+caract\'eristiques des ensembles born\'es non convexes}, Atti Accad.\
+Naz.\ Lincei \textbf{21} (1935), 773--779.
+
+\bibitem{Lie} A.~Lieutier, \emph{Any open bounded subset of
+$\mathbb{R}^{n}$ has the same homotopy type as its medial axis},
+Computer-Aided Design \textbf{36} (2004), 1029--1046.
+
+\end{thebibliography}
+
+\end{document}
