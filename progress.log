@@ -1,0 +1,123 @@
+# Progress log — Białozyt Theorem 6 → general complete Riemannian manifolds
+# Goal: finish the full version in full generality.
+# (Newest entries at the bottom. Files: medial_axis_riemannian_3.tex [R3, Hadamard],
+#  medial_axis_spherical.tex [Sph, positive curvature], medial_axis_trichotomy.tex [Tri, capstone].)
+
+## [1] AUDIT COMPLETE — current state of the series
+Read all three notes end-to-end.
+
+Coverage today:
+- R^n ...................... Białozyt Thm 6 (baseline).
+- Hadamard, X compact ...... DONE, unconditional (R3 Thm 3.3: faithful hconv certificate).
+- Hadamard, X closed ....... NEARLY: "⊆" unconditional; equality has the *radial-offset caveat*
+                             for purely asymptotic drifts in inhomogeneous manifolds (R3 Thm 3.4).
+- Round sphere S^n ......... DONE: total reconstruction (Sph Thm 4.1).
+- Compact M, δ-dense X ..... DONE: total, 2δ < inj(M) (Sph Thm 6.1).
+- Compact M, sparse X, M_X . DONE (sharp negative): cut-shielding, prolate ellipsoid c* ≈ 2.6.
+- Compact M, M^g_X ......... GAP #1: Sph Thm 8.3 / Tri Thm 5.6 (R^g = M \ X) rests on an UNPROVEN
+                             extension of Lieutier's swallow past cut points — flagged in
+                             Sph Rem 8.4 (rem:containment) and Tri Rem 5.5 (rem:twogeo-caveat)
+                             as "expected, unconditional for generic/analytic metrics".
+- Noncompact general M ..... GAP #2: NO theorem at all (the "in general partial" cell); includes
+                             non-simply-connected sec≤0 (cusps), mixed curvature, sec>0 ends.
+- Hadamard offset caveat ... GAP #3 (R3 Thm 3.4 "single exception": only deep part reconstructed).
+
+## [2] MATHEMATICAL PLAN (worked out in detail, self-audited)
+Key discoveries from the analysis:
+
+(A) CAPTURE THEOREM (new; closes GAP #1 unconditionally, no genericity/analyticity).
+    Machinery: the generalized-gradient flow is replaced by ANY solution of the differential
+    inclusion  Φ' ∈ -conv U(Φ),  U(x) = unit initial vectors of minimizing geodesics x→X
+    (usc, compact; Filippov/Aubin–Cellina existence). Two facts:
+      (i) off Σ := M^g_X (≥2 minimizing geodesics) the inclusion is single-valued, |Φ'|=1 and
+          d_X grows at rate exactly 1 (first variation), so the margin
+          m(t) = d_X(Φ_t) − d(p,Φ_t) is NONDECREASING while the flow avoids Σ
+          (d(p,·) is 1-Lipschitz — rate ≤ 1);
+      (ii) hence either the flow meets/accumulates at Σ at T ≤ diam − d_X(p) with
+          m(T) ≥ d_X(p) > 0  (p reconstructed by an M^g center, quantitative margin), or it
+          avoids Σ forever, d_X(Φ_t) = d_X(p) + t → ∞ — impossible on compact M ("escape").
+    IMPORTANT subtleties handled: Σ is NOT closed (focal/conjugate degenerations); the argument
+    only needs hitting times or approach times t_k ↓ T (margin continuity finishes both cases).
+    Focal "stall" points (unique geodesic, in closure(Σ)\Σ, e.g. ellipse evolute, ellipsoid
+    conjugate cusp) are just regular points of the inclusion — F' = 1 passes straight through.
+    Checked against: ellipse-evolute example, ellipsoid cut-segment + cusp, S^n singleton.
+    Consequences: compact M ⇒ R^g_X = M\X for EVERY closed X ≠ ∅ (even |X| = 1 — strengthens
+    the |X|≥2 statements); Lieutier margin caveats deleted.
+    NOTE (self-audit): margin m and even the quadratic F² − d² are NOT monotone through
+    multi-geodesic arcs (explicit 3-point R² counterexample built) — that is why stopping at Σ
+    is the correct formulation, and why the old "constant-margin" route could not work.
+
+(B) HOROFUNCTION CHARACTERIZATION (new; closes GAP #2 structurally, and GAP #3 by redefinition).
+    M complete ⇒ proper (Hopf–Rinow) ⇒ horofunction compactification M̄ = M ∪ ∂_h M exists for
+    EVERY complete M (no curvature). Call h ∈ M̄ *defective* if h = lim [d(·,a_k) − d_X(a_k)]
+    (locally uniformly) with a_k ∈ M^g_X. Then:
+      SWALLOW (curvature-free, general): {h < 0} ⊆ R^g_X for every defective h — proof is three
+      lines from local-uniform convergence; NO anchoring, NO pinching, NO offset condition.
+      CHARACTERIZATION: R^g_X = ⋃ {h < 0 : h defective} for every complete M and closed X.
+      (⊆ is definitional via finite h = d(·,a) − r(a); ⊇ is the swallow.)
+      The R3 offset caveat dissolves: defectiveness is defined by the limit of the medial balls
+      themselves, not by the Busemann function of the ideal endpoint; an offset-c drift is
+      simply defective at level c, reconstructing {b_ξ < −c} — now a statement, not a gap.
+    TRICHOTOMY (general): captured / drift-swallowed / escaping-unswallowed, specializing to
+    R3's hull/drift/ray-escape on Hadamard and to "no escape" on compact M.
+    Also noted: ideal defective h DOES fire on noncompact sec>0 (paraboloid bisector drifts);
+    consistent with capstone since {h<0} is unbounded free but NON-convex there (b concave).
+
+(C) WRITE-UP: new final note medial_axis_complete.tex — "the unconditional theorem on complete
+    Riemannian manifolds": capture theorem + general swallow + characterization + trichotomy +
+    specializations recovering Bia/R2/R3/Sph + updated 2×2 + remaining open (faithful M^g-free
+    certificates off the known geometries; quantitative shielding threshold).
+    Then surgical patches: Sph rem:containment + summary-table "(analytic)" row; Tri
+    rem:twogeo-caveat + compact-row wording; R3 pointer-remark on the offset caveat.
+    Compile all PDFs.
+
+## [3] DONE — full-generality note written, gaps closed, everything compiled.
+
+medial_axis_complete.tex (NEW, final note of the series; 12pp PDF, compiles clean, 0 undefined refs):
+  §2  Preliminaries: direction field U(x) usc (Lem 2.1), first variation (Lem 2.2, cite
+      Mantegazza–Mennucci), descent inclusion Φ' ∈ -conv U(Φ) (Aubin–Cellina), free-ball
+      functions ψ_a = d(·,a) − d_X(a), medial limit functions (Def 2.3).
+  §3  CAPTURE THEOREM (Thm 3.1): rate-one identity d_X(Φ_t) = d_X(p)+t off the axis
+      (through focal/conjugate points), margin ≥ d_X(p), capture-or-escape dichotomy,
+      stop at FIRST APPROACH to M^g (Σ not closed — approach suffices, margin continuous).
+      Cor 3.2: compact M ⇒ R^g = M\X UNCONDITIONALLY, every closed X ≠ ∅, |X|=1 included.
+      Cor 3.3: spread version for the two-point axis (d_X < inj ⇒ R_X total).
+      Rem 3.4: why margin/quadratic-margin monotonicity FAIL through multi-geodesic arcs
+      (explicit R² counterexamples) — stopping at Σ is the correct formulation.
+  §4  DRIFT: swallow lemma {ψ<0} ⊆ R^g for every medial limit function (Lem 4.1, 3 lines,
+      offset/anchoring-free); characterization R^g = ⋃{ψ<0} on EVERY complete M (Thm 4.3);
+      trichotomy captured/swallowed/escaping (Thm 4.4); offset caveat of R3 resolved:
+      drift of offset c = medial limit at level c, reconstructs {b_ξ < −c} (Rem 4.6).
+  §5  Specializations: Białozyt, Hadamard/hconv, sphere (|X|=1 new), space forms
+      (Sph Rem 7.3 sharp statement now settled for R^g), paraboloid (both mechanisms),
+      ellipsoid shielding; updated 2×2 table.
+  §6  Honest remaining open: faithful certificates in mixed curvature; level function
+      c(ξ); two-point shielding threshold; Carnot/Alexandrov Motzkin; domain problem.
+
+PATCHES (all recompiled, 0 errors / 0 undefined refs):
+  medial_axis_spherical.tex  — Thm 8.3 statement + Rem 8.4 now cite [C, Thm 3.1, Cor 3.2];
+                               summary table "(analytic)" dropped; bibitem C added.
+  medial_axis_trichotomy.tex — Thm 3.1 proof sentence + Rem 6.5 updated (caveat removed,
+                               |X|≥2 droppable for R^g); bibitem C added.
+  medial_axis_riemannian_3.tex — new Rem 3.5 (offset resolved via medial limit functions,
+                               points to [C, Lem 4.1, Rem 4.6]); bibitem C added.
+
+NUMERICAL VERIFICATION (medial_capture_check.py, NEW):
+  S², X = non-circular convex curve (colatitude 0.9 + 0.25cos2φ), flow started inside,
+  crossing the focal/evolute region (sliding feet — the delicate regime):
+  60 random starts, 0 failures; worst d_X growth rate 0.99999 (predicted 1);
+  worst margin deficit at capture 2.77e-06 (predicted ≥ 0). Result recorded in the
+  note's verification footnote. (venv with numpy in $CLAUDE_JOB_DIR/tmp/venv.)
+
+CORRECTIONS MADE DURING WRITING (self-audit):
+  - Tri cross-refs: thm:twogeo is Thm 6.4 (not 5.6), rem:twogeo-caveat is Rem 6.5,
+    rem:sharp is Rem 6.6; fixed everywhere including this log's earlier entry.
+  - Trichotomy class (2) witnesses need NOT be ideal (a point can be swallowed by a
+    remote finite ball while all its own capture curves escape — two-point R² example);
+    statement and proof rewritten accordingly (Rem 4.5 records the example).
+
+## STATUS: COMPLETE. Full generality achieved in the dynamical layer:
+##   every complete Riemannian manifold, every closed X, two-geodesic axis —
+##   characterization + trichotomy unconditional; compact case total, no caveats;
+##   Hadamard offset gap dissolved. Faithful-certificate layer beyond flat/Hadamard/
+##   compact remains open by nature (documented in §6 of the new note).

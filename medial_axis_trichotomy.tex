@@ -360,9 +360,11 @@ flow of $d_{\X}$ from $p$ can run to an end of $M$ with a single foot.
 On compact $M$ the semiconcave $d_{\X}$ has a finite-length ascending flow
 resting at a critical point with $0$ in the convex hull of its directions
 to $\X$, hence $\ge2$ minimising geodesics; that the flow retains $p$ in
-its moving ball --- the Lieutier swallow property, unconditional below the
-cut distance and otherwise as in Remark~\ref{rem:twogeo-caveat} --- is
-assembled into $\Rx^{g}=M\setminus\X$ by Theorem~\ref{thm:twogeo}. On
+its moving ball is now unconditional --- the capture theorem of the final
+note \cite[Thm.~3.1]{C} stops the ascent at its first approach to the
+two-geodesic axis, where the accumulated margin is intact
+(Remark~\ref{rem:twogeo-caveat}) --- and is assembled into
+$\Rx^{g}=M\setminus\X$ by Theorem~\ref{thm:twogeo}. On
 non-compact $M$ the flow can ascend $d_{\X}\to\infty$ along a ray with a
 single foot: the $\R^{n}$ rays past a segment, or the paraboloid of
 Remark~\ref{rem:carrier}.
@@ -756,12 +758,19 @@ cut distance: unconditional on $\Sn$ (cut distance $=\pi=$ diameter) and
 under the spread hypothesis of Theorem~\ref{thm:spread} ($2\delta<\inj M$).
 On a general compact $M$ the reach can exceed an intermediate foot's cut
 distance, where the arc ceases to minimise and the elementary identity
-breaks; there $\Rx^{g}=M\setminus\X$ rests on Lieutier's swallow extending
-past cut points (expected, and unconditional for generic or analytic
-metrics, but not delivered by the margin identity alone). We therefore read
-Theorem~\ref{thm:twogeo} as unconditional below the cut distance and as
-resting on the Lieutier property otherwise --- ``any compact $M$'' in that
-qualified sense.
+breaks. The qualification is now removed: the final note of the series
+\cite[Thm.~3.1, Cor.~3.2]{C} proves the containment on every complete
+manifold, with no genericity or analyticity hypothesis, by following the
+ascent only while the minimising geodesic to $\X$ is unique --- there
+$d_{\X}$ grows at unit rate and the margin cannot shrink, through focal
+and conjugate points without comment --- and stopping at the first
+approach to the two-geodesic axis instead of flowing through it (the
+margin is genuinely non-monotone through multi-geodesic arcs, which is
+why the elementary identity could not be pushed further). ``Any compact
+$M$'' in Theorem~\ref{thm:twogeo} is thus unqualified, and the hypothesis
+$|\X|\ge2$ can be dropped for $\Rx^{g}$: a single point is reconstructed
+in full by the two-geodesic axis, though it is invisible to the two-point
+one.
 \end{remark}
 
 Both refinements stay on the finite-centre side: the flow lands at a
@@ -925,6 +934,10 @@ faithful, curvature-free characterization}, companion note, June 2026
 \bibitem{Sph} \emph{Medial-axis reconstruction in positive curvature: the
 focal collapse and total reconstruction}, companion note, June 2026
 (file \texttt{medial\_axis\_spherical.pdf}).
+
+\bibitem{C} \emph{Medial-axis reconstruction on complete Riemannian
+manifolds: capture, drift, and the unconditional theorem}, companion
+note, July 2026 (file \texttt{medial\_axis\_complete.pdf}).
 
 \bibitem{BH} M.~Bridson and A.~Haefliger, \emph{Metric Spaces of
 Non-Positive Curvature}, Grundlehren 319, Springer, 1999.

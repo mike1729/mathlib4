@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.5.22)  14 JUN 2026 20:13
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.5.22)  2 JUL 2026 12:31
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -304,7 +304,7 @@ Package uniquecounter Info: New unique counter `rerunfilecheck' on input line 2
 File: l3backend-pdftex.def 2025-10-09 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count317
 )
-No file medial_axis_riemannian_3.aux.
+(./medial_axis_riemannian_3.aux)
 \openout1 = `medial_axis_riemannian_3.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 49.
@@ -325,6 +325,7 @@ LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 49.
 LaTeX Font Info:    ... okay on input line 49.
 LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 49.
 LaTeX Font Info:    ... okay on input line 49.
+
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
 *geometry* verbose mode - [ preamble ] result:
@@ -385,6 +386,8 @@ File: pdftex.def 2025/09/29 v1.2d Graphics/color driver for pdftex
 \everyMPtoPDFconversion=\toks32
 )) (/usr/local/texlive/2026/texmf-dist/tex/latex/graphics/mathcolor.ltx))
 Package hyperref Info: Link coloring ON on input line 49.
+
+(./medial_axis_riemannian_3.out) (./medial_axis_riemannian_3.out)
 \@outlinefile=\write3
 \openout3 = `medial_axis_riemannian_3.out'.
 
@@ -400,19 +403,6 @@ LaTeX Font Info:    Trying to load font information for U+msb on input line 51.
 (/usr/local/texlive/2026/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-
-LaTeX Warning: Citation `R1' on page 1 undefined on input line 51.
-
-
-LaTeX Warning: Citation `Bia' on page 1 undefined on input line 51.
-
-
-LaTeX Warning: Citation `R2' on page 1 undefined on input line 51.
-
-
-LaTeX Warning: Citation `Notes' on page 1 undefined on input line 51.
-
-
 Overfull \hbox (36.94986pt too wide) in paragraph at lines 53--59
 []\T1/cmr/m/n/10 For a closed set $\OML/cmm/m/it/10 X$ \T1/cmr/m/n/10 in a com-
 plete Rie-man-nian man-i-fold, the \T1/cmr/m/it/10 re-con-struc-tion $\OMS/cmsy
@@ -420,116 +410,15 @@ plete Rie-man-nian man-i-fold, the \T1/cmr/m/it/10 re-con-struc-tion $\OMS/cmsy
 m/it/10 a; r\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 a\OT1/cmr/m/n/10 ))$
  []
 
-No file medial_axis_riemannian_3.toc.
-\tf@toc=\write4
-\openout4 = `medial_axis_riemannian_3.toc'.
-
-
-LaTeX Warning: Citation `Bia' on page 1 undefined on input line 99.
-
-[1
+(./medial_axis_riemannian_3.toc [1
 
 {/usr/local/texlive/2026/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{/usr/loc
 al/texlive/2026/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc}{/usr/local
-/texlive/2026/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc}]
+/texlive/2026/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc}])
+\tf@toc=\write4
+\openout4 = `medial_axis_riemannian_3.toc'.
 
-LaTeX Warning: Citation `R2' on page 2 undefined on input line 106.
-
-
-LaTeX Warning: Reference `eq:hyp-main' on page 2 undefined on input line 120.
-
-
-LaTeX Warning: Reference `sec:backbone' on page 2 undefined on input line 151.
-
-
-LaTeX Warning: Reference `def:hconv' on page 2 undefined on input line 158.
-
-
-LaTeX Warning: Reference `thm:faithful' on page 2 undefined on input line 164.
-
-
-LaTeX Warning: Reference `thm:faithful-nc' on page 2 undefined on input line 16
-4.
-
-
-LaTeX Warning: Reference `sec:hconv' on page 2 undefined on input line 180.
-
-
-LaTeX Warning: Reference `lem:swallow' on page 2 undefined on input line 182.
-
-
-LaTeX Warning: Reference `thm:fullgen' on page 2 undefined on input line 185.
-
-[2]
-
-LaTeX Warning: Reference `sec:warp' on page 3 undefined on input line 199.
-
-
-LaTeX Warning: Reference `sec:dict' on page 3 undefined on input line 201.
-
-
-LaTeX Warning: Reference `sec:recon' on page 3 undefined on input line 203.
-
-
-LaTeX Warning: Reference `rem:asym' on page 3 undefined on input line 206.
-
-
-LaTeX Warning: Reference `sec:curved' on page 3 undefined on input line 209.
-
-
-LaTeX Warning: Reference `sec:ch2' on page 3 undefined on input line 211.
-
-
-LaTeX Warning: Reference `sec:frontier' on page 3 undefined on input line 213.
-
-
-LaTeX Warning: Citation `R1' on page 3 undefined on input line 226.
-
-
-LaTeX Warning: Citation `R2' on page 3 undefined on input line 226.
-
-
-LaTeX Warning: Citation `R1' on page 3 undefined on input line 231.
-
-
-LaTeX Warning: Citation `BH' on page 3 undefined on input line 239.
-
-[3]
-
-LaTeX Warning: Citation `R1' on page 4 undefined on input line 245.
-
-
-LaTeX Warning: Citation `R2' on page 4 undefined on input line 245.
-
-
-LaTeX Warning: Citation `BH' on page 4 undefined on input line 271.
-
-
-LaTeX Warning: Reference `lem:swallow' on page 4 undefined on input line 304.
-
-
-LaTeX Warning: Reference `thm:engine' on page 4 undefined on input line 324.
-
-
-LaTeX Warning: Reference `thm:engine' on page 4 undefined on input line 327.
-
-
-LaTeX Warning: Reference `thm:engine' on page 4 undefined on input line 329.
-
-
-LaTeX Warning: Citation `R1' on page 4 undefined on input line 332.
-
-[4]
-
-LaTeX Warning: Reference `lem:swallow' on page 5 undefined on input line 336.
-
-
-LaTeX Warning: Citation `HIH' on page 5 undefined on input line 338.
-
-
-LaTeX Warning: Reference `thm:fullgen' on page 5 undefined on input line 346.
-
-
+ [2] [3] [4] [5]
 Overfull \hbox (13.89209pt too wide) in paragraph at lines 396--404
 []\T1/cmr/m/n/10.95 The Buse-mann gra-di-ent along $\OML/cmm/m/it/10.95 ^^M$ \T
 1/cmr/m/n/10.95 is the in-ward ra-dial field, $\OMS/cmsy/m/n/10.95 r\OML/cmm/m/
@@ -540,71 +429,8 @@ it/10.95 b[]\OT1/cmr/m/n/10.95 (\OML/cmm/m/it/10.95 ^^M\OT1/cmr/m/n/10.95 (\OML
 5 (\OML/cmm/m/it/10.95 t\OT1/cmr/m/n/10.95 )) =
  []
 
-[5]
-
-LaTeX Warning: Reference `def:hconv' on page 6 undefined on input line 436.
-
-
-LaTeX Warning: Citation `R1' on page 6 undefined on input line 440.
-
-
-LaTeX Warning: Reference `lem:Lu-axial' on page 6 undefined on input line 447.
-
-
-LaTeX Warning: Citation `Lie' on page 6 undefined on input line 454.
-
-
-LaTeX Warning: Reference `thm:engine' on page 6 undefined on input line 466.
-
-
-LaTeX Warning: Reference `lem:swallow' on page 6 undefined on input line 468.
-
-
-LaTeX Warning: Citation `R2' on page 6 undefined on input line 477.
-
-
-LaTeX Warning: Reference `lem:swallow' on page 6 undefined on input line 479.
-
-
-LaTeX Warning: Reference `thm:faithful' on page 6 undefined on input line 486.
-
-[6]
-
-LaTeX Warning: Reference `thm:faithful' on page 7 undefined on input line 510.
-
-
-LaTeX Warning: Reference `thm:engine' on page 7 undefined on input line 530.
-
-
-LaTeX Warning: Reference `thm:faithful' on page 7 undefined on input line 554.
-
-
-LaTeX Warning: Reference `thm:faithful-nc' on page 7 undefined on input line 55
-4.
-
-
-LaTeX Warning: Reference `thm:motzkin' on page 7 undefined on input line 565.
-
-[7]
-
-LaTeX Warning: Reference `def:defective' on page 8 undefined on input line 582.
-
-
-
-LaTeX Warning: Reference `thm:faithful' on page 8 undefined on input line 583.
-
-
-LaTeX Warning: Citation `HIH' on page 8 undefined on input line 620.
-
-[8]
-
-LaTeX Warning: Citation `One' on page 9 undefined on input line 672.
-
-
-LaTeX Warning: Reference `lem:distlaw' on page 9 undefined on input line 713.
-
-
-Overfull \hbox (26.79675pt too wide) in paragraph at lines 711--728
+[6] [7] [8] [9]
+Overfull \hbox (26.79675pt too wide) in paragraph at lines 729--746
 []\T1/cmr/m/n/10.95 Let $\OML/cmm/m/it/10.95 ^^M\OT1/cmr/m/n/10.95 (\OML/cmm/m/
 it/10.95 s\OT1/cmr/m/n/10.95 ) = (\OML/cmm/m/it/10.95 s; \OT1/cmr/m/n/10.95 0)$
  \T1/cmr/m/n/10.95 be the up-ward unit-speed $\OML/cmm/m/it/10.95 t$\T1/cmr/m/n
@@ -615,243 +441,50 @@ t/10.95 d\OT1/cmr/m/n/10.95 (\OML/cmm/m/it/10.95 y; ^^M\OT1/cmr/m/n/10.95 (\OML
 /cmm/m/it/10.95 s\OT1/cmr/m/n/10.95 )) \OMS/cmsy/m/n/10.95 ^^@
  []
 
-[9]
+[10] [11] [12] [13] [14]
+LaTeX Font Info:    Trying to load font information for U+euf on input line 111
+4.
 
-LaTeX Warning: Reference `prop:mf-isom' on page 10 undefined on input line 781.
-
-
-[10]
-
-LaTeX Warning: Reference `lem:distlaw' on page 11 undefined on input line 832.
-
-
-LaTeX Warning: Reference `lem:feet' on page 11 undefined on input line 841.
-
-
-LaTeX Warning: Citation `Mot' on page 11 undefined on input line 846.
-
-
-LaTeX Warning: Reference `lem:feet' on page 11 undefined on input line 868.
-
-
-LaTeX Warning: Reference `lem:distlaw' on page 11 undefined on input line 872.
-
-
-LaTeX Warning: Reference `lem:distlaw' on page 11 undefined on input line 878.
-
-
-LaTeX Warning: Citation `R2' on page 11 undefined on input line 900.
-
-
-LaTeX Warning: Reference `thm:mf-suff' on page 11 undefined on input line 904.
-
-
-LaTeX Warning: Reference `lem:distlaw' on page 11 undefined on input line 906.
-
-[11]
-
-LaTeX Warning: Reference `prop:mf-horo' on page 12 undefined on input line 917.
-
-
-
-LaTeX Warning: Reference `thm:mf-suff' on page 12 undefined on input line 922.
-
-
-LaTeX Warning: Reference `ex:warp' on page 12 undefined on input line 927.
-
-
-LaTeX Warning: Reference `sec:curved' on page 12 undefined on input line 933.
-
-
-LaTeX Warning: Reference `sec:frontier' on page 12 undefined on input line 933.
-
-
-
-LaTeX Warning: Reference `thm:faithful' on page 12 undefined on input line 945.
-
-
-
-LaTeX Warning: Reference `thm:faithful-nc' on page 12 undefined on input line 9
-45.
-
-
-LaTeX Warning: Reference `lem:Lu-axial' on page 12 undefined on input line 949.
-
-
-
-LaTeX Warning: Reference `prop:mf-horo' on page 12 undefined on input line 953.
-
-
-
-LaTeX Warning: Citation `One' on page 12 undefined on input line 986.
-
-
-LaTeX Warning: Reference `prop:mf-horo' on page 12 undefined on input line 990.
-
-
-[12]
-
-LaTeX Warning: Reference `lem:distlaw' on page 13 undefined on input line 1023.
-
-
-
-LaTeX Warning: Reference `lem:fN-dict' on page 13 undefined on input line 1029.
-
-
-
-LaTeX Warning: Citation `BH' on page 13 undefined on input line 1046.
-
-
-LaTeX Warning: Reference `lem:fN-dict' on page 13 undefined on input line 1047.
-
-
-
-LaTeX Warning: Reference `lem:fN-dict' on page 13 undefined on input line 1051.
-
-
-
-LaTeX Warning: Reference `thm:mf-suff' on page 13 undefined on input line 1053.
-
-
-
-LaTeX Warning: Reference `lem:fN-dict' on page 13 undefined on input line 1059.
-
-
-
-LaTeX Warning: Reference `thm:faithful' on page 13 undefined on input line 1072
-.
-
-[13]
-
-LaTeX Warning: Reference `sec:static' on page 14 undefined on input line 1080.
-
-LaTeX Font Info:    Trying to load font information for U+euf on input line 109
-6.
 (/usr/local/texlive/2026/texmf-dist/tex/latex/amsfonts/ueuf.fd
 File: ueuf.fd 2013/01/14 v3.01 Euler Fraktur
-) [14]
+) [15]
 
-LaTeX Warning: Reference `prop:ch2' on page 15 undefined on input line 1157.
-
-
-LaTeX Warning: Reference `prop:ch2' on page 15 undefined on input line 1173.
-
-
-LaTeX Warning: Reference `thm:ch2' on page 15 undefined on input line 1175.
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 1203.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 1185.
+(hyperref)                removing `math shift' on input line 1203.
 
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 1185.
-
-
-LaTeX Warning: Reference `prop:gauss' on page 15 undefined on input line 1194.
-
-
-LaTeX Warning: Citation `HIH' on page 15 undefined on input line 1201.
-
-
-LaTeX Warning: Citation `One' on page 15 undefined on input line 1201.
-
-
-LaTeX Warning: Citation `Gol' on page 15 undefined on input line 1201.
-
-
-LaTeX Warning: Citation `Mil' on page 15 undefined on input line 1208.
-
-
-LaTeX Warning: Reference `sec:ch2' on page 15 undefined on input line 1209.
-
-
-LaTeX Warning: Reference `lem:fN-dict' on page 15 undefined on input line 1212.
-
-
-
-LaTeX Warning: Reference `prop:gauss' on page 15 undefined on input line 1220.
-
-[15]
-
-LaTeX Warning: Reference `sec:recon' on page 16 undefined on input line 1234.
-
-
-LaTeX Warning: Reference `sec:curved' on page 16 undefined on input line 1236.
-
-
-LaTeX Warning: Reference `sec:ch2' on page 16 undefined on input line 1239.
-
-
-LaTeX Warning: Reference `thm:faithful' on page 16 undefined on input line 1247
-.
-
-
-LaTeX Warning: Reference `thm:faithful-nc' on page 16 undefined on input line 1
-248.
-
-
-LaTeX Warning: Reference `def:defective' on page 16 undefined on input line 125
-0.
-
-
-LaTeX Warning: Reference `thm:fullgen' on page 16 undefined on input line 1271.
-
-
-
-LaTeX Warning: Reference `thm:faithful' on page 16 undefined on input line 1276
-.
-
-
-LaTeX Warning: Reference `thm:faithful-nc' on page 16 undefined on input line 1
-276.
-
-[16]
-
-LaTeX Warning: Citation `Bia' on page 17 undefined on input line 1310.
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 1310--1315
+[16] [17]
+Underfull \hbox (badness 10000) in paragraph at lines 1328--1333
 []\T1/cmr/m/it/10.95 Formalization notes on The-o-rem 6 of [[]]\T1/cmr/m/n/10.9
 5 , June 2026 (files
  []
 
 
-Underfull \hbox (badness 1796) in paragraph at lines 1310--1315
+Underfull \hbox (badness 1796) in paragraph at lines 1328--1333
 \T1/cmtt/m/n/10.95 medial_formalization_notes.tex\T1/cmr/m/n/10.95 , \T1/cmtt/m
 /n/10.95 medial_formalization_plan.md\T1/cmr/m/n/10.95 ); Lean 4 for-mal-
  []
 
-[17] (./medial_axis_riemannian_3.aux)
+[18] (./medial_axis_riemannian_3.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-01-19>
  ***********
-
-
-LaTeX Warning: There were undefined references.
-
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
-
-
-Package rerunfilecheck Warning: File `medial_axis_riemannian_3.out' has changed
-.
-(rerunfilecheck)                Rerun to get outlines right
-(rerunfilecheck)                or use package `bookmark'.
-
-Package rerunfilecheck Info: Checksums for `medial_axis_riemannian_3.out':
-(rerunfilecheck)             Before: <no file>
-(rerunfilecheck)             After:  0DBAFAEDF3AB1B28CA6139D4F6461E92;2853.
+Package rerunfilecheck Info: File `medial_axis_riemannian_3.out' has not change
+d.
+(rerunfilecheck)             Checksum: 0DBAFAEDF3AB1B28CA6139D4F6461E92;2853.
  ) 
 Here is how much of TeX's memory you used:
- 10819 strings out of 467525
- 161867 string characters out of 5418982
- 589690 words of memory out of 5000000
- 39507 multiletter control sequences out of 15000+600000
- 656434 words of font info for 118 fonts, out of 8000000 for 9000
+ 10846 strings out of 467525
+ 162394 string characters out of 5418982
+ 593383 words of memory out of 5000000
+ 39524 multiletter control sequences out of 15000+600000
+ 655658 words of font info for 117 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,8n,79p,561b,757s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,8n,79p,561b,611s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb
 ></usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb>
 </usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb><
@@ -870,25 +503,24 @@ texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/texlive/2026/te
 xmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/2026/texm
 f-dist/fonts/type1/public/amsfonts/euler/eufm10.pfb></usr/local/texlive/2026/te
 xmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/local/texlive/202
-6/texmf-dist/fonts/type1/public/cm-super/sfbx0900.pfb></usr/local/texlive/2026/
-texmf-dist/fonts/type1/public/cm-super/sfbx1000.pfb></usr/local/texlive/2026/te
-xmf-dist/fonts/type1/public/cm-super/sfbx1095.pfb></usr/local/texlive/2026/texm
-f-dist/fonts/type1/public/cm-super/sfbx1200.pfb></usr/local/texlive/2026/texmf-
-dist/fonts/type1/public/cm-super/sfbx1440.pfb></usr/local/texlive/2026/texmf-di
-st/fonts/type1/public/cm-super/sfcc1095.pfb></usr/local/texlive/2026/texmf-dist
-/fonts/type1/public/cm-super/sfrm0600.pfb></usr/local/texlive/2026/texmf-dist/f
-onts/type1/public/cm-super/sfrm0900.pfb></usr/local/texlive/2026/texmf-dist/fon
-ts/type1/public/cm-super/sfrm1000.pfb></usr/local/texlive/2026/texmf-dist/fonts
-/type1/public/cm-super/sfrm1095.pfb></usr/local/texlive/2026/texmf-dist/fonts/t
-ype1/public/cm-super/sfrm1200.pfb></usr/local/texlive/2026/texmf-dist/fonts/typ
-e1/public/cm-super/sfrm1728.pfb></usr/local/texlive/2026/texmf-dist/fonts/type1
-/public/cm-super/sfti1000.pfb></usr/local/texlive/2026/texmf-dist/fonts/type1/p
-ublic/cm-super/sfti1095.pfb></usr/local/texlive/2026/texmf-dist/fonts/type1/pub
-lic/cm-super/sftt1095.pfb>
-Output written on medial_axis_riemannian_3.pdf (17 pages, 564904 bytes).
+6/texmf-dist/fonts/type1/public/cm-super/sfbx1000.pfb></usr/local/texlive/2026/
+texmf-dist/fonts/type1/public/cm-super/sfbx1095.pfb></usr/local/texlive/2026/te
+xmf-dist/fonts/type1/public/cm-super/sfbx1200.pfb></usr/local/texlive/2026/texm
+f-dist/fonts/type1/public/cm-super/sfbx1440.pfb></usr/local/texlive/2026/texmf-
+dist/fonts/type1/public/cm-super/sfcc1095.pfb></usr/local/texlive/2026/texmf-di
+st/fonts/type1/public/cm-super/sfrm0600.pfb></usr/local/texlive/2026/texmf-dist
+/fonts/type1/public/cm-super/sfrm0900.pfb></usr/local/texlive/2026/texmf-dist/f
+onts/type1/public/cm-super/sfrm1000.pfb></usr/local/texlive/2026/texmf-dist/fon
+ts/type1/public/cm-super/sfrm1095.pfb></usr/local/texlive/2026/texmf-dist/fonts
+/type1/public/cm-super/sfrm1200.pfb></usr/local/texlive/2026/texmf-dist/fonts/t
+ype1/public/cm-super/sfrm1728.pfb></usr/local/texlive/2026/texmf-dist/fonts/typ
+e1/public/cm-super/sfti1000.pfb></usr/local/texlive/2026/texmf-dist/fonts/type1
+/public/cm-super/sfti1095.pfb></usr/local/texlive/2026/texmf-dist/fonts/type1/p
+ublic/cm-super/sftt1095.pfb>
+Output written on medial_axis_riemannian_3.pdf (18 pages, 563802 bytes).
 PDF statistics:
- 343 PDF objects out of 1000 (max. 8388607)
- 253 compressed objects within 3 object streams
- 88 named destinations out of 1000 (max. 500000)
- 1 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 505 PDF objects out of 1000 (max. 8388607)
+ 414 compressed objects within 5 object streams
+ 91 named destinations out of 1000 (max. 500000)
+ 97 words of extra memory for PDF output out of 10000 (max. 10000000)
 

@@ -1,0 +1,14 @@
+\contentsline {section}{\numberline {1}Introduction}{2}{section.1}%
+\contentsline {section}{\numberline {2}Preliminaries}{4}{section.2}%
+\contentsline {paragraph}{The descent inclusion.}{4}{section*.4}%
+\contentsline {paragraph}{Free-ball functions.}{5}{section*.5}%
+\contentsline {section}{\numberline {3}The capture theorem}{5}{section.3}%
+\contentsline {section}{\numberline {4}Drift: the swallow, the characterisation, the trichotomy}{7}{section.4}%
+\contentsline {section}{\numberline {5}Specialisations: the series re-derived}{9}{section.5}%
+\contentsline {paragraph}{Euclidean space \cite {Bia}.}{9}{section*.6}%
+\contentsline {paragraph}{Hadamard manifolds \cite {R1,R2,R3}.}{10}{section*.7}%
+\contentsline {paragraph}{The sphere, compact manifolds, space forms \cite {Sph,Tri}.}{10}{section*.8}%
+\contentsline {paragraph}{Non-compact positive curvature.}{10}{section*.9}%
+\contentsline {paragraph}{The updated table.}{10}{section*.10}%
+\contentsline {section}{\numberline {6}What remains}{10}{section.6}%
+\contentsline {paragraph}{Conclusion.}{11}{section*.11}%

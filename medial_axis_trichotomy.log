@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.5.22)  14 JUN 2026 21:29
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.5.22)  2 JUL 2026 12:31
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -421,48 +421,48 @@ File: ueuf.fd 2013/01/14 v3.01 Euler Fraktur
 [7]
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 530.
+(hyperref)                removing `math shift' on input line 532.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\new@ifnextchar' on input line 530.
+(hyperref)                removing `\new@ifnextchar' on input line 532.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\le' on input line 530.
+(hyperref)                removing `\le' on input line 532.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 530.
+(hyperref)                removing `math shift' on input line 532.
 
 [8]
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 616.
+(hyperref)                removing `math shift' on input line 618.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\new@ifnextchar' on input line 616.
+(hyperref)                removing `\new@ifnextchar' on input line 618.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\equiv' on input line 616.
+(hyperref)                removing `\equiv' on input line 618.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 616.
+(hyperref)                removing `math shift' on input line 618.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 658.
+(hyperref)                removing `math shift' on input line 660.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\new@ifnextchar' on input line 658.
+(hyperref)                removing `\new@ifnextchar' on input line 660.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 658.
+(hyperref)                removing `math shift' on input line 660.
 
 [9] [10] [11] [12] [13] [14] (./medial_axis_trichotomy.aux)
  ***********
@@ -474,10 +474,10 @@ Package rerunfilecheck Info: File `medial_axis_trichotomy.out' has not changed.
 (rerunfilecheck)             Checksum: 0C5AED29F88CBF10F686271C36DD40A1;1442.
  ) 
 Here is how much of TeX's memory you used:
- 10816 strings out of 467525
- 161895 string characters out of 5418982
- 591688 words of memory out of 5000000
- 39510 multiletter control sequences out of 15000+600000
+ 10818 strings out of 467525
+ 161904 string characters out of 5418982
+ 591712 words of memory out of 5000000
+ 39511 multiletter control sequences out of 15000+600000
  656003 words of font info for 118 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  75i,8n,79p,559b,599s stack positions out of 10000i,1000n,20000p,200000b,200000s
@@ -513,10 +513,10 @@ ype1/public/cm-super/sfti0900.pfb></usr/local/texlive/2026/texmf-dist/fonts/typ
 e1/public/cm-super/sfti1000.pfb></usr/local/texlive/2026/texmf-dist/fonts/type1
 /public/cm-super/sfti1095.pfb></usr/local/texlive/2026/texmf-dist/fonts/type1/p
 ublic/cm-super/sftt1095.pfb>
-Output written on medial_axis_trichotomy.pdf (14 pages, 533498 bytes).
+Output written on medial_axis_trichotomy.pdf (14 pages, 534675 bytes).
 PDF statistics:
- 492 PDF objects out of 1000 (max. 8388607)
- 404 compressed objects within 5 object streams
- 74 named destinations out of 1000 (max. 500000)
+ 495 PDF objects out of 1000 (max. 8388607)
+ 407 compressed objects within 5 object streams
+ 75 named destinations out of 1000 (max. 500000)
  57 words of extra memory for PDF output out of 10000 (max. 10000000)
 

@@ -548,6 +548,24 @@ escaping; the valley $\{t=-1/(1+x^{2})\}$ in $\Mf$ ($K=\varnothing$,
 feet $x^{\ast}\to\pm\infty$) is so reconstructed.
 \end{proof}
 
+\begin{remark}[The offset, resolved in the final note]
+\label{rem:offset-resolved}
+The final note of the series \cite{C} removes the single exception by
+changing the normalisation. Defining a \emph{medial limit function} as
+a locally uniform limit of the free-ball functions
+$d(\cdot,a_{k})-r(a_{k})$ over medial $a_{k}$ --- normalised by their
+own reach, rather than against a Busemann function chosen in advance
+--- the swallow becomes unconditional: $\{\psi<0\}\subseteq\Rx$ for
+every such limit $\psi$, with no anchoring, pinching, or offset
+hypothesis \cite[Lem.~4.1]{C}. A drift of asymptotic offset $c$ is
+then exactly a medial limit at \emph{level} $c$ ($\psi=b_{\xi}+c$),
+reconstructing $\{b_{\xi}<-c\}$ in full; the deep-part phenomenon
+above is thereby the precise content of the level, not a gap in the
+reconstruction. What remains open is only the faithful computation of
+the minimal level $c(\xi)$ from $X$ in an inhomogeneous manifold
+\cite[Rem.~4.6]{C}; it vanishes in every case named in the theorem.
+\end{remark}
+
 \subsection{The static reading: localisation and Motzkin}
 \label{sec:static}
 
@@ -1312,6 +1330,10 @@ June 2026 (file \texttt{medial\_axis\_riemannian\_2.pdf}).
 \texttt{medial\_formalization\_plan.md}); Lean~4 formalization on
 branch \texttt{medial-axis}, files
 \texttt{Mathlib/Analysis/Convex/MedialAxis*.lean}.
+
+\bibitem{C} \emph{Medial-axis reconstruction on complete Riemannian
+manifolds: capture, drift, and the unconditional theorem}, companion
+note, July 2026 (file \texttt{medial\_axis\_complete.pdf}).
 
 \bibitem{BH} M.~Bridson and A.~Haefliger, \emph{Metric Spaces of
 Non-Positive Curvature}, Grundlehren 319, Springer, 1999.

@@ -9,5 +9,5 @@
 \contentsline {section}{\numberline {9}Discussion}{12}{section.9}%
 \contentsline {paragraph}{The phenomenon, in one line.}{12}{section*.5}%
 \contentsline {paragraph}{Relation to the horospherical programme.}{12}{section*.6}%
-\contentsline {paragraph}{Where nontrivial positive-curvature structure lives.}{12}{section*.7}%
+\contentsline {paragraph}{Where nontrivial positive-curvature structure lives.}{13}{section*.7}%
 \contentsline {paragraph}{Summary.}{13}{section*.8}%

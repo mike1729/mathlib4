@@ -789,9 +789,11 @@ $\X\subseteq M$ with $|\X|\ge2$,
 \[
   \Rx^{g}=M\setminus\X .
 \]
-No spread or curvature hypothesis is needed; the one delicate step is the
-containment of $p$ in the moving ball past intermediate cut points
-(Remark~\ref{rem:containment}).
+No spread or curvature hypothesis is needed. The containment of $p$ in
+the moving ball past intermediate cut points --- the one formerly
+delicate step --- is proved unconditionally in the final note of the
+series \cite[Thm.~3.1, Cor.~3.2]{C}; Remark~\ref{rem:containment}
+records the scope of the elementary margin argument and the repair.
 \end{theorem}
 
 \begin{proof}
@@ -818,12 +820,18 @@ holds exactly while the reach stays below the foot's cut distance:
 unconditional on $\Sn$ (cut distance $\pi=$ diameter) and under the spread
 hypothesis $2\delta<\inj M$ of Theorem~\ref{thm:dense}. On a general
 compact $M$ the reach can exceed an intermediate foot's cut distance, where
-the arc ceases to minimise and the constant-margin identity breaks; there
-$\Rx^{g}=M\setminus\X$ relies on Lieutier's swallow continuing past cut
-points (expected, and unconditional for generic or analytic metrics, but
-not delivered by the margin identity alone). We therefore read
-Theorem~\ref{thm:twogeo} as unconditional below the cut distance and as
-resting on Lieutier's property otherwise.
+the arc ceases to minimise and the constant-margin identity breaks. This
+gap is now closed: the final note of the series proves the containment
+unconditionally on every complete manifold, with no genericity or
+analyticity hypothesis, by following the ascent only while the minimising
+geodesic to $\X$ is unique --- there $d_{\X}$ grows at unit rate and the
+margin cannot shrink, through focal and conjugate points without
+comment --- and \emph{stopping at the first approach} to $\Mx^{g}$, where
+the accumulated margin is intact, instead of flowing through it
+\cite[Thm.~3.1, Cor.~3.2]{C}. Theorem~\ref{thm:twogeo} therefore holds as
+stated for every compact $M$, and indeed for every closed
+$\X\neq\varnothing$: even $|\X|=1$, invisible to the two-point axis, is
+reconstructed in full by the two-geodesic one.
 \end{remark}
 
 \begin{remark}[The fix activates exactly on the cut locus]\label{rem:fix}
@@ -919,7 +927,7 @@ Explicit via $\sec\le\Delta$ (Klingenberg)
 Cut-shielding obstruction; sparse variable case
   & compact $\sec>0$ & open (Prop.~\ref{prop:obstruction})\\
 \textbf{Two-geodesic axis} $\Rx^{g}=M\setminus\X$ (no spread)
-  & any compact $M$ (analytic) & \textbf{Thm.~\ref{thm:twogeo}}\\
+  & any compact $M$ & \textbf{Thm.~\ref{thm:twogeo}}, \cite{C}\\
 \quad $\Mx^{g}=\Mx$ (definition invisible)
   & $\R^{n}$, $\Sn$ & Prop.~\ref{prop:invisible}\\
 \bottomrule
@@ -943,6 +951,10 @@ structural framework for Hadamard manifolds}, companion note, June 2026
 warped products with flat horospheres, and the Gauss obstruction},
 companion note, June 2026 (file
 \texttt{medial\_axis\_riemannian\_3.pdf}).
+
+\bibitem{C} \emph{Medial-axis reconstruction on complete Riemannian
+manifolds: capture, drift, and the unconditional theorem}, companion
+note, July 2026 (file \texttt{medial\_axis\_complete.pdf}).
 
 \bibitem{Lie} A.~Lieutier, \emph{Any open bounded subset of $\R^{n}$ has
 the same homotopy type as its medial axis}, Computer-Aided Design
