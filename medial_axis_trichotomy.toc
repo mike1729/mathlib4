@@ -1,0 +1,16 @@
+\contentsline {section}{\numberline {1}Introduction}{2}{section.1}%
+\contentsline {section}{\numberline {2}The common objects}{4}{section.2}%
+\contentsline {paragraph}{The carrier: a maximal free ball, and its Busemann function.}{4}{section*.5}%
+\contentsline {paragraph}{The defect template.}{5}{section*.6}%
+\contentsline {paragraph}{The reconstruction engine, curvature-free.}{5}{section*.7}%
+\contentsline {section}{\numberline {3}The two axes}{5}{section.3}%
+\contentsline {section}{\numberline {4}The branch $\operatorname {sec}\le 0$: ideal centres and the Chebyshev defect}{8}{section.4}%
+\contentsline {paragraph}{The Gauss obstruction and the detection frontier.}{8}{section*.8}%
+\contentsline {section}{\numberline {5}The knife-edge $\operatorname {sec}\equiv 0$: Bia\l {}o\.zyt's theorem}{9}{section.5}%
+\contentsline {section}{\numberline {6}The branch $\operatorname {sec}>0$: finite centres and total reconstruction}{10}{section.6}%
+\contentsline {paragraph}{Off constant curvature: what survives.}{10}{section*.9}%
+\contentsline {section}{\numberline {7}The unified picture}{12}{section.7}%
+\contentsline {paragraph}{The phenomenon, in one line.}{12}{section*.10}%
+\contentsline {paragraph}{The $2\times 2$.}{12}{section*.11}%
+\contentsline {paragraph}{What each branch leaves open.}{12}{section*.12}%
+\contentsline {paragraph}{The natural sequel.}{13}{section*.13}%

@@ -1,0 +1,13 @@
+\contentsline {section}{\numberline {1}Introduction}{2}{section.1}%
+\contentsline {section}{\numberline {2}Setup and notation}{3}{section.2}%
+\contentsline {section}{\numberline {3}The focal pole}{4}{section.3}%
+\contentsline {section}{\numberline {4}Total reconstruction on the sphere}{6}{section.4}%
+\contentsline {section}{\numberline {5}Collapse of the Bia\l {}o\.zyt structure}{7}{section.5}%
+\contentsline {section}{\numberline {6}Generalisation: compact manifolds and the spread condition}{8}{section.6}%
+\contentsline {section}{\numberline {7}The variable-curvature obstruction: cut shielding}{9}{section.7}%
+\contentsline {section}{\numberline {8}The two-geodesic medial axis}{10}{section.8}%
+\contentsline {section}{\numberline {9}Discussion}{12}{section.9}%
+\contentsline {paragraph}{The phenomenon, in one line.}{12}{section*.5}%
+\contentsline {paragraph}{Relation to the horospherical programme.}{12}{section*.6}%
+\contentsline {paragraph}{Where nontrivial positive-curvature structure lives.}{12}{section*.7}%
+\contentsline {paragraph}{Summary.}{13}{section*.8}%

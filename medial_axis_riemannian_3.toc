@@ -1,0 +1,17 @@
+\contentsline {section}{\numberline {1}Introduction}{1}{section.1}%
+\contentsline {section}{\numberline {2}The curvature-free backbone}{3}{section.2}%
+\contentsline {subsection}{\numberline {2.1}The swallow, and the dynamical characterization}{4}{subsection.2.1}%
+\contentsline {section}{\numberline {3}The horospherical convex hull, and the main theorem}{5}{section.3}%
+\contentsline {subsection}{\numberline {3.1}The static reading: localisation and Motzkin}{7}{subsection.3.1}%
+\contentsline {section}{\numberline {4}The Gauss obstruction}{8}{section.4}%
+\contentsline {section}{\numberline {5}Warped products with flat horospheres}{8}{section.5}%
+\contentsline {section}{\numberline {6}The local dictionary on $M_{f}$}{10}{section.6}%
+\contentsline {section}{\numberline {7}The reconstruction theorem on $M_{f}$}{11}{section.7}%
+\contentsline {section}{\numberline {8}Curved horospheres I: warping over a Hadamard fibre}{12}{section.8}%
+\contentsline {section}{\numberline {9}Curved horospheres II: complex hyperbolic space}{14}{section.9}%
+\contentsline {paragraph}{Horospherical coordinates.}{14}{section*.5}%
+\contentsline {section}{\numberline {10}The frontier: non-$\mathrm {CAT}(0)$ horospheres}{15}{section.10}%
+\contentsline {paragraph}{Rank-one symmetric spaces.}{15}{section*.6}%
+\contentsline {paragraph}{Pinched negative curvature.}{16}{section*.7}%
+\contentsline {paragraph}{The stratification.}{16}{section*.8}%
+\contentsline {paragraph}{Conclusion.}{16}{section*.9}%

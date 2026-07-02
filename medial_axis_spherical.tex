@@ -682,22 +682,47 @@ waist point $m$ is a cut point of $x_{0}$ with $x_{0}$ still its unique
 nearest contact (the tip $x_{1}$ being far). By
 Proposition~\ref{prop:obstruction} the waist points between $x_{0}$ and
 $m$ are not reconstructed by waist centres; whether some \emph{off}-waist
-medial centre nonetheless reconstructs them depends on the global medial
-axis, and we have not settled it. We therefore state the variable-positive
-case as follows.
+medial centre nonetheless reconstructs them is decided by the
+\emph{global} two-point medial axis, which for $|\X|=2$ is exactly the
+bisector $\{a:d(a,x_{0})=d(a,x_{1})\}$, so $q\in\Rx$ iff some bisector
+point $a$ has $d(a,q)<d(a,x_{0})$. We have now settled this finite test
+numerically, and the answer is \emph{negative}: cut-shielding genuinely
+obstructs two-point reconstruction once the curvature varies enough.
 \begin{itemize}
-\item \emph{Unconditional:} constant curvature $+1$
+\item \emph{Unconditional totality:} constant curvature $+1$
 (Theorem~\ref{thm:sphere}); and any compact $M$ with $\delta$-dense $\X$,
 $2\delta<\inj M$ (Theorem~\ref{thm:dense}). These cover all
 \emph{sufficiently sampled} $\X$ in positive curvature.
-\item \emph{Open:} whether $\Rx=M\setminus\X$ holds for \emph{sparse}
-$\X$ in \emph{variable} positive curvature. The only obstruction to the
-margin argument is cut-shielding (Proposition~\ref{prop:obstruction}); a
-sufficient condition for total reconstruction is its absence ---
-$\mathrm{cut}(x_{0};\gamma)\ge\sup\{t:\ x_{0}\ \text{uniquely
+\item \emph{Settled (numerically, negative) for sparse $\X$:} computing the
+bisector test above on a prolate ellipsoid of revolution (the cigar;
+$\sec>0$ everywhere), with the whole pipeline validated on the round sphere
+(geodesic distances within $1\%$; reconstruction total, zero shielded
+points, confirming Theorem~\ref{thm:sphere}), gives a sharp transition in
+the eccentricity. Reconstruction is total for small eccentricity and
+shielded for large, with the transition localised to $c^{\ast}=2.6\pm0.1$
+(the $2.4\%$ solver error cannot resolve it more finely); the shielded
+region sits near the far tip. At $c=3$ it is $\approx9\%$ of the surface
+with reconstruction deficit $\min_{a}[d(a,q)-r(a)]\approx18\%$ of the
+diameter at its deepest point (the distance by which $q$ lies beyond every
+medial ball), a factor of about seven above the $2.4\%$ discretisation
+error, and persisting and stabilising under mesh refinement (its area
+fraction rising slightly, not vanishing). So $\Rx=M\setminus\X$ \emph{fails}
+for sparse
+$\X$ in variable positive curvature: total two-point reconstruction is
+special to constant curvature (and, more finely, bounded eccentricity). The
+remaining open question is only the \emph{quantitative} threshold ---
+precisely, $\mathrm{cut}(x_{0};\gamma)\ge\sup\{t:\ x_{0}\ \text{uniquely
 nearest}\}$ along every ray, which on $\Sn$ holds because the cut distance
-$\pi$ realises the diameter (Remark~\ref{rem:why}).
+$\pi$ realises the diameter (Remark~\ref{rem:why}) and which the
+eccentricity controls on the cigar.
 \end{itemize}
+The shielded points are cut points of $x_{0}$ admitting two or more
+minimising geodesics to $x_{0}$ yet strictly closer to $x_{0}$ than to
+$x_{1}$ (a single nearest \emph{point}, reached twice), hence lie in
+$\Mx^{g}\setminus\Mx$ and \emph{are} reconstructed by the two-geodesic
+axis of \S\ref{sec:twogeo} (Theorem~\ref{thm:twogeo}): cut-shielding is the
+exact phenomenon separating the two axes off constant curvature, and the
+two-geodesic reformulation is its unconditional resolution.
 \end{remark}
 
 \begin{remark}[Constant-curvature space forms]\label{rem:spaceforms}
@@ -764,7 +789,9 @@ $\X\subseteq M$ with $|\X|\ge2$,
 \[
   \Rx^{g}=M\setminus\X .
 \]
-No spread, curvature, or genericity hypothesis is needed.
+No spread or curvature hypothesis is needed; the one delicate step is the
+containment of $p$ in the moving ball past intermediate cut points
+(Remark~\ref{rem:containment}).
 \end{theorem}
 
 \begin{proof}
@@ -781,6 +808,23 @@ focal/conjugate subtlety that the two-point axis must confront and the
 geodesic axis sidesteps). Thus $p\in B(a_{\infty},r(a_{\infty}))\subseteq
 \Rx^{g}$.
 \end{proof}
+
+\begin{remark}[Scope of the containment step]\label{rem:containment}
+The clause ``retaining $p$ in the moving free ball'' is Lieutier's swallow
+property \cite{Lie}, proved in $\R^{n}$. In the elementary form of
+Step~3 the margin $r-d(p,\cdot)$ is constant along each unique-foot arc
+\emph{because that arc is the minimising geodesic from its foot} --- which
+holds exactly while the reach stays below the foot's cut distance:
+unconditional on $\Sn$ (cut distance $\pi=$ diameter) and under the spread
+hypothesis $2\delta<\inj M$ of Theorem~\ref{thm:dense}. On a general
+compact $M$ the reach can exceed an intermediate foot's cut distance, where
+the arc ceases to minimise and the constant-margin identity breaks; there
+$\Rx^{g}=M\setminus\X$ relies on Lieutier's swallow continuing past cut
+points (expected, and unconditional for generic or analytic metrics, but
+not delivered by the margin identity alone). We therefore read
+Theorem~\ref{thm:twogeo} as unconditional below the cut distance and as
+resting on Lieutier's property otherwise.
+\end{remark}
 
 \begin{remark}[The fix activates exactly on the cut locus]\label{rem:fix}
 The flow never needs a rival contact: when none appears it simply rests at

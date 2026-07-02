@@ -39,22 +39,24 @@
 \newcommand{\CP}{\mathbb{CP}}
 \newcommand{\Sn}{\mathbb{S}^{n}}
 
-\title{The curvature trichotomy of medial-axis reconstruction:\\
-ideal versus finite centres and the sign of the Busemann
-Hessian\thanks{Capstone of a series generalising Theorem~6 of
+\title{Two axes of medial-axis reconstruction:\\
+compactness, and the Busemann--Hessian detection
+trichotomy\thanks{Capstone of a series generalising Theorem~6 of
 \cite{Bia}: \cite{R1} carried its sufficiency half to Hadamard
 manifolds, \cite{R2} proved the full characterisation in real
 hyperbolic space, \cite{R3} gave the faithful curvature-free
 characterisation for every Hadamard manifold and isolated the Gauss
 obstruction, and \cite{Sph} crossed into positive curvature. This note
-unifies them: it identifies the single invariant --- the sign of the
+unifies them: it identifies the invariant --- the sign of the
 Busemann Hessian, i.e.\ the sign of the sectional curvature --- that
-governs the whole theory, and reads each companion result as one branch
-of the resulting trichotomy. Drafted with the assistance of Claude
+governs the \emph{detection flavour}, separates it from the orthogonal
+\emph{compactness} axis that governs partial-versus-total, and reads each
+companion result as one cell of the resulting $2\times2$. Drafted with the assistance of Claude
 (Anthropic); all arguments were re-derived and checked by hand, and the
-positive-curvature branch verified numerically (convexity-radius
-threshold and Hessian sign-flip on $\mathbb{S}^{2}$; zero failures).
-Remaining errors are ours.}}
+positive-curvature branch verified numerically (the convexity-radius
+threshold and Hessian sign-flip on $\mathbb{S}^{2}$; the cap's lone-antipode
+medial axis; the open-paraboloid partiality; and the prolate-ellipsoid
+shielding transition). Remaining errors are ours.}}
 \author{}
 \date{June 2026}
 
@@ -71,37 +73,44 @@ those whose contact set is non-convex. Across the companion notes this
 characterisation took two seemingly different faithful forms: in
 non-positive curvature an exact, \emph{strict} description by horoballs
 with a Chebyshev/horoconvex defect \cite{R1,R2,R3}, and in positive
-curvature its total collapse, $\Rx=M\setminus\X$ \cite{Sph}. We show
-these are the two branches of a single \emph{trichotomy}, governed by one
-invariant. The maximal free convex region carrying the reconstruction
-near a point --- the horoball analogue --- is a sublevel set of a
-Busemann function, and the sign of its Hessian, fixed by the sign of
-$\sect$ through the Hessian comparison theorem, determines whether its
-centre is \emph{ideal} or \emph{finite}, and with it the entire detection
-problem:
+curvature its total collapse, $\Rx=M\setminus\X$ \cite{Sph}. We show these
+are governed by \emph{two} orthogonal invariants, of which one --- the
+sign of the Busemann Hessian --- is the note's subject. The maximal free
+region carrying the reconstruction near a point is a sublevel set of a
+Busemann/distance function: a horoball below zero, a metric \emph{ball}
+above. Two questions decide the theory, and they are independent.
 \begin{itemize}
-\item[$\sect\le0$:] $\Hess b\succeq0$, Busemann functions are convex,
-horoballs are convex and \emph{unbounded} --- an \emph{ideal} centre at
-$\xi\in\bdry M$. Detection is a convexity question: $\Rx$ is the hull plus
-the defective horoballs, where ``defective'' means the contact set differs
-from its horoconvex hull (Chebyshev on flat horospheres, Carnot on
-homogeneous ones), and $\Rx\subsetneq M\setminus\X$ strictly.
-\item[$\sect\equiv0$:] $\Hess b\equiv0$, $b$ is affine, the maximal free
-convex region is a \emph{half-space} with its ideal centre at infinity ---
-the knife-edge, Motzkin detection, Bia\l{}o\.zyt's theorem verbatim.
-\item[$\sect>0$:] $\Hess b\preceq0$, $b$ is concave; convex free regions
-cannot grow unbounded (Bonnet--Myers; point soul), so the maximal one is a
-bounded ball with a \emph{finite} centre, equidistant from its boundary.
-Detection collapses to $\ge2$ contacts --- and on the round sphere every
-point is captured: $\Rx=M\setminus\X$.
+\item \emph{Partial versus total} is fixed by \textbf{compactness}, not by
+curvature: reconstruction misses exactly the points whose ascending
+distance-flow escapes to an end with a single foot, so on a \emph{compact}
+$M$ the two-geodesic axis reconstructs everything, $\Rx^{g}=M\setminus\X$
+(Theorem~\ref{thm:twogeo}, any curvature), while a non-compact one is in
+general partial. The two-\emph{point} axis $\Mx$ of Bia\l{}o\.zyt is finer:
+even on a compact $M$ it is governed by cut-shielding, total only under a
+cut-locus rigidity (the round sphere) and partial otherwise.
+\item \emph{The detection flavour}, when partial, is fixed by the sign of
+$\Hess b$ --- by curvature, through Hessian comparison --- because it sets
+whether the maximal free \emph{convex} region is unbounded (an \emph{ideal}
+centre) or bounded (a \emph{finite} one): $\sect\le0$ ($\Hess b\succeq0$,
+convex unbounded horoballs, ideal centre) makes detection a convexity test
+(Chebyshev/Motzkin/Carnot hull) with $\Rx\subsetneq M\setminus\X$;
+$\sect\equiv0$ ($\Hess b\equiv0$, half-space, ideal centre at infinity) is
+the Motzkin knife-edge (Bia\l{}o\.zyt verbatim); $\sect>0$
+($\Hess b\preceq0$, no unbounded convex free region by Bonnet--Myers or a
+soul, finite centre) collapses detection to a contact count.
 \end{itemize}
-The flat case sits exactly on the boundary between the two: it is the
-$R\to\infty$ limit in which the finite circumcentre recedes to the ideal
-point and the convexity radius diverges. The trichotomy thus explains, by
-the single mechanism ``can a free convex region be unbounded,'' why
-reconstruction is partial and convexity-detected below curvature $0$,
-total and contact-counted above it, and Bia\l{}o\.zyt's theorem the
-boundary between them.
+The two co-vary on the classical models ($\HH^{n}$: non-compact,
+$\sect\le0$; $\Sn$: compact, $\sect>0$), which invites their fusion into a
+single ``curvature trichotomy''; they \emph{decouple} on an open
+$\sect>0$ paraboloid (finite centres, yet \emph{partial}) and on a compact
+hyperbolic manifold ($\sect<0$, yet \emph{total}). The reconstructing ball
+above zero is moreover \emph{not} convex --- it wraps around past the
+convexity radius (radius up to the diameter), which is the mechanism of
+totality; the convexity-radius and soul bounds apply to the convex regions
+that host the \emph{ideal} centre, hence to the detection flavour, not to
+the carrier. The honest structure is therefore a $2\times2$ ---
+compactness $\times$ Hessian sign --- with Bia\l{}o\.zyt's theorem the
+curvature knife-edge of the detection axis.
 \end{abstract}
 
 \tableofcontents
@@ -135,7 +144,7 @@ the Busemann geometry of $M$, and \eqref{eq:bia} holds verbatim:
   \bigcup\bigl\{\operatorname{int}\Hb{}:\ \X\cap\partial\Hb{}\neq
   \hconv(\X\cap\partial\Hb{})\bigr\}
 \end{equation}
-\cite[Thm.~5.6--5.7]{R3}, with $\hconv=\conv$ on flat horospheres (so
+\cite[Thm.~3.3--3.4]{R3}, with $\hconv=\conv$ on flat horospheres (so
 \eqref{eq:hada} contains \eqref{eq:bia} and the hyperbolic theorem
 \cite{R2}) and the Carnot hull on homogeneous ones. The reconstruction is
 a \emph{strict} subset of $M\setminus\X$, and the unreconstructed points
@@ -157,69 +166,80 @@ spherical cap reconstructs its entire complement
 \subsection*{The invariant that unifies them}
 
 The purpose of this note is to show that \eqref{eq:hada} and \eqref{eq:sph}
-are not two theorems but two \emph{branches} of one, selected by a single
-invariant. Both proofs run the same machine. Outside the hull, the
-reconstruction of a point $p$ is carried by a \emph{maximal free convex
-region} $\Hb{}$ --- the largest geodesically convex open set that avoids
-$\X$ and contains $p$, the role played by a horoball in $\HH^{n}$ and by a
-free metric ball on $\Sn$. The region $\Hb{}$ is a sublevel set
-$\{b\le c\}$ of a \emph{Busemann function} $b$ (the signed distance to its
-bounding ``horosphere''), and \emph{everything} about the theory --- where
-the centre of $\Hb{}$ sits, what ``defective'' means, whether $\Rx$ is
-partial or total --- is read off the geometry of $\Hb{}$. That geometry is
-fixed by one number: the sign of $\Hess b$.
+are governed by two \emph{independent} invariants, and to separate them ---
+because reading them as one curvature trichotomy, as a first pass invites,
+conflates two genuinely different mechanisms. Both proofs run the same
+machine. Outside the hull, the reconstruction of a point $p$ is carried by
+a \emph{maximal free ball} $B(a,r(a))\ni p$ --- the sublevel set
+$\{b_{a}\le0\}$ of the distance-Busemann $b_{a}=d(\cdot,a)-r(a)$ --- whose
+limiting form is a horoball in $\HH^{n}$ and an ordinary metric ball on
+$\Sn$. Two questions about it decide the theory, and they pull apart.
 
-\begin{quote}
-\textbf{Trichotomy (Theorem~\ref{thm:trich}).} The sign of $\Hess b$
-equals the sign of $\sect$ (Hessian comparison), and it controls the
-\emph{centre type} of the maximal free convex region, hence the detection
-mechanism:
+\smallskip\noindent\emph{(A) Partial versus total: compactness.} The
+ascending generalised-gradient flow of $d_{\X}$ from $p$ either reaches a
+medial centre or escapes to an end of $M$ with a single foot; the latter is
+possible iff $M$ is non-compact. Hence \textbf{a compact $M$ is totally
+reconstructed} (Theorem~\ref{thm:twogeo}, \emph{any} curvature), and a
+non-compact one is in general partial --- the ``escape to infinity'' named
+above. This is a statement about ends, not curvature.
+
+\smallskip\noindent\emph{(B) Detection flavour: the sign of $\Hess b$.}
+When reconstruction \emph{is} partial, what must a contact set do to admit
+a medial centre? This is fixed by whether the maximal free \emph{convex}
+region is unbounded or bounded --- equivalently, by the sign of $\Hess b$,
+which equals the sign of $\sect$ (Hessian comparison):
 \[
 \begin{array}{c|c|c|c}
- & \Hess b & \text{region } \Hb{} & \text{centre / detection}\\\hline
+ & \Hess b & \text{convex free region} & \text{centre / detection}\\\hline
 \sect\le0 & \succeq0\ \text{(convex } b) & \text{convex, unbounded} &
   \text{ideal }\xi\in\bdry M\ /\ \text{Chebyshev hull}\\
 \sect\equiv0 & \equiv0\ \text{(affine } b) & \text{half-space} &
   \infty\ /\ \text{Motzkin convexity}\\
-\sect>0 & \preceq0\ \text{(concave } b) & \text{bounded ball} &
+\sect>0 & \preceq0\ \text{(concave } b) & \text{bounded} &
   \text{finite }a\in M\ /\ \ge2\ \text{contacts}
 \end{array}
 \]
-\end{quote}
+In $\sect\le0$, convexity of $b$ lets horoballs run to infinity, so their
+centre is an ideal point $\xi$; a finite reconstructing centre must
+\emph{drift} toward $\xi$ and is medial only when its foot is non-Chebyshev
+--- a genuine convexity test (Motzkin on flat horospheres, Carnot on curved
+ones). In $\sect>0$, concavity of $b$ past the convexity radius forbids
+\emph{unbounded} convex free regions (Bonnet--Myers, or a point soul), so
+there is no ideal centre to drift to; a finite equidistant centre is medial
+as soon as its boundary carries two contacts --- no convexity test
+(Proposition~\ref{prop:finite}). The flat case is the knife-edge: $b$
+affine, the convex region a half-space, the would-be finite circumcentre
+receded to infinity and the convexity radius diverged --- the unique
+curvature where Bia\l{}o\.zyt's $\conv$-certificate is exact.
 
-The mechanism is a single dichotomy --- \emph{can a free convex region be
-unbounded?} --- and the answer is dictated by curvature. In $\sect\le0$,
-convexity of $b$ lets horoballs run to infinity, so their centre is an
-ideal point $\xi$; a finite reconstructing centre must \emph{drift} toward
-$\xi$, and it is medial precisely when its foot is non-Chebyshev in the
-contact set --- a genuine convexity test (Motzkin on flat horospheres,
-Carnot on curved ones), which is what makes $\Rx$ partial and the defect
-the organising notion. In $\sect>0$, concavity of $b$ forbids unbounded
-convex sublevel sets (Bonnet--Myers compactness, or a point soul): the
-maximal free convex region is a \emph{bounded} ball, its centre a genuine
-\emph{finite} point equidistant from the boundary, hence medial as soon as
-the boundary carries two contacts --- no convexity test at all, the
-detection problem trivialised. The flat case $\sect\equiv0$ is exactly the
-boundary: $b$ is affine, the ``ball'' is a half-space, the finite
-circumcentre has receded to the ideal point at infinity and the convexity
-radius has diverged --- the unique knife-edge on which Bia\l{}o\.zyt's
-theorem lives. Pushing past it into $\sect>0$, the recovered finite centre
-swallows so much that reconstruction becomes total.
-
-This is the sense in which Theorem~6 has not one generalisation but a
-\emph{trichotomy}: the same hull-plus-defective-region template, with the
-region's centre ideal or finite according to the sign of the Busemann
-Hessian, and the detection collapsing from a convexity question to a
-counting one as curvature crosses $0$.
+\smallskip
+These two axes are \emph{orthogonal}. They co-vary on the classical models
+($\HH^{n}$ pairs non-compact with $\sect\le0$; $\Sn$ pairs compact with
+$\sect>0$), which is why they look like one curvature trichotomy; but an
+open $\sect>0$ paraboloid has finite centres yet is \emph{partial}
+(\S\ref{sec:pos}), and a compact hyperbolic manifold has $\sect<0$ yet is
+\emph{total}. Two consequences sharpen the positive branch and correct the
+naive reading. First, above zero the reconstructing \emph{ball} is in
+general \emph{not} convex: it wraps around past the convexity radius
+(radius up to the diameter $\pi$), and that wrap-around --- not a bounded
+convex region --- is what makes reconstruction total (the convex free
+regions carry only the focal-pole part of \S\ref{sec:pos}). Second, the
+convexity-radius/Bonnet--Myers/soul apparatus bounds the convex regions
+that would host an \emph{ideal} centre, so it controls the detection
+\emph{flavour} (B), \emph{not} partial-versus-total (A). The honest
+statement is a $2\times2$ (Table in \S\ref{sec:disc}), with the
+``trichotomy'' naming its detection-flavour axis.
 
 \subsection*{Organisation}
 
 Section~\ref{sec:setup} fixes the common objects --- medial axis,
-Busemann functions, maximal free convex regions, the defect template.
-Section~\ref{sec:trich} states and proves the trichotomy theorem, the
-conceptual core: the Hessian-comparison input, the three centre-type
-conclusions, and the finite-equidistant-centre principle that trivialises
-detection above zero. Sections~\ref{sec:neg}--\ref{sec:pos} then read each
+Busemann functions, the free ball carrying reconstruction, the defect
+template. Section~\ref{sec:trich} is the conceptual core: two short
+theorems, one per axis --- compactness governs partial-versus-total
+(Theorem~\ref{thm:compact}), the Busemann Hessian governs the
+detection-flavour trichotomy (Theorem~\ref{thm:flavour}) --- together with
+the finite-equidistant-centre principle that trivialises detection above
+zero. Sections~\ref{sec:neg}--\ref{sec:pos} then read each
 branch as an instance, quoting the companion notes for the detailed
 reconstruction theorems and giving the mechanism in trichotomy language:
 the Hadamard branch (\S\ref{sec:neg}, ideal centres, the faithful $\hconv$
@@ -240,26 +260,29 @@ are free ($B(a,r(a))\cap\X=\varnothing$), so always
 $\Rx\subseteq M\setminus\X$. Two structural objects underlie all three
 branches.
 
-\paragraph{Busemann functions and the horoball analogue.} A
-\emph{Busemann function} is a normalised limit of distance functions. In
-$\sect\le0$ one fixes a geodesic ray $\gamma$ to an ideal point
-$\xi\in\bdry M$ and sets $b_{\xi}(x)=\lim_{t\to\infty}\bigl(d(x,\gamma(t))
--t\bigr)$; the limit exists, $b_{\xi}$ is $1$-Lipschitz, and its sublevel
-sets $\Hb{}=\{b_{\xi}\le c\}$ are the \emph{horoballs} at $\xi$. In
-$\sect>0$ there are no rays --- the manifold is compact (Bonnet--Myers, if
-$\sect\ge\kappa>0$) --- and the role of $b_{\xi}$ is played by a
-\emph{signed distance to a sphere}: on $\Sn$ the function
-$b_{v}(x)=d(x,v)-\tfrac\pi2$, the signed distance to the equator
-$\partial H_{v}=S(v,\tfrac\pi2)$ of a pole $v$, is the exact analogue ---
-its zero set is the ``horosphere,'' its negative sublevel set $\{b_{v}<0\}
-=B(v,\tfrac\pi2)$ the free hemisphere, and $v$ the (now finite) centre
-\cite[\S2,\S9]{Sph}. In all cases we call $\Hb{}=\{b\le c\}$ a
-\emph{maximal free convex region} when it is geodesically convex, disjoint
-from $\X$, and maximal with these properties among the sublevel sets of
-its Busemann function; its boundary $\partial\Hb{}$ is the
-\emph{horosphere}, its \emph{contact set} is $K=\X\cap\partial\Hb{}$, and
-its \emph{centre} is the ideal point $\xi$ (when $\Hb{}$ is unbounded) or
-the finite circumcentre $a$ with $\Hb{}=B(a,r(a))$ (when bounded).
+\paragraph{The carrier: a maximal free ball, and its Busemann function.}
+The object that carries reconstruction is a \emph{maximal free ball}
+$\Hb{}=B(a,r(a))$, the sublevel set $\{b_{a}\le0\}$ of the
+distance-Busemann $b_{a}=d(\cdot,a)-r(a)$; its boundary
+$\partial\Hb{}=S(a,r(a))$ is the \emph{horosphere}, its \emph{contact set}
+is $K=\X\cap\partial\Hb{}$, and its \emph{centre} is $a$. Two limiting
+regimes specialise it. In $\sect\le0$ one drives the centre to an ideal
+point $\xi\in\bdry M$ along a ray $\gamma$, and $b_{a}\to b_{\xi}(x)=
+\lim_{t\to\infty}(d(x,\gamma(t))-t)$ (a genuine \emph{Busemann function},
+$1$-Lipschitz), whose sublevel sets are the \emph{horoballs} at $\xi$; the
+centre is then ideal. In $\sect>0$ the centre stays finite: on $\Sn$,
+$b_{v}=d(\cdot,v)-\tfrac\pi2$ is the signed distance to the equator
+$S(v,\tfrac\pi2)$ of a pole $v$, with $\{b_{v}<0\}=B(v,\tfrac\pi2)$ the free
+hemisphere and $v$ the finite centre \cite[\S2,\S9]{Sph}. A
+\emph{ball} $B(a,r(a))$ carries reconstruction at \emph{any} radius and is
+convex only for $r(a)$ below the convexity radius; separately we call a
+free $\{b\le c\}$ a \emph{maximal free convex region} when it is in
+addition geodesically convex and inclusion-maximal among such. The
+distinction is the crux of the positive branch (\S\ref{sec:trich}): the
+convex regions control \emph{detection flavour}, but the carriers are the
+balls, which above zero wrap around past the convexity radius and need not
+be convex. (In $\sect\le0$ the two coincide --- horoballs are convex --- so
+the classical theory never had to separate them.)
 
 \paragraph{The defect template.} Every branch instantiates the same shape
 of theorem,
@@ -280,25 +303,27 @@ type of $\Hb{}$.
 common to all branches and use no curvature sign beyond what is named.
 
 \begin{theorem}[Hull inclusion and the swallow; {\cite[Thm.~3.1]{R1},
-\cite[Lem.~5.5]{R3},\cite[Lem.~3.1]{Sph}}]\label{thm:engine}
+\cite[Lem.~2.2]{R3},\cite[Lem.~3.1]{Sph}}]\label{thm:engine}
 For every complete $M$ and closed $\X$:
 \begin{enumerate}[label=\textup{(\arabic*)}]
 \item \emph{(Hull.)} $\Xhat\setminus\X\subseteq\Rx$.
-\item \emph{(Swallow.)} If a maximal free convex region $\Hb{}$ admits
-medial centres $a_{k}\in\Mx$ converging to its centre (drifting to $\xi$
-in the unbounded case, or a single finite medial centre in the bounded
-case), then $\operatorname{int}\Hb{}\subseteq\Rx$. The estimate is
-$d(p,a_{k})-r(a_{k})\to b(p)<0$ for $p\in\operatorname{int}\Hb{}$ and uses
-only horofunction convergence --- \emph{no curvature bound}.
+\item \emph{(Swallow.)} If a horoball $\Hb{}$ admits medial centres
+$a_{k}\in\Mx$ drifting to its ideal centre $\xi$, then
+$\operatorname{int}\Hb{}\subseteq\Rx$, with
+$d(p,a_{k})-r(a_{k})\to b_{\xi}(p)<0$ for $p\in\operatorname{int}\Hb{}$
+--- only horofunction convergence, \emph{no curvature bound}.
 \end{enumerate}
 \end{theorem}
 
-What the engine leaves open is exactly the certificate: \emph{which}
-$\Hb{}$ admit such medial centres, read from $\X$. That is the detection
-problem, and the next section shows it is governed by the sign of
-$\Hess b$.
+The swallow is the \emph{unbounded}-centre mechanism. When the centre is
+finite there is no limit to take: a single medial ball $B(a,r(a))$ with
+$p\in B(a,r(a))$ already gives $p\in\Rx$, and the work is only to make $a$
+medial --- which is Proposition~\ref{prop:finite}, not a swallow. What the
+engine leaves open is exactly the certificate: \emph{which} $\Hb{}$ admit
+medial centres, read from $\X$. That detection problem, and whether the
+flow can escape at all, are governed by the two axes of the next section.
 
-\section{The trichotomy theorem}\label{sec:trich}
+\section{The two axes}\label{sec:trich}
 
 We isolate the single comparison-geometric fact behind the whole theory.
 Recall the Hessian comparison theorem (e.g.\ \cite[Ch.~6]{doCarmo}): for
@@ -316,62 +341,118 @@ for $\kappa<0$. Passing to the Busemann limit $r\to\infty$ at $\kappa=0$
 sends the model term $1/r\to0$, leaving the sign of $\Hess b$ equal to the
 sign forced on $\Hess r$ by the curvature sign.
 
-\begin{theorem}[Curvature controls the centre]\label{thm:trich}
-Let $M$ be complete, $\X\subseteq M$ closed, and $\Hb{}=\{b\le c\}$ a
-maximal free convex region with Busemann function $b$. The sign of $\sect$
-fixes the sign of $\Hess b$ and, through it, the centre type of $\Hb{}$.
+The reconstruction of a point $p\in M\setminus\Xhat$ is carried by a
+maximal free ball $B(a,r(a))\ni p$. Two independent features of $M$ govern
+it, and we take them in turn.
+
+\begin{theorem}[Compactness controls partial versus total]\label{thm:compact}
+Let $M$ be complete and $\X\subseteq M$ closed, $|\X|\ge2$. If $M$ is
+\emph{compact}, the two-geodesic axis reconstructs everything,
+\[
+  \Rx^{g}=M\setminus\X ,
+\]
+whatever the curvature \textup{(}Theorem~\ref{thm:twogeo}\textup{)}. If $M$
+is \emph{non-compact}, reconstruction is in general strict: the ascending
+flow of $d_{\X}$ from $p$ can run to an end of $M$ with a single foot.
+\end{theorem}
+
+\begin{proof}
+On compact $M$ the semiconcave $d_{\X}$ has a finite-length ascending flow
+resting at a critical point with $0$ in the convex hull of its directions
+to $\X$, hence $\ge2$ minimising geodesics; that the flow retains $p$ in
+its moving ball --- the Lieutier swallow property, unconditional below the
+cut distance and otherwise as in Remark~\ref{rem:twogeo-caveat} --- is
+assembled into $\Rx^{g}=M\setminus\X$ by Theorem~\ref{thm:twogeo}. On
+non-compact $M$ the flow can ascend $d_{\X}\to\infty$ along a ray with a
+single foot: the $\R^{n}$ rays past a segment, or the paraboloid of
+Remark~\ref{rem:carrier}.
+\end{proof}
+
+\noindent This axis is about \emph{ends}, not curvature --- it separates
+neither $\HH^{n}$ from a paraboloid nor a compact hyperbolic manifold from
+$\Sn$. (Bia\l{}o\.zyt's two-\emph{point} axis $\Mx$ is finer: cut-shielding
+keeps it partial even on some compact $M$, Remark~\ref{rem:sharp}.)
+
+\begin{theorem}[The Busemann Hessian controls the detection flavour]
+\label{thm:flavour}
+Where reconstruction is partial, the sign of $\Hess b$ --- equal to the
+sign of $\sect$ by Hessian comparison --- decides whether the maximal free
+\emph{convex} region is unbounded, hence what its contact set must do to
+admit a medial centre:
 \begin{enumerate}[label=\textup{(\roman*)}]
-\item \emph{($\sect\le0$: ideal centre.)} $\Hess b\succeq0$: $b$ is convex,
-$\Hb{}=\{b\le c\}$ is a convex sublevel set containing the ray to $\xi$,
-hence \emph{unbounded}, with the ideal centre $\xi\in\bdry M$. A finite
-centre is never equidistant from $\partial\Hb{}$; it is medial only after
-\emph{drifting} toward $\xi$, and then iff its foot is non-Chebyshev in
-$K$.
-\item \emph{($\sect\equiv0$: ideal centre at infinity.)} $\Hess b\equiv0$:
-$b(x)=-\sca{x}{u}+\mathrm{const}$ is affine, $\Hb{}$ is a half-space, the
-unique convex maximal free region, with centre the ideal point $u$ at
-infinity.
-\item \emph{($\sect>0$: finite centre.)} $\Hess b\preceq0$: $b$ is concave,
-so its convex sublevel sets cannot grow unbounded. Quantitatively, every
-geodesically convex set has diameter at most the convexity radius
-$\le\pi/(2\sqrt{\sup\sect})$ \textup{(}finite, e.g.\ $\tfrac\pi2$ on
-$\Sn$\textup{)}; if $\sect\ge\kappa>0$ then $M$ itself has diameter
-$\le\pi/\sqrt\kappa$ \textup{(}Bonnet--Myers\textup{)}, and if $M$ is open
-with $\sect>0$ it has a \emph{point} soul \textup{(}Cheeger--Gromoll
-\cite{CG}; Perelman \cite{Per}\textup{)}, so it has no unbounded totally
-convex proper subset.
-Hence $\Hb{}$ is a \emph{bounded} ball $B(a,r(a))$ with a \emph{finite}
-centre $a$, equidistant \textup{(}at $r(a)$\textup{)} from
-$\partial\Hb{}$.
+\item $\sect\le0$ \textup{(}$\Hess b\succeq0$\textup{)}: convex and
+\emph{unbounded}, an \emph{ideal} centre $\xi\in\bdry M$; medial iff the
+contact set is non-Chebyshev \textup{(}Proposition~\ref{prop:ideal}\textup{)}.
+\item $\sect\equiv0$ \textup{(}$\Hess b\equiv0$\textup{)}: the affine
+knife-edge --- a half-space, ideal centre at infinity, detection Motzkin's.
+\item $\sect>0$ \textup{(}$\Hess b\preceq0$\textup{)}: \emph{bounded}, a
+\emph{finite} centre; medial as soon as it carries $\ge2$ contacts,
+irrespective of their position \textup{(}Proposition~\ref{prop:finite}\textup{)}.
 \end{enumerate}
 \end{theorem}
 
 \begin{proof}
-The sign of $\Hess b$ is the Hessian comparison theorem in the Busemann
-limit, as recalled above. For (i): on a Hadamard manifold Busemann
-functions are convex \cite[II.8.24]{BH}, so $\{b\le c\}$ is convex; it
-contains the asymptotic ray $\gamma$ (along which $b$ decreases linearly),
-hence is unbounded, and $\xi=\gamma(\infty)$ is its ideal centre. A finite
-point $a$ has $b$ strictly convex transversally, so $\partial\Hb{}=
-\{b=c\}$ is at non-constant distance from $a$ --- $a$ is not a
-circumcentre --- which is exactly why detection needs the contact set to
-fail Chebyshev: see \S\ref{sec:neg}. (ii) is the flat specialisation,
-$\Hess b\equiv0$ forcing $b$ affine, $\Hb{}$ a half-space. For (iii): the
-sign $\Hess b\preceq0$ is comparison with $\kappa=\sup\sect>0$, under which
-$\mathfrak{c}_{\kappa}(r)=\sqrt\kappa\cot(\sqrt\kappa\,r)$ changes sign at
-the convexity radius $r=\pi/(2\sqrt\kappa)$; beyond it $b$ is concave and
-$\{b\le c\}$ ceases to be convex, so a \emph{convex} free region cannot
-extend past a ball of that radius. The named global statements ---
-convexity radius finite, Bonnet--Myers, point soul --- each independently
-force every convex (indeed totally convex) free region bounded; a bounded
-convex region is inscribed in a smallest enclosing metric ball
-$B(a,r(a))$, whose finite centre $a$ is equidistant from the bounding
-sphere by construction.
+The sign of $\Hess b$ is Hessian comparison in the Busemann limit
+($r\to\infty$ kills the $\kappa=0$ model term $1/r$). For (i), Busemann
+functions on a Hadamard manifold are convex \cite[II.8.24]{BH}, so
+$\{b\le c\}$ is convex and, containing the asymptotic ray, unbounded; a
+finite point sees $\partial\Hb{}$ at non-constant distance, so it is no
+circumcentre --- whence the Chebyshev condition of \S\ref{sec:neg}. (ii) is
+the affine specialisation. For (iii), comparison with $\kappa=\sup\sect>0$
+makes $\mathfrak{c}_{\kappa}(r)=\sqrt\kappa\cot(\sqrt\kappa r)$ change sign
+at the convexity radius $\pi/(2\sqrt\kappa)$, past which $\{b\le c\}$ is
+non-convex; each of the finite convexity radius, Bonnet--Myers (under
+$\sect\ge\kappa>0$), and the point soul of an open $\sect>0$ manifold
+\cite{CG,Per} then bounds every convex free region, so no ideal centre
+exists. The carrier itself is a metric ball, to which
+Proposition~\ref{prop:finite} applies at any radius.
 \end{proof}
 
-The operational half of the trichotomy is the contrast in \emph{detection}
-that the centre type forces. We state the two principles; each is proved in
-its branch.
+\noindent The two are \emph{independent}: curvature sign
+(Theorem~\ref{thm:flavour}) is silent on partial-versus-total, which is
+compactness (Theorem~\ref{thm:compact}). They co-vary on $\{\HH^{n},\Sn\}$
+but decouple on the paraboloid and the compact space forms.
+
+\begin{remark}[The carrier is a ball, not a convex region; and total is
+compactness]\label{rem:carrier}
+Two cautions keep the positive branch honest; both were verified
+numerically.
+
+\emph{The carrier need not be convex.} On $\Sn$ the cap
+$\X=\bar B(e,\beta)$ ($\beta<\tfrac\pi2$) is reconstructed entirely by the
+single ball $B(-e,\pi-\beta)$ of radius $\pi-\beta>\tfrac\pi2$ ---
+\emph{non-convex}, wrapping past the convexity radius. The maximal free
+\emph{convex} regions here are hemispheres tangent to the cap, meeting $\X$
+in one point, so their poles are not medial
+(Proposition~\ref{prop:finite}) and they reconstruct nothing: the
+convex-region carrier is \emph{empty}, and totality comes from the
+wrap-around ball alone (the cap's medial axis is the lone antipode $-e$).
+So Theorem~\ref{thm:flavour}(iii) bounds the convex regions --- killing
+the ideal centre, fixing the \emph{flavour} --- but the convexity radius
+does \emph{not} bound the carriers, which reach radius up to the diameter
+$\pi$; the wrap-around is the mechanism of totality. This is
+Proposition~\ref{prop:collapse} (the template undercounts) seen in advance.
+
+\emph{Total is compactness, not $\sect>0$.} A paraboloid of revolution has
+$\sect>0$ everywhere but is non-compact, with an end on which $\sect\to0$.
+For $\X$ a small circle around the vertex, the vertex is equidistant from
+$\X$ and medial (its feet the whole circle), while every \emph{other}
+interior point has a unique same-meridian foot; so $\Mx=\{\text{vertex}\}$
+and $\Rx$ is the disk it bounds. Outside, the meridian through a point is a
+\emph{ray} --- the flattening end carries no conjugate point along it ---
+so it minimises from its foot forever, $d_{\X}\to\infty$ with that single
+foot, and the point never reaches a medial centre: \emph{partial}, with
+finite centres throughout (no ideal boundary). Numerically, $d_{\X}$ is
+unbounded up the axis and no point above the inner disk is reconstructed,
+the vertex ball reaching only the disk. Dually, a compact hyperbolic
+manifold has $\sect<0$ yet is \emph{total} for $\Rx^{g}$
+(Theorem~\ref{thm:twogeo}). Curvature sign and compactness, fused on
+$\{\HH^{n},\Sn\}$, are independent in general.
+\end{remark}
+
+Behind Theorem~\ref{thm:flavour} are two principles --- the contrast in
+\emph{detection} that the centre type forces. We state them here; each is
+proved in its branch.
 
 \begin{proposition}[Finite equidistant centre trivialises detection ---
 any manifold]\label{prop:finite}
@@ -387,7 +468,8 @@ structure plays no role.
 \begin{proof}
 For $x\in\partial B(a,\rho)$, $d(a,x)=\rho=d(a,\X)$, so every contact is a
 foot; two contacts give two feet, $a\in\Mx$ with $r(a)=\rho$, and every
-point of $B(a,\rho)$ lies in this medial ball \cite[Prop.~3.3]{Sph}.
+point of $B(a,\rho)$ lies in this medial ball
+\cite[Lem.~3.1, Prop.~3.3]{Sph}.
 \end{proof}
 
 \begin{proposition}[Ideal centre demands a convexity test ---
@@ -402,9 +484,9 @@ horoconvex-hull \textup{(}Chebyshev/Motzkin\textup{)} question.
 
 \begin{proof}
 This is the deepest-shadow necessity and the swallow sufficiency of
-\cite[Thm.~5.6]{R3}; see \S\ref{sec:neg}. The point is that, $\Hb{}$ being
+\cite[Thm.~3.3]{R3}; see \S\ref{sec:neg}. The point is that, $\Hb{}$ being
 unbounded, the centre is \emph{not} equidistant from $\partial\Hb{}$
-(Theorem~\ref{thm:trich}(i)), so being medial is a genuine
+(Theorem~\ref{thm:flavour}(i)), so being medial is a genuine
 nearest-among-many condition --- non-Chebyshev --- rather than the trivial
 count of Proposition~\ref{prop:finite}.
 \end{proof}
@@ -426,14 +508,14 @@ of angular radius $R$ is geodesically convex iff $R\le\tfrac\pi2$ (convex
 at $R=1.551$, leaking at $R=1.591$), and the tangential eigenvalue of
 $\Hess d(\cdot,v)$ matches $\cot r$ to four places, flipping sign exactly
 at $r=\tfrac\pi2$. This is the $\kappa=+1$ instance of
-Theorem~\ref{thm:trich}(iii).
+Theorem~\ref{thm:flavour}(iii).
 \end{remark}
 
 \begin{remark}[Why the flat case is a knife-edge]\label{rem:knife}
 The two branches meet only at $\sect\equiv0$, and degenerately. View
 $\Sn_{R}$ of radius $R$ (curvature $R^{-2}>0$): the convexity radius is
-$\tfrac\pi2R\to\infty$ and the focal circumcentre of a free hemisphere
-recedes to distance $\tfrac\pi2 R\to\infty$ as $R\to\infty$
+$\tfrac{\pi R}{2}\to\infty$ and the focal circumcentre of a free hemisphere
+recedes to distance $\tfrac{\pi R}{2}\to\infty$ as $R\to\infty$
 \cite[Rem.~3.2]{Sph}, so the finite centre escapes to infinity and the
 bounded ball opens into a half-space --- exactly the $\sect=0$ picture of
 (ii). Symmetrically, sharpening $\sect\le-a^{2}<0$ contracts horoballs
@@ -448,13 +530,13 @@ lives precisely there.
 \section{The branch $\sect\le0$: ideal centres and the Chebyshev defect}
 \label{sec:neg}
 
-In non-positive curvature Theorem~\ref{thm:trich}(i) gives unbounded
+In non-positive curvature Theorem~\ref{thm:flavour}(i) gives unbounded
 horoballs with ideal centres, and Proposition~\ref{prop:ideal} makes
 detection a convexity question. The faithful characterisation is the
 template \eqref{eq:hada}, proved in \cite{R3} and quoted here in
 trichotomy form.
 
-\begin{definition}[Horospherical convex hull; {\cite[Def.~4.1]{R3}}]
+\begin{definition}[Horospherical convex hull; {\cite[Def.~3.1]{R3}}]
 \label{def:hconv}
 For a maximal free horoball $\Hb{}$ at $\xi$ with horosphere
 $S=\partial\Hb{}$ and an ideal direction $u$, let $L_{u}(y)=\frac{d}{d
@@ -472,7 +554,7 @@ homogeneous one.
 \end{definition}
 
 \begin{theorem}[Faithful characterisation in $\sect\le0$;
-{\cite[Thm.~5.6--5.7]{R3}}]\label{thm:hada}
+{\cite[Thm.~3.3--3.4]{R3}}]\label{thm:hada}
 For every Hadamard manifold $M$ and every closed $\X\subseteq M$,
 \[
   \Rx=(\Xhat\setminus\X)\ \cup\
@@ -492,10 +574,10 @@ The two analytic inputs are both curvature-free and both visible in the
 trichotomy. \emph{Necessity} is Danskin's first-order condition for the
 depth $D(\xi)=\inf_{x}b_{\xi}(x)-b_{\xi}(p)$: the deepest free horoball
 over $p$ has its foot $\sigma(p)$ in $\hconv(K)\setminus K$, so $K\neq
-\hconv(K)$ \cite[Thm.~5.6]{R3}. \emph{Sufficiency} is the swallow
+\hconv(K)$ \cite[Thm.~3.3]{R3}. \emph{Sufficiency} is the swallow
 (Theorem~\ref{thm:engine}(2)) along the medial centres drifting to $\xi$
 --- which exist precisely because, the centre being ideal
-(Theorem~\ref{thm:trich}(i)), a non-horoconvex contact set surrounds the
+(Theorem~\ref{thm:flavour}(i)), a non-horoconvex contact set surrounds the
 foot on every tilt and blocks ray-escape, so the trichotomy of point types
 \cite[Thm.~2.1(4)]{R3} forces drift.
 
@@ -503,7 +585,7 @@ foot on every tilt and blocks ray-escape, so the trichotomy of point types
 ambient certificate $K\neq\hconv(K)$ as an \emph{intrinsic} convexity of
 $K$ in $\partial\Hb{}$ --- the form Theorem~6 takes --- requires the
 horosphere geometry, governed by the Gauss equation $K_{S}=K_{M}
-+\det\mathrm{II}$ \cite[Prop.~6.1]{R3}. This is where the branch develops
++\det\mathrm{II}$ \cite[Prop.~4.1]{R3}. This is where the branch develops
 its own hierarchy, all of it on the \emph{ideal-centre} side of the
 trichotomy:
 \begin{itemize}
@@ -511,20 +593,20 @@ trichotomy:
 products $M_{f}$ of variable pinched curvature). Motzkin's theorem applies
 on the flat horosphere and detection is exactly non-convexity of $K$ ---
 the first reconstruction theorems beyond constant curvature
-\cite[Thm.~8.4]{R3}.
+\cite[Thm.~7.2]{R3}.
 \item \emph{$\mathrm{CAT}(0)$ horospheres} (warped over a Hadamard fibre).
 The sharpness half (convex $\Rightarrow$ Chebyshev) is unconditional;
 detection reduces to the Motzkin property of the fibre
-\cite[Thm.~9.3]{R3}.
+\cite[Thm.~8.3]{R3}.
 \item \emph{Positively curved horospheres} (the Heisenberg horosphere of
 $\CH^{2}$). Here $K_{S}$ takes both signs; localisation is carried out
 exactly in the Carnot metric and detection is \emph{graded non-Chebyshev}
 --- the first reconstruction on a non-$\mathrm{CAT}(0)$ horosphere
-\cite[Thm.~10.4]{R3}.
+\cite[Thm.~9.2]{R3}.
 \item \emph{The frontier} ($\CH^{n}$, $n\ge3$; pinched $\sect\le-a^{2}$).
 Detection is a Chebyshev-set problem in a Carnot group, or Motzkin's
 theorem in an Alexandrov space of indefinite curvature --- open
-\cite[\S11]{R3}.
+\cite[\S10]{R3}.
 \end{itemize}
 The entire frontier is a $\sect\le0$ phenomenon: it lives on the
 ideal-centre branch, where ``defective'' is a convexity and the open
@@ -534,14 +616,14 @@ counterpart above zero.
 \section{The knife-edge $\sect\equiv0$: Bia\l{}o\.zyt's theorem}
 \label{sec:flat}
 
-The flat case is the degenerate boundary of Theorem~\ref{thm:trich}, where
-both descriptions of the centre coincide at infinity
+The flat case is the degenerate boundary of Theorem~\ref{thm:flavour}(ii),
+where both descriptions of the centre coincide at infinity
 (Remark~\ref{rem:knife}). It is worth recording exactly what each branch's
 mechanism becomes there, because it shows Bia\l{}o\.zyt's
 theorem~\eqref{eq:bia} as the simultaneous limit of both.
 
 In $\R^{n}$ the Busemann function $b_{u}(x)=-\sca{x}{u}$ is affine
-(Theorem~\ref{thm:trich}(ii)), the maximal free convex region is a
+(Theorem~\ref{thm:flavour}(ii)), the maximal free convex region is a
 half-space $H$, and:
 \begin{itemize}
 \item \emph{From the ideal-centre side:} $\hconv=\conv$ (the tilts
@@ -576,10 +658,13 @@ nineteenth-century statement is the whole truth.
 \section{The branch $\sect>0$: finite centres and total reconstruction}
 \label{sec:pos}
 
-Above zero, Theorem~\ref{thm:trich}(iii) makes the maximal free convex
-region a bounded ball with a finite equidistant centre, and
-Proposition~\ref{prop:finite} collapses detection to a contact count. On
-the round sphere this collapse is total.
+Above zero, Theorem~\ref{thm:flavour}(iii) leaves no ideal centre: every
+centre is finite, and Proposition~\ref{prop:finite} collapses detection to
+a contact count. The \emph{carriers}, though, are balls of any radius up to
+the diameter --- convex only up to the convexity radius, then wrapping
+around (Remark~\ref{rem:carrier}) --- and it is the wrap-around, together
+with compactness (Theorem~\ref{thm:compact}), that on the round sphere
+makes the collapse \emph{total}.
 
 \begin{theorem}[Total reconstruction on $\Sn$; {\cite[Thm.~4.1]{Sph}}]
 \label{thm:sph}
@@ -597,9 +682,10 @@ $\tfrac\pi2$ from the entire equator, so $v\in\Mx$ and $H_{v}^{\circ}
 (Proposition~\ref{prop:finite} with $\rho=\tfrac\pi2$) --- there is no
 Motzkin step, no Chebyshev problem, the equatorial geometry idle. Globally,
 the proof follows the nearest-point ray of any $p\notin\Mx$ from its foot
-$x_{0}$: it cannot escape (Theorem~\ref{thm:trich}(iii): no rays, diameter
-$\pi$), so before the antipode $x_{0}$ is overtaken by a rival contact and
-a finite medial centre appears that still contains $p$. The
+$x_{0}$: $\Sn$ being compact (Theorem~\ref{thm:compact}), the ray cannot
+escape, and the antipode being the farthest point at distance $\pi$,
+$x_{0}$ is overtaken by a rival contact before it --- producing a finite
+medial centre that still contains $p$. The
 generalised-gradient flow of $d_{\X}$ \cite{Lie,ACa} makes this
 unconditional: on the compact $\Sn$ it has finite length, rests only at
 critical points, and a critical point of reach $<\pi$ carries two distinct
@@ -641,22 +727,42 @@ hypothesis is explicit via Klingenberg's estimate. For sparse $\X$ in
 variable positive curvature the sole obstruction is \emph{cut-shielding}
 --- a ray reaching the cut locus of its foot before any rival contact ---
 and total reconstruction holds iff cut-shielding is absent
-\cite[Prop.~7.1]{Sph}; whether it can occur for sparse $\X$ on a
-positively curved $M$ is open.
+\cite[Prop.~7.1]{Sph}. Cut-shielding genuinely occurs
+(Remark~\ref{rem:sharp}), so this conclusion is sharp.
 \end{theorem}
 
 \begin{theorem}[The two-geodesic axis removes the obstruction;
-{\cite[Thm.~8.4]{Sph}}]\label{thm:twogeo}
+{\cite[Thm.~8.3]{Sph}}]\label{thm:twogeo}
 Let $\Mx^{g}$ be the set of points with two distinct minimising geodesics
 to $\X$ \textup{(}the cut locus of $\X$\textup{)} and $\Rx^{g}=\bigcup_{a
 \in\Mx^{g}}B(a,r(a))$. Then for \emph{every} compact $M$ and closed $\X$
-with $|\X|\ge2$, $\Rx^{g}=M\setminus\X$, with no spread, curvature, or
-genericity hypothesis; and $\Mx^{g}=\Mx$ on $\R^{n}$ and $\Sn$, so the
-sphere and Euclidean theories are unchanged. The gradient flow always rests
-at a critical point, which carries two minimising geodesics by definition;
+with $|\X|\ge2$, $\Rx^{g}=M\setminus\X$, with no spread or curvature
+hypothesis; and $\Mx^{g}=\Mx$ on $\R^{n}$ and $\Sn$, so the sphere and
+Euclidean theories are unchanged. The gradient flow always rests at a
+critical point, which carries two minimising geodesics by definition;
 cut-shielding is precisely the case where these have a common endpoint, and
 the two-geodesic axis counts it as medial.
 \end{theorem}
+
+\begin{remark}[The scope of Theorem~\ref{thm:twogeo}'s
+proof]\label{rem:twogeo-caveat}
+The reconstruction step --- that the flow keeps $p$ inside the moving free
+ball until it reaches $a_{\infty}$ --- is Lieutier's swallow property
+\cite{Lie}, proved in $\R^{n}$. The elementary form quoted in
+\cite[Thm.~8.3]{Sph}, with the margin $r-d(p,\cdot)$ constant along each
+unique-foot arc, uses that the arc is the \emph{minimising} geodesic from
+its foot, hence is rigorous exactly while the reach stays below that foot's
+cut distance: unconditional on $\Sn$ (cut distance $=\pi=$ diameter) and
+under the spread hypothesis of Theorem~\ref{thm:spread} ($2\delta<\inj M$).
+On a general compact $M$ the reach can exceed an intermediate foot's cut
+distance, where the arc ceases to minimise and the elementary identity
+breaks; there $\Rx^{g}=M\setminus\X$ rests on Lieutier's swallow extending
+past cut points (expected, and unconditional for generic or analytic
+metrics, but not delivered by the margin identity alone). We therefore read
+Theorem~\ref{thm:twogeo} as unconditional below the cut distance and as
+resting on the Lieutier property otherwise --- ``any compact $M$'' in that
+qualified sense.
+\end{remark}
 
 Both refinements stay on the finite-centre side: the flow lands at a
 \emph{finite} critical point, and the only question is whether its two
@@ -665,42 +771,97 @@ or one (then only $\Mx^{g}$, Theorem~\ref{thm:twogeo}). The convexity
 detection of the negative branch never reappears, exactly as the
 trichotomy predicts.
 
+\begin{remark}[Sharpness: two-point reconstruction fails off constant
+curvature]\label{rem:sharp}
+The maximally sparse case settles, in the negative, whether
+Theorem~\ref{thm:sph} can hold for the two-\emph{point} axis off constant
+curvature. Take $\X=\{x_{0},x_{1}\}$ on a prolate ellipsoid of revolution
+(intrinsic $\sect>0$ everywhere), with $x_{0}$ on the equator and $x_{1}$
+at a pole. With $|\X|=2$ the two-point axis $\Mx$ is exactly the bisector
+$\{a:d(a,x_{0})=d(a,x_{1})\}$, so $q\in\Rx$ iff some bisector point $a$
+satisfies $d(a,q)<d(a,x_{0})$ --- a finite, decidable test. Evaluating it
+reveals a sharp transition in the eccentricity. (The solver uses Dijkstra
+geodesics on a dense point cloud; validated on the round sphere it returns
+distances within $1\%$, total reconstruction, and zero shielded points,
+confirming Theorem~\ref{thm:sph}.) Reconstruction is total for mild prolateness (ratio of
+polar to equatorial semi-axes $c$ small) and shielded for large
+eccentricity, the transition localised to $c^{\ast}=2.6\pm0.1$ --- the
+solver's $2.4\%$ error cannot resolve it more finely. At $c=3$ a robust
+\emph{shielded} region near the antipodal pole occupies $\approx9\%$ of the
+surface, with reconstruction deficit
+$\min_{a}\bigl[d(a,q)-r(a)\bigr]\approx18\%$ of the diameter at its deepest
+point --- the distance by which $q$ lies beyond every medial ball. This
+deficit is a factor of about seven above the $2.4\%$ discretisation error,
+and the shielded region persists and stabilises under
+mesh refinement (its area fraction rising slightly, from $7\%$ to
+$\approx9\%$ as the mesh doubles, rather than vanishing). The shielded
+points are precisely the cut points of $x_{0}$ that admit two or more
+minimising geodesics to $x_{0}$ while remaining strictly closer to $x_{0}$
+than to $x_{1}$: meeting no rival contact, they lie in
+$\Mx^{g}\setminus\Mx$ and are reconstructed by the two-\emph{geodesic} axis
+(Theorem~\ref{thm:twogeo}) but by no two-point medial ball. Thus total
+reconstruction from $\Mx$ is restricted to constant curvature --- and, more
+finely, to bounded eccentricity --- whereas $\Mx^{g}$ is unconditional:
+cut-shielding is not a gap in the theory but the exact geometric
+obstruction separating the two axes, and the two-geodesic reformulation
+resolves it.
+\end{remark}
+
 \section{The unified picture}\label{sec:disc}
 
 \paragraph{The phenomenon, in one line.} A point escapes reconstruction by
-sending its nearest-point ray to infinity with a single foot. Whether this
-can happen is whether a free convex region can be unbounded, which is the
-sign of the Busemann Hessian, which is the sign of the curvature. Below
-zero it happens, $\Rx$ is partial and organised by a convexity defect of
-contact sets; above zero compactness forbids it, every point is swallowed
-by a finite centre, $\Rx=M\setminus\X$; at zero the ray escapes but only
-just, and Bia\l{}o\.zyt's $\conv$-certificate is exact.
+sending its nearest-point ray to an \emph{end} of $M$ with a single foot
+--- so partial-versus-total is governed by \textbf{compactness}.
+\emph{Given} partiality, what a contact set must do to admit a medial
+centre is governed by the sign of the Busemann Hessian: a convexity test
+where the centre is ideal ($\sect\le0$), a contact count where it is finite
+($\sect>0$), Motzkin at the knife-edge. The two questions coincide on
+$\HH^{n}$ and $\Sn$ but are independent (the paraboloid; the compact
+hyperbolic manifold).
 
-\paragraph{The phase transition.} The same template
-\eqref{eq:template} carries all three regimes, with one parameter --- the
-centre type --- flipping at $\sect=0$:
+\paragraph{The $2\times2$.} The honest structure has \emph{two} axes:
+compactness (rows: total versus partial) and the Hessian sign (columns:
+detection flavour, visible in the non-compact row).
 
 \begin{center}
-\begin{tabular}{lllll}
+\begin{tabular}{l|ccc}
 \toprule
-$\sect$ & $\Hess b$ & region $\Hb{}$ & centre & detection / $\Rx$\\
+ & $\sect\le0$ ($\Hess b\succeq0$) & $\sect\equiv0$ ($\Hess b\equiv0$)
+   & $\sect>0$ ($\Hess b\preceq0$)\\
+ & ideal centre & ideal at $\infty$ & finite centre\\
 \midrule
-$\le0$ & $\succeq0$ & convex, unbounded & ideal $\xi\in\bdry M$
-  & non-Chebyshev hull; $\Rx\subsetneq M\setminus\X$\\
-$\equiv0$ & $\equiv0$ & half-space & $\infty$
-  & Motzkin (non-convex); strict\\
-$>0$ & $\preceq0$ & bounded ball & finite $a\in M$
-  & $\ge2$ contacts; $\Rx=M\setminus\X$ (total)\\
+non-compact & \emph{partial}: Chebyshev/ & \emph{partial}: Motzkin
+   & \emph{partial}: $\ge2$-count\\
+(rays escape) & Carnot defect ($\HH^{n}$) & (Bia\l{}o\.zyt, $\R^{n}$)
+   & (paraboloid)\\
+\midrule
+compact & \emph{total} $\Rx^{g}$ & \emph{total} $\Rx^{g}$
+   & \emph{total} $\Rx^{g}$\\
+(no escape) & (cpt.\ hyperbolic) & (flat torus)
+   & ($\Sn$; two-point too)\\
 \bottomrule
 \end{tabular}
 \end{center}
 
-\noindent The left two columns are Theorem~\ref{thm:trich}; the right two
-are Propositions~\ref{prop:ideal} and~\ref{prop:finite} with
-Theorems~\ref{thm:hada},~\ref{thm:bia},~\ref{thm:sph}. Reading down the
-``detection'' column is the content of Theorem~6's generalisation: it is
-\emph{not} one formula but a convexity question that trivialises into a
-counting question as the ideal centre descends to a finite one.
+\noindent The columns are Theorem~\ref{thm:flavour} with
+Propositions~\ref{prop:ideal},~\ref{prop:finite} and
+Theorems~\ref{thm:hada},~\ref{thm:bia},~\ref{thm:sph}; the rows are
+Theorem~\ref{thm:compact} with Theorem~\ref{thm:twogeo}. The classical
+results sit on a diagonal --- $\HH^{n},\R^{n}$ (non-compact) and $\Sn$
+(compact) --- which is why a first reading fuses the axes; the off-diagonal
+cells, the paraboloid and the compact space forms, are what pry them apart.
+Reading the non-compact row is the content of Theorem~6's
+detection-flavour generalisation: \emph{not} one formula but a convexity
+question that trivialises into a count as the ideal centre descends to a
+finite one. The compact row is uniformly total \emph{for the two-geodesic
+axis} $\Rx^{g}$ --- but \emph{not} for Bia\l{}o\.zyt's two-\emph{point}
+axis $\Mx$, the object of every column header: there cut-shielding
+(Remark~\ref{rem:sharp}) makes the compact-hyperbolic and the generic
+positively-curved cells \emph{partial} for $\Mx$, total only under a
+cut-locus rigidity ($\Sn$, where $\Mx=\Mx^{g}$). So the $\Mx$-versus-$\Mx^{g}$
+distinction is the genuine content of the compact row, not an aside; and
+Bia\l{}o\.zyt's own partiality was never about $\sect\le0$ but about the
+non-compactness of $\R^{n}$.
 
 \paragraph{What each branch leaves open.} The two open problems are the two
 branches' own, and the trichotomy says they do not mix.
@@ -708,14 +869,19 @@ branches' own, and the trichotomy says they do not mix.
 \item \emph{Negative branch (ideal centre).} Detection on
 non-$\mathrm{CAT}(0)$ horospheres: a Chebyshev-set problem in a Carnot
 group ($\CH^{n}$), or Motzkin's theorem in an Alexandrov space of
-indefinite curvature (pinched $\sect\le-a^{2}$) \cite[\S11]{R3}. This is a
+indefinite curvature (pinched $\sect\le-a^{2}$) \cite[\S10]{R3}. This is a
 \emph{convexity} question and exists only because the centre is ideal.
 \item \emph{Positive branch (finite centre).} Non-detection for sparse
-$\X$ in \emph{variable} positive curvature: whether cut-shielding can
-obstruct total reconstruction \cite[\S7]{Sph}. This is a \emph{cut-locus}
-question and exists only because the certificate has collapsed --- there
-is no convexity content left, only the geometry of the cut locus. The
-two-geodesic axis removes it entirely (Theorem~\ref{thm:twogeo}).
+$\X$ in \emph{variable} positive curvature: cut-shielding \emph{does}
+obstruct total reconstruction from the two-point axis
+(Remark~\ref{rem:sharp}: an explicit prolate-ellipsoid witness), so
+$\Rx=M\setminus\X$ is special to constant curvature. This is a
+\emph{cut-locus} question and exists only because the certificate has
+collapsed --- there is no convexity content left, only the geometry of
+the cut locus --- and the two-geodesic axis removes it entirely
+(Theorem~\ref{thm:twogeo}). The open residue is quantitative, not
+existential: the eccentricity threshold below which even two points
+reconstruct everything.
 \end{itemize}
 The trichotomy thus also explains why the search for a positive-curvature
 mirror of the $\CH^{2}$ detection theorem fails: detection is an
@@ -726,12 +892,18 @@ ideal-centre structure, and above zero there are no ideal centres
 problem trivial above zero, which points to the \emph{domain}
 reconstruction problem of Lieutier \cite{Lie}: reconstruct an open
 $\Omega\subseteq\Sn$ from the medial axis of $\partial\Omega$ using only
-balls contained in $\Omega$. The confinement excludes the far-side focal
-centres, the antipodal collapse does not occur, and a genuine
-convexity/defect theory --- now with the positively curved induced
-geometry of $\partial\Omega$, an Alexandrov rather than horosphere setting
---- should re-emerge. That is where the two branches of this note would
-finally meet on the same side of zero.
+balls contained in $\Omega$. One must state this carefully, on pain of
+repeating the conflation this note corrects. The confinement to $\Omega$ is
+an axis-(A) device --- it bounds the inradius and so caps reach, as
+compactness does --- not an axis-(B) curvature one; and interior
+reconstruction of a bounded $\Omega$ is itself total (Lieutier), with the
+\emph{same} trivial defect as the $\sect>0$ count, since inscribed balls
+have finite equidistant centres. So the sequel \emph{cannot} re-import the
+$\sect\le0$ Chebyshev theory: the trichotomy forbids a convexity defect on
+the finite-centre side. Its genuine content, if any, is the
+\emph{Alexandrov geometry of $\partial\Omega$} --- the positively curved
+induced metric of the boundary --- as a detection object in its own right,
+not a re-emergence of the horoball defect.
 
 \begin{thebibliography}{9}
 
