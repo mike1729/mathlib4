@@ -132,7 +132,12 @@ $\Rg$ is the captured set plus the ideal cells, and the
 \emph{medial complex}, $\Mg$ with the ideal free horoballs glued
 along the diagram of the cover, always carries the homotopy type
 of $\Rg$, of $M\setminus\X$ when the reconstruction is complete:
-on the cylinder it rebuilds the figure-eight. Two classical
+on the cylinder it rebuilds the figure-eight. The complex is not a
+curvature tax: three points in the plane already reconstruct
+completely while their complement, a wedge of three circles, faces
+a contractible Voronoi tripod --- the flat no-leak conjecture is
+false, the leak sitting in the corner cones where two ideal
+half-planes overlap inside the Aubry set. Two classical
 instances and a smooth refinement close the layer: uniform capture
 recovers the
 Ford--Voronoi spines of finite-volume cusped hyperbolic manifolds
@@ -293,7 +298,14 @@ escaping class becomes ideally visible too --- class (3) is exactly
 the Aubry points on which every ideal medial limit function is
 nonnegative --- and when $\X$ has no ideal medial limit functions
 at all, $\Rg\simeq\Mg$ with no bound on $\dX$
-(Corollary~\ref{cor:noideal}).
+(Corollary~\ref{cor:noideal}). The section ends by settling the
+flat no-leak conjecture of the earlier draft, negatively: three
+points in the plane reconstruct completely and leak all of their
+homotopy, the loops living in the corner cones where two ideal
+half-planes overlap inside the Aubry set
+(Proposition~\ref{prop:flatleak}); for finite planar contact sets
+the leak has rank exactly the number of convex-hull corners
+(Remark~\ref{rem:flatleak}).
 
 \section{Preliminaries}\label{sec:prelim}
 
@@ -1424,7 +1436,10 @@ ideal medial limit functions can --- every swallowed-uncaptured
 point lies in an ideal free horoball
 (Theorem~\ref{thm:idealswallow}), and gluing those cells onto the
 axis restores the homotopy type of $\Rg$
-(Theorem~\ref{thm:complex}).
+(Theorem~\ref{thm:complex}). The leak itself is not a curvature
+phenomenon: it recurs for three points in the plane, where complete
+reconstruction and a contractible axis coexist with a wedge of
+three circles (Proposition~\ref{prop:flatleak}).
 \end{remark}
 
 \paragraph{Two classical instances, and the smooth dual side.} The
@@ -1964,24 +1979,29 @@ level function $c(\xi)$ of Remark~\ref{rem:offset} (item (2) of
 \S\ref{sec:open}) is untouched, as is the detection question ---
 \emph{which} ideal functions exist is still read from $\Mg$, not
 from $\X$ (items (1)--(2)).
-(b) \emph{The flat no-leak conjecture, reduced.} In $\R^{n}$ every
-ideal medial limit function is affine and its cell $H=\{\psi<0\}$ is
-an open half-space avoiding $\X$; along a calibrated ray
-$\gamma(t)=x_{\gamma}+tu$ the affine function
+(b) \emph{The flat no-leak conjecture, reduced --- and refuted.} In
+$\R^{n}$ every ideal medial limit function is affine and its cell
+$H=\{\psi<0\}$ is an open half-space avoiding $\X$; along a
+calibrated ray $\gamma(t)=x_{\gamma}+tu$ the affine function
 $t\mapsto\psi(\gamma(t))$ starts nonnegative
 ($\psi\ge0$ on $\X$) and is monotone, so a ray that enters $H$ never
 leaves: $\Aub(\X)\cap H$ is a bundle of inward half-lines. The
 conjecture that $\Rx=\R^{n}\setminus\X$ forces
-$\R^{n}\setminus\X\simeq\Mx$ is now equivalent, by
+$\R^{n}\setminus\X\simeq\Mx$ is therefore equivalent, by
 Theorem~\ref{thm:complex}, to the statement that these attachments
-are trivial: $H\cap W\hookrightarrow H$ (and its finite-intersection
-versions) are weak equivalences. Both spaces are contractible
-candidates --- $H$ is convex, and $H\cap W=H\setminus\Aub(\X)$ is
-$H$ minus the half-line bundle --- but the equivalence remains open;
-the cylinder shows it is genuinely flat (its cells are homotopy
-circles, and the attachment is not trivial). On a Hadamard manifold
-the cells are horoballs, convex hence contractible; whether their
-captured traces are is open in the same way.
+are trivial: $H\cap W\hookrightarrow H$ \emph{and its
+finite-intersection versions} are weak equivalences. For a single
+cell both spaces are contractible candidates --- $H$ is convex, and
+$H\cap W$ is $H$ minus the half-line bundle --- and on the acute
+triangle below the single-cell attachments are indeed trivial. The
+conjecture fails anyway: Proposition~\ref{prop:flatleak} exhibits
+double overlaps $H'\cap H''$ that sink entirely into the Aubry set,
+and three points in the plane already leak all of their homotopy.
+On a Hadamard manifold the corner mechanism is throttled by the
+thinness of horoballs --- a calibrated ray not asymptotic to the
+cell's ideal point eventually exits it, so three points in
+$\HH^{2}$ do not even reconstruct completely --- and which complete
+Hadamard reconstructions leak is open.
 (c) \emph{Regularity.} When the cover is good --- all members and
 intersections contractible, as below the convexity radius, or for
 all of $\R^{n}$ if (b) holds --- the nerve theorem \cite{Bor}
@@ -1998,6 +2018,134 @@ $\Aub(\X)\cap\{\dX\ge R\}\hookrightarrow\Aub(\X)$ for every $R$:
 classes (2)$\,\cup\,$(3) are carried entirely at infinity, which is
 why only ideal objects can see them --- the geometric content of
 Theorem~\ref{thm:idealswallow}.
+\end{remark}
+
+\begin{proposition}[The flat leak: three points refute the no-leak
+conjecture]\label{prop:flatleak}
+Let $\X\subset\R^{2}$ be three affinely independent points. Then
+the reconstruction is complete, and
+\[
+  \Rx\ =\ \R^{2}\setminus\X\ \simeq\ S^{1}\vee S^{1}\vee S^{1},
+  \qquad\text{while $\Mx$ is the Voronoi tripod, contractible.}
+\]
+Complete reconstruction does not transport homotopy type even in
+$\R^{2}$, even for $|\X|=3$: the flat no-leak conjecture of
+Remark~\ref{rem:complexlimits}(b) is false.
+\end{proposition}
+
+\begin{proof}
+Write $e$ for a generic edge of the triangle, $\ell_{e}$ for its
+line, $n_{e}$ for its outward unit normal and $m_{e}$ for its
+midpoint. $\Mx$ is the Voronoi skeleton of three points --- the
+circumcentre with its three outward bisector rays --- a tripod.
+
+\emph{Ideal cells.} Along the outward bisector ray the centres
+$a_{t}=m_{e}+tn_{e}$ have exactly the endpoints of $e$ as feet and
+$\dX(a_{t})=\sqrt{t^{2}+h^{2}}$, $2h=|e|$; hence
+$d(x,a_{t})-\dX(a_{t})\to\psi_{e}(x):=\sca{m_{e}-x}{n_{e}}$ locally
+uniformly, an \emph{ideal} medial limit function whose cell
+$H_{e}=\{\psi_{e}<0\}$ is the open half-plane beyond $\ell_{e}$.
+
+\emph{The Aubry set.} In $\R^{n}$ the unit-speed ray $t\mapsto p+tv$
+from $p\in\X$ is calibrated iff
+$\bigcup_{t>0}B(p+tv,t)=\{x:\sca{x-p}{v}>0\}$ avoids $\X$, i.e.\ iff
+$v$ lies in the normal cone $N_{p}$ of $\conv\X$ at $p$; and every
+Aubry point lies on such a ray through its foot
+(Lemma~\ref{lem:aubry}). Hence
+$\Aub(\X)=\bigcup_{i}\bigl(p_{i}+N_{p_{i}}\bigr)$, three closed
+corner cones.
+
+\emph{Complete reconstruction.} Fix a vertex $p$, let $n',n''$ be
+the normals of its two edges, so
+$N_{p}=\operatorname{cone}(n',n'')$ and $p\in\ell'\cap\ell''$. If
+$v=an'+bn''$ with $a,b\ge0$ had $\sca{v}{n'}\le0$ and
+$\sca{v}{n''}\le0$, then
+$|v|^{2}=a\sca{n'}{v}+b\sca{n''}{v}\le0$, so $v=0$. Thus every
+$v\in N_{p}\setminus\{0\}$ has, say, $\sca{v}{n'}>0$, and since
+$p\in\ell'$,
+\[
+  \psi'(p+tv)\ =\ -t\,\sca{v}{n'}\ <\ 0\qquad(t>0):
+\]
+the ray lies in the adjacent cell from the instant it leaves $p$.
+So $\Aub(\X)\subseteq H_{1}\cup H_{2}\cup H_{3}$, and
+Corollary~\ref{cor:idealdecomp} gives
+$\Rg\supseteq W\cup\Aub(\X)=\R^{2}\setminus\X$, i.e.\
+$\Rx=\Rg=\R^{2}\setminus\X$ ($\Mx=\Mg$ in $\R^{n}$).
+
+Finally $\R^{2}$ minus three points is a wedge of three circles,
+and the tripod is contractible.
+\end{proof}
+
+\begin{remark}[Anatomy of the flat leak]\label{rem:flatleak}
+(a) \emph{The corner mechanism.} For an acute triangle the failure
+is isolated exactly where Remark~\ref{rem:complexlimits}(b) did not
+look. Each single-cell attachment is trivial: $W\cap H_{e}$ is the
+strip between the two corner cones flanking $e$, contractible, as
+is $H_{e}$. But two cells adjacent at a vertex $p$ overlap in the
+nonempty open cone
+$H'\cap H''=p+\{v:\sca{v}{n'}>0,\ \sca{v}{n''}>0\}\subseteq
+p+N_{p}\subseteq\Aub(\X)$ (the containment because the normals
+subtend an angle $\ge90^{\circ}$): the double overlap sinks
+\emph{entirely} into the Aubry set, $W\cap H'\cap H''=\varnothing$,
+and the finite-intersection attachment fails as badly as possible.
+The cover $\{W,H_{1},H_{2},H_{3}\}$ is good (all nonempty pieces
+convex or strips; $H_{1}\cap H_{2}\cap H_{3}=\varnothing$ since the
+weighted outward normals sum to zero), so the nerve theorem
+applies: the nerve is the complete graph $K_{4}$ --- four
+contractible vertices, six edges, every triangle missing --- which
+is a wedge of three circles. Theorem~\ref{thm:complex} thus
+computes $\Rx$ exactly; it is $W\hookrightarrow\Rx$ that fails.
+The three leaked classes are localised by winding: a loop winding
+once about $p$ must cross the unbounded cone
+$p+N_{p}\subseteq\Aub(\X)$, so no captured loop winds about any
+vertex, while the cycle $W\to H'\to H''\to W$ around $p$ winds
+once. For an \emph{obtuse} triangle the cover is not even good: the
+obtuse corner's overlap cone protrudes past its normal cone, the
+protrusion is captured near the apex and Aubry far out (inside the
+opposite vertex's cone), and both $W\cap H'\cap H''$ and one
+$W\cap H_{e}$ become disconnected --- the goodness threshold of
+item~(5b) of \S\ref{sec:open} is visible already for triangles:
+the ideal cover of three points is good precisely when no angle is
+obtuse.
+
+(b) \emph{The leak count for finite sets.} Let $\X\subset\R^{2}$ be
+finite and affinely spanning, $k=|\X|$, with no point of $\X$ in
+the relative interior of a hull edge, and let $V$ be the number of
+hull vertices. Consecutive hull vertices bound an unbounded Voronoi
+edge, so every hull edge is defective as above; the corner
+computation of Proposition~\ref{prop:flatleak} covers every normal
+cone, and $\Rx=\R^{2}\setminus\X\simeq\bigvee_{k}S^{1}$. On the
+other side $\Mx$ is the Voronoi skeleton, whose first Betti number
+is the number of \emph{bounded} Voronoi cells, i.e.\ of interior
+points of $\X$. The leak therefore has rank exactly $V\ge3$: one
+class per hull corner. Complete reconstruction is generic for
+finite planar sets; what fails, by exactly the number of Aubry
+corners, is transport.
+
+(c) \emph{Corners are the mechanism.} The notched half-plane
+$\X=\{y\le0,\ |x|\ge1\}$ has $\Aub(\X)=\{y>0,\ |x|\ge1\}$, the
+vertical rays over the shelf, and no hull corner; the single ideal
+cell $\{y>0\}$ (centres $(0,t)$, feet $(\pm1,0)$) covers the Aubry
+set at level $0$, the reconstruction is complete, and there is no
+leak: $\R^{2}\setminus\X$ and $\Mx=\{x=0\}$ are both contractible.
+Separately, the \emph{single-cell} attachment can itself fail
+further afield: for $\X=$ unit circle $\cup$ the plane $\{z=-10\}$
+in $\R^{3}$, the cell $H=\{z>0\}$ is defective (centres on the
+circle--plane bisector bowl escape with
+$\psi\to-z$), its Aubry trace is the cylinder shell
+$\{\rho=1,z>0\}$, and $H\cap W$ = (open tube) $\sqcup$ (outside) is
+disconnected --- though there the reconstruction is incomplete
+below the plane.
+
+(d) \emph{The moral, inverted.} The leak of
+Remark~\ref{rem:homotopyleak} is not a curvature phenomenon: it is
+affine, generic, and quantified by the corners of the convex hull.
+What the cylinder adds is only that the cells themselves can be
+homotopy circles; the flat leak builds its loops from contractible
+cells glued around a corner. Lieutier's theorem is genuinely a
+theorem about bounded domains --- completeness of the
+reconstruction does not restore it in the unbounded setting --- but
+the medial complex does, everywhere (Theorem~\ref{thm:complex}).
 \end{remark}
 
 \section{What remains}\label{sec:open}
@@ -2051,19 +2199,23 @@ settled by \S\ref{sec:complex}: the medial complex --- $\Mg$ with
 the ideal free horoballs glued on --- always carries the homotopy
 type of $\Rg$ (Theorem~\ref{thm:complex}), because the finite layer
 does not leak (Theorem~\ref{thm:idealswallow}). What remains is its
-structure. \emph{(a) The flat no-leak conjecture, in reduced form:}
-if $\Rx=\R^{n}\setminus\X$ (the sets characterised by
-\cite[Thm.~6]{Bia}), is $\R^{n}\setminus\X\simeq\Mx$? By
-Remark~\ref{rem:complexlimits}(b) this is now equivalent to the
-triviality of the ideal attachments
-$H\cap W\hookrightarrow H$ over the defective half-spaces $H$ ---
-the Aubry trace on each cell is a bundle of inward half-lines, and
-the question is whether removing it can change the homotopy type of
-a convex cell. A positive answer would make the leak of
-Remark~\ref{rem:homotopyleak} genuinely Riemannian: created by
-non-convex free balls, impossible in flat space. \emph{(b) A CW or
+structure. \emph{(a) The flat leak, localised:} the no-leak
+conjecture of the earlier draft is settled, negatively --- three
+points in the plane reconstruct completely
+($\Rx=\R^{2}\setminus\X$, the sets characterised by
+\cite[Thm.~6]{Bia}) and leak all three of their loops past a
+contractible axis (Proposition~\ref{prop:flatleak}); for finite
+planar $\X$ the leak has rank exactly the number of hull corners,
+and it dies without corners
+(Remark~\ref{rem:flatleak}). What survives is localisation: is the
+leak in $\R^{n}$ likewise carried by the non-smooth strata of
+$\partial\conv\X$, and which pairs of homotopy types
+$(\R^{n}\setminus\X,\ \Mx)$ are realised by completely
+reconstructing sets? \emph{(b) A CW or
 nerve model:} when is the ideal cover good, so that the nerve
-theorem \cite{Bor} computes the complex --- and can the local-tree
+theorem \cite{Bor} computes the complex (for three points:\ iff the
+triangle has no obtuse angle, Remark~\ref{rem:flatleak}(a)) --- and
+can the local-tree
 and delta-convex structure theory of \cite{TS,MT}, or Damon's
 skeletal calculus \cite{Dam}, produce a finite model in the generic
 compact-contact case? \emph{(c) Grazing rays:} can
@@ -2103,8 +2255,11 @@ homotopy type --- and the medial complex re-fuses them: the finite
 layer does not leak (Theorem~\ref{thm:idealswallow}), so the axis
 with its ideal free horoballs glued on carries the homotopy type of
 $\Rg$ on every complete manifold, for every closed contact set
-(Theorem~\ref{thm:complex}), and the residue of the homotopy
-programme is regularity, not existence
+(Theorem~\ref{thm:complex}); the leak the complex repairs is
+already flat --- three points in the plane leak all of their
+homotopy past a contractible axis, one loop per hull corner
+(Proposition~\ref{prop:flatleak}) --- and the residue of the
+homotopy programme is regularity, not existence
 (\S\ref{sec:open}(5)). In the smooth case the layer is classical geometry
 made medial: the captured part is the mapping cylinder of the
 swallow map onto the cut locus, its collapse is the Thom space
