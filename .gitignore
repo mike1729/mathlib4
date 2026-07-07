@@ -10,3 +10,14 @@
 scripts/.rm_set_option_progress.jsonl
 # Artifacts from using the devcontainer setup
 .devcontainer/devcontainer-lock.json
+# LaTeX auxiliary files
+*.aux
+*.log
+*.fdb_latexmk
+*.fls
+*.out
+*.toc
+*.xdv
+*.synctex.gz
+*.bbl
+*.blg
