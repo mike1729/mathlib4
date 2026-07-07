@@ -37,6 +37,9 @@
 \newcommand{\HH}{\mathbb{H}}
 \newcommand{\Sn}{\mathbb{S}^{n}}
 \newcommand{\bdry}{\partial_{\infty}}
+\newcommand{\Cut}{\operatorname{Cut}}
+\newcommand{\Aub}{\mathcal{A}^{\ast}}
+\newcommand{\Cu}{\operatorname{Cu}}
 
 \title{Medial-axis reconstruction on complete Riemannian manifolds:\\
 capture, drift, and the unconditional theorem\thanks{Final note of a
@@ -64,7 +67,8 @@ growth rate $1$ to five digits, margin deficit $<3\cdot10^{-6}$; file
 \begin{abstract}
 For a closed set $\X$ in a complete Riemannian manifold $M$, the
 \emph{two-geodesic medial axis} $\Mg$ is the set of points admitting
-two distinct minimising geodesics to $\X$ (the cut locus of $\X$), and
+two distinct minimising geodesics to $\X$ (the multi-geodesic part of
+the cut locus of $\X$, in general a proper dense subset of it), and
 the reconstruction $\Rg=\bigcup_{a\in\Mg}B(a,\dX(a))$ is the union of
 its open medial balls. Across the series, the generalisation of
 Bia\l{}o\.zyt's Theorem~6 to Riemannian manifolds had been proved up to
@@ -105,7 +109,39 @@ no longer a gap. Together with the trichotomy
 captured/drift-swallowed/escaping, this completes the programme: the
 Euclidean, Hadamard, spherical, spread, and compact theorems are all
 specialisations, and the remaining open problems are exactly the
-faithful ($\Mg$-free) certificates on the escape side.
+faithful ($\Mg$-free) certificates on the escape side. As a first
+instance beyond the series we prove the end certificate on the flat
+cylinder: the free end-region above $\sup_{\X}z$ is reconstructed in
+full if the top contact set omits a circle position, and not at all
+if it is the full circle. A closing section adds the homotopy layer:
+the escape class of the trichotomy is exactly the Aubry set of
+$\dX$ in the sense of Cannarsa--Cheng--Fathi, so the captured part of
+the complement always has the homotopy type of $\Mg$; whenever
+$\sup\dX<\infty$ --- every compact $M$, every coarsely dense $\X$ ---
+capture supplies the uniform clock that boundedness of the domain
+supplied for Lieutier and Albano--Cannarsa--Nguyen--Sinestrari, and
+$M\setminus\X\simeq\Mg\simeq\Cut(\X)$. The cylinder with $|\X|=1$
+shows the bound is not cosmetic: the reconstruction is complete,
+$\Rg=C\setminus\X$, yet a figure-eight complement faces a
+contractible axis --- homotopy equivalence follows capture, and
+swallowing does not transmit it. A final section repairs the leak,
+unconditionally: every swallowed-uncaptured point lies in an
+\emph{ideal} free horoball, at depth no smaller than its depth in
+any finite medial ball --- the finite layer does not leak --- so
+$\Rg$ is the captured set plus the ideal cells, and the
+\emph{medial complex}, $\Mg$ with the ideal free horoballs glued
+along the diagram of the cover, always carries the homotopy type
+of $\Rg$, of $M\setminus\X$ when the reconstruction is complete:
+on the cylinder it rebuilds the figure-eight. Two classical
+instances and a smooth refinement close the layer: uniform capture
+recovers the
+Ford--Voronoi spines of finite-volume cusped hyperbolic manifolds
+and the Voronoi spines of crystallographic quotients; and for a
+smooth closed submanifold $\X$ the captured part of the complement
+is, always, the mapping cylinder of the swallow map
+$S(\nu)\to\Cu(\X)$ --- the homotopy equivalence sharpens to a
+strong deformation retraction onto the full cut locus, with the
+Thom-space collapse of Basu--Prasad as its inward dual.
 \end{abstract}
 
 \tableofcontents
@@ -135,35 +171,16 @@ curvature \cite{Sph}, and \cite{Tri} organised the results into two
 independent axes: \emph{compactness} governs partial-versus-total,
 the \emph{Busemann--Hessian sign} governs the detection flavour.
 
-Two analytic gaps remained, both flagged explicitly in the series.
-
-\begin{enumerate}[label=(G\arabic*)]
-\item\label{G1} \emph{The containment step on compact manifolds.} The
-total-reconstruction theorem $\Rg=M\setminus\X$ for compact $M$
-\cite[Thm.~8.3]{Sph}, \cite[Thm.~6.4]{Tri} used the ascending
-generalised-gradient flow of $\dX$ and needed the starting point to
-remain inside the moving free ball. The elementary constant-margin
-identity proves this only while the reach stays below the cut distance
-of the current foot; past it, the argument invoked ``Lieutier's swallow
-property extending past cut points --- expected, and unconditional for
-generic or analytic metrics, but not delivered by the margin identity
-alone'' \cite[Rem.~8.4]{Sph}, \cite[Rem.~6.5]{Tri}.
-\item\label{G2} \emph{The radial offset for non-compact contact sets.}
-In the Hadamard characterisation for arbitrary closed $\X$
-\cite[Thm.~3.4]{R3}, a purely asymptotic drift in an inhomogeneous
-manifold could carry a nonvanishing radial offset, and then only the
-deep part of the defective horoball was proved reconstructed.
-\end{enumerate}
-
-This note closes \ref{G1} and \ref{G2} and states the resulting
-theorem in full generality: \emph{every} complete Riemannian manifold,
-\emph{every} closed set. No curvature bound, genericity, analyticity,
-spread, or cardinality hypothesis is used anywhere.
 
 \subsection*{The two inputs}
 
-\emph{Capture (\S\ref{sec:capture}).} The obstruction in \ref{G1} was
-never the existence of the ascending flow; it was the bookkeeping of
+\emph{Capture (\S\ref{sec:capture}).} The obstruction in the first
+flagged gap --- the containment step past cut points on compact
+manifolds \cite[Rem.~8.4]{Sph}, \cite[Rem.~6.5]{Tri} --- was
+never the existence of the ascending flow (on Riemannian domains its
+canonical, semiconcave form is the singular gradient flow of
+Albano--Cannarsa--Nguyen--Sinestrari \cite{ACNS}; see
+Remark~\ref{rem:lieutier}); it was the bookkeeping of
 the margin through multi-geodesic points, where the flow turns and the
 margin genuinely need not be monotone (Remark~\ref{rem:notmonotone}).
 The repair is to reverse the roles: follow \emph{any} trajectory of
@@ -185,7 +202,10 @@ harmless, because approach suffices: the margin is continuous. This is
 Theorem~\ref{thm:capture}, and it makes the compact theorem
 unconditional (Corollary~\ref{cor:compact}), for every closed
 $\X\neq\varnothing$ --- including $|\X|=1$, which the two-point axis
-cannot see at all.
+cannot see at all. In particular the reconstruction question on
+compact Riemannian manifolds, raised for the medial axis in
+\cite[\S5.2]{Bia}, has an unconditional affirmative answer for the
+two-geodesic axis.
 
 \emph{Drift (\S\ref{sec:drift}).} Capture cannot be the whole story on
 a non-compact manifold: a point can be reconstructed by medial balls
@@ -206,7 +226,8 @@ trichotomy: every $p\in M\setminus\X$ is captured, drift-swallowed, or
 escaping-unswallowed, and $\Rg$ is exactly the first two classes
 (Theorem~\ref{thm:trichotomy}). On a Hadamard manifold the ideal medial
 limit functions are Busemann functions up to an additive level, and the
-offset caveat \ref{G2} dissolves into a definition: a drift with
+radial-offset caveat of \cite[Thm.~3.4]{R3} dissolves into a
+definition: a drift with
 asymptotic offset $c$ \emph{is} a medial limit function at level $c$
 and reconstructs $\{b_{\xi}<-c\}$ in full
 (Remark~\ref{rem:offset}).
@@ -220,17 +241,71 @@ by the medial limit functions, whose faithful ($\Mg$-free)
 certificates are known exactly on the geometries where the series
 established them --- $\conv$ in $\R^{n}$ \cite{Bia}, $\hconv$ on
 Hadamard manifolds \cite{R3}, vacuous on compact $M$ --- and open in
-mixed curvature. Those certificates, and the quantitative
+mixed curvature, with the flat cylinder settled here as the first
+instance beyond them (Proposition~\ref{prop:cylinder}). Those
+certificates, and the quantitative
 cut-shielding threshold for the two-point axis \cite[Rem.~6.6]{Tri},
 are the honest residue of the programme
 (\S\ref{sec:open}).
+
+Section~\ref{sec:homotopy} adds the topological counterpart of the
+reconstruction theory. The escape class of the trichotomy turns out
+to be exactly the \emph{Aubry set} of $\dX$ in the sense of
+Cannarsa--Cheng--Fathi \cite{CCF}, so their theorem reads: the
+captured part of the complement always has the homotopy type of
+$\Mg$. When $\sup\dX<\infty$ --- every compact $M$, every coarsely
+dense $\X$ --- capture supplies the uniform clock that boundedness of
+the domain supplied in \cite{Lie,ACNS}, and
+$M\setminus\X\simeq\Mg\simeq\Cut(\X)$ on every complete manifold,
+components of $M\setminus\X$ unbounded or not. The flat cylinder
+separates the metric and topological completions: $\Rg=C\setminus\X$
+in full, yet $C\setminus\X\not\simeq\Mg$ --- homotopy follows
+capture, not swallowing. The section closes with the classical
+geometry this contains: uniform capture recovers the Ford--Voronoi
+spines of finite-volume cusped hyperbolic manifolds --- dual to the
+Epstein--Penner decomposition \cite{EP} --- and the Voronoi spines
+of crystallographic quotients (Corollary~\ref{cor:spines}); and for
+a smooth closed submanifold the captured part of the complement is,
+with no further hypothesis, the mapping cylinder of the swallow map
+onto the cut locus --- a strong deformation retraction, with the
+Basu--Prasad Thom-space picture as its inward dual
+(Proposition~\ref{prop:thom}, Remark~\ref{rem:bp}).
+
+Section~\ref{sec:complex} then closes the leak. Its engine is a
+covering theorem with no counterpart in the series: \emph{the
+finite layer does not leak} --- every swallowed-uncaptured point
+lies in an \emph{ideal} free horoball, at depth no smaller than its
+depth in any finite medial ball
+(Theorem~\ref{thm:idealswallow}). The proof runs the capture clock
+along the transition between the captured set and the Aubry set:
+either the clocks of nearby captured points blow up, dragging
+medial centres to infinity with the margin intact, or the
+transition ray grazes the cut locus --- and then, by the invariance
+of Lemma~\ref{lem:perm}, rides it to infinity, with the same
+effect. Consequently $\Rg$ is the captured set plus the ideal
+cells (Corollary~\ref{cor:idealdecomp}), and the \emph{medial
+complex} --- $\Mg$ with the ideal free horoballs glued along the
+diagram of the cover --- always carries the homotopy type of
+$\Rg$, of $M\setminus\X$ when the reconstruction is complete
+(Theorem~\ref{thm:complex}): on the cylinder it rebuilds the
+figure-eight from a contractible axis and two ideal circles. The
+escaping class becomes ideally visible too --- class (3) is exactly
+the Aubry points on which every ideal medial limit function is
+nonnegative --- and when $\X$ has no ideal medial limit functions
+at all, $\Rg\simeq\Mg$ with no bound on $\dX$
+(Corollary~\ref{cor:noideal}).
 
 \section{Preliminaries}\label{sec:prelim}
 
 Throughout, $M$ is a complete Riemannian manifold (hence a proper
 geodesic metric space, by Hopf--Rinow), $\X\subseteq M$ is closed with
 $\varnothing\neq\X\neq M$, and $\dX=\dist(\cdot,\X)$. All geodesics are
-unit-speed. For $x\in M\setminus\X$ let
+unit-speed. We state the standing hypotheses once, to prevent a
+misreading the series invites: \emph{complete metric, closed $\X$ ---
+nothing else}. No curvature assumption of any kind (sign, constancy,
+pinching, bounds) appears in
+\S\ref{sec:prelim}--\S\ref{sec:drift}; the curvature of $M$ may vary
+and change sign freely. For $x\in M\setminus\X$ let
 \[
   U(x)=\bigl\{\gamma'(0):\ \gamma:[0,\dX(x)]\to M\ \text{minimising
   geodesic},\ \gamma(0)=x,\ \gamma(\dX(x))\in\X\bigr\}
@@ -282,18 +357,58 @@ derivative of $\dX$ exists and equals
 \]
 \end{lemma}
 
-\begin{proof}[Proof sketch]
-``$\le$'': fix $u\in U(x)$ with foot $y=\gamma(\dX(x))$ and vary
-$\gamma$ through curves from $\exp_{x}(sw)$ to $y$; the first variation
-of arc length gives
-$\dX(\exp_{x}(sw))\le d(\exp_{x}(sw),y)\le\dX(x)+s\sca{w}{-u}+O(s^{2})$.
-``$\ge$'': for $s_{k}\downarrow0$ pick $u_{k}\in U(\exp_{x}(s_{k}w))$;
-by Lemma~\ref{lem:usc} a subsequence converges to some $u\in U(x)$, and
-the reverse comparison along the geodesics with directions $u_{k}$
-gives the matching lower bound with this $u$, hence with the minimum.
-Details (with the semiconcavity of $\dX$ on $M\setminus\X$, which we do
-not need) are in Mantegazza--Mennucci \cite{MM}.
+\begin{proof}
+``$\le$'': fix $u\in U(x)$ with geodesic $\gamma$, and fix a small
+$\delta>0$. The point $\gamma(\delta)$ lies in a normal ball around
+$x$, so $q\mapsto d(q,\gamma(\delta))$ is smooth near $x$ with
+gradient $-u$ at $x$. Since points of $\gamma$ satisfy
+$\dX(\gamma(\delta))=\dX(x)-\delta$,
+\[
+  \dX\bigl(\exp_{x}(sw)\bigr)
+  \ \le\ d\bigl(\exp_{x}(sw),\gamma(\delta)\bigr)+\dX(x)-\delta
+  \ =\ \dX(x)+s\,\sca{w}{-u}+O_{\delta}(s^{2}),
+\]
+so $\limsup_{s\downarrow0}s^{-1}[\dX(\exp_{x}(sw))-\dX(x)]\le
+\sca{w}{-u}$ for every $u\in U(x)$, hence $\le$ the minimum.
+
+``$\ge$'': let $s_{k}\downarrow0$ realise the $\liminf$, put
+$x_{k}=\exp_{x}(s_{k}w)$, pick $u_{k}\in U(x_{k})$ with geodesics
+$\gamma_{k}$, and set $\delta_{k}=\sqrt{s_{k}}$. The broken path
+through $\gamma_{k}(\delta_{k})$ gives
+$\dX(x)\le d(x,\gamma_{k}(\delta_{k}))+\dX(x_{k})-\delta_{k}$, and in
+normal coordinates at $x_{k}$, where
+$v_{k}:=\exp_{x_{k}}^{-1}(x)=-s_{k}w+O(s_{k}^{2})$,
+\[
+  d\bigl(x,\gamma_{k}(\delta_{k})\bigr)
+  \ \le\ |\delta_{k}u_{k}-v_{k}|+O(\delta_{k}^{3})
+  \ \le\ \delta_{k}-\sca{v_{k}}{u_{k}}+\frac{|v_{k}|^{2}}{2\delta_{k}}
+  +O(\delta_{k}^{3})
+  \ =\ \delta_{k}+s_{k}\sca{w}{u_{k}}+O(s_{k}^{3/2}),
+\]
+using $\sqrt{1+\tau}\le1+\tau/2$ and the $O(r^{2})$ metric distortion
+of normal coordinates. Hence
+$\dX(x_{k})-\dX(x)\ge s_{k}\sca{w}{-u_{k}}-O(s_{k}^{3/2})$. By
+Lemma~\ref{lem:usc} a subsequence of $u_{k}$ converges to some
+$u\in U(x)$, so the $\liminf$ is $\ge\sca{w}{-u}\ge\min_{u\in U(x)}
+\sca{w}{-u}$. (Cf.\ \cite[\S3]{MM}, where the semiconcavity of $\dX$
+on $M\setminus\X$ --- not needed here --- is also established.)
 \end{proof}
+
+\paragraph{Prior art on the distance from a closed set.} The
+dichotomy beneath everything here --- $\dX$ is differentiable
+exactly where the foot direction is unique, singular exactly on
+$\Sigma$ --- is classical, and its fine structure theory is active.
+Tanaka and Sabau \cite{TS} characterise the differentiable points
+of the distance from an arbitrary closed subset in Finsler
+generality and prove that on surfaces its cut locus is a local
+tree, statements new even in the Riemannian case; Miura and Tanaka
+\cite{MT} prove a delta-convex structure theorem for the singular
+set. The capture argument needs none of this finer structure ---
+only Lemmas~\ref{lem:usc} and~\ref{lem:firstvar} below --- but the
+structure theory is what a regularity upgrade of the homotopy layer
+of \S\ref{sec:homotopy}, and a CW model of the medial complex of
+\S\ref{sec:complex} (Remark~\ref{rem:complexlimits}(c)), would draw
+on.
 
 \paragraph{The descent inclusion.} On the open set $M\setminus\X$
 define the multimap
@@ -341,8 +456,11 @@ $\psi\ge0$ on $\X$ (each $\psi_{a_{k}}$ is), so $\{\psi<0\}$ is an open
 set disjoint from $\X$: the \emph{free horoball} of $\psi$. For finite
 $\psi$ along $a_{k}\to a$: if $a\in\Mg$ then $\psi=\psi_{a}$ is a
 free-ball function; in general ($\Mg$ is not closed) $\psi=\psi_{a}$
-with $a$ a focal-degenerate limit of medial centres --- still usable,
-by Lemma~\ref{lem:swallow}, which never needs the limit centre itself.
+with $a$ a focal-degenerate limit of medial centres, or even a point
+of $\X$ itself (medial centres collapsing into a corner of $\X$ with
+$\dX(a_{k})\to0$), where $\psi_{a}=d(\cdot,a)$ and the free horoball
+is empty --- still usable, by Lemma~\ref{lem:swallow}, which never
+needs the limit centre itself.
 \end{definition}
 
 \begin{remark}[Relation to the horofunction compactification]
@@ -365,10 +483,12 @@ functions are exactly ``Busemann function $b_{\xi}$ $+$ level $c$''.
 
 \begin{theorem}[Capture or escape]\label{thm:capture}
 Let $M$ be complete, $\X$ closed, $p\in M\setminus\X$, and let $\Phi$
-be any capture curve from $p$. Let
+be any capture curve from $p$; assume $p\notin\Sigma$ (otherwise $p$
+is captured at time $0$: $a=p$ contains $p$ at depth $\dX(p)$ in its
+own medial ball). Let
 \[
   T\ :=\ \sup\bigl\{t\in[0,T_{\max}):\ \Phi_{s}\notin\Sigma\ \ \forall
-  s\in[0,t]\bigr\}.
+  s\in[0,t]\bigr\}\ \in\ (0,T_{\max}].
 \]
 Then on $[0,T)$,
 \begin{equation}\label{eq:rateone}
@@ -459,10 +579,7 @@ $\ge\dX(p)-\varepsilon$ (any $\varepsilon>0$) inside a medial ball of
 $\Mg$. No curvature, genericity, analyticity, spread, or cardinality
 hypothesis is required; in particular $|\X|=1$ is allowed, where the
 two-point axis has $\Mx=\varnothing$ but the two-geodesic axis still
-reconstructs everything. This closes the containment caveat of
-\cite[Rem.~8.4]{Sph} and \cite[Rem.~6.5]{Tri}: Theorem~8.3 of
-\cite{Sph} and Theorem~6.4 of \cite{Tri} hold as stated, with
-``resting on Lieutier's property'' deleted.
+reconstructs everything.
 \end{corollary}
 
 \begin{proof}
@@ -473,19 +590,33 @@ Theorem~\ref{thm:capture} escape is impossible on compact $M$, so $p$
 is captured.
 \end{proof}
 
-\begin{corollary}[Two-point axis under spread; {cf.\
-\cite[Thm.~6.1]{Sph}}]\label{cor:spread}
-If $M$ is compact and $\dX<\inj(M)$ on $M\setminus\X$ --- e.g.\ if
-$\X$ is $\delta$-dense with $\delta<\inj(M)$ --- then
-$\Rx=M\setminus\X$ for the two-point axis as well.
+\begin{corollary}[Two-point axis under spread; strengthening
+{\cite[Thm.~6.1]{Sph}}]\label{cor:spread}
+Let $M$ be complete with $\inj(M):=\inf_{q\in M}\inj(q)>0$, and
+suppose
+\[
+  \sup_{M\setminus\X}\dX\ <\ \inj(M)
+  \qquad\text{--- e.g.\ $\X$ $\delta$-dense with $\delta<\inj(M)$.}
+\]
+Then $\Rx=M\setminus\X$ for the two-point axis. Compactness is not
+needed: it entered \cite[Thm.~6.1]{Sph} only to preclude escape,
+which the spread hypothesis already does; and the constant improves
+from the $2\delta<\inj(M)$ of \cite[Thm.~6.1]{Sph} to
+$\delta<\inj(M)$. In $\R^{n}$ ($\inj=\infty$) the statement recovers
+the classical fact that every coarsely dense closed set reconstructs
+its complement: $\sup\dX<\infty$ implies $\Rx=\R^{n}\setminus\X$.
 \end{corollary}
 
 \begin{proof}
-By Corollary~\ref{cor:compact} every $p$ lies in $B(a,\dX(a))$ for
-some $a\in\Mg$. Two distinct minimising geodesics from $a$ with the
-same endpoint $x_{0}$ would put $x_{0}$ in the cut locus of $a$, giving
-$\dX(a)=d(a,x_{0})\ge\inj(M)$, contradiction. So the two geodesics of
-$a$ have distinct endpoints: $a\in\Mx$.
+Escape is impossible: along an escaping capture curve,
+$\dX(\Phi_{t})=\dX(p)+t\to\infty$ would exceed $\sup\dX$. So every
+$p\in(M\setminus\X)\setminus\Mg$ is captured
+(Theorem~\ref{thm:capture}(i), within time $\sup\dX-\dX(p)$), giving
+$a\in\Mg$ with $p\in B(a,\dX(a))$; for $p\in\Mg$ take $a=p$. Two
+distinct minimising geodesics from $a$ with the same endpoint
+$x_{0}$ would make $\exp_{a}$ non-injective on the open ball of
+radius $d(a,x_{0})=\dX(a)<\inj(M)\le\inj(a)$, impossible. So the two
+geodesics of $a$ have distinct endpoints: $a\in\Mx$.
 \end{proof}
 
 \begin{remark}[Why stopping at $\Sigma$, not flowing through it, is the
@@ -516,20 +647,71 @@ through with $\dX$ still growing at rate one, the foot sliding
 continuously.
 \end{remark}
 
-\begin{remark}[Relation to Lieutier's flow]\label{rem:lieutier}
+\begin{remark}[Relation to the singular gradient flows of Lieutier
+and Albano--Cannarsa--Nguyen--Sinestrari]\label{rem:lieutier}
 For semiconcave $\dX$ one can canonically select the minimal-norm
 element of $G$ (Lieutier's generalised gradient \cite{Lie}, in
-$\R^{n}$; \cite{ACa,MM} for the semiconcavity). Our argument uses the
-opposite regime: it only ever analyses the inclusion \emph{off}
-$\Sigma$, where every selection agrees with the naive one (extend the
-unique minimising geodesic), and it terminates at $\Sigma$, where
-Lieutier's flow is designed to continue. This is why no analogue of
-the swallow property past cut points is needed: the trajectory is
-stopped at first approach, and the reconstruction is read off the
-margin accumulated strictly before it. The price --- capture produces
-a centre only \emph{near} the first $\Sigma$-approach when
-$\Phi_{T}\notin\Sigma$ --- costs an arbitrarily small $\varepsilon$ of
-depth, invisible to the open-ball statement.
+$\R^{n}$; \cite{ACa,MM} for the semiconcavity). Two theorems run that
+canonical flow \emph{into} the singular set: Lieutier's homotopy
+equivalence of a bounded domain with its medial axis \cite{Lie}, and
+its Riemannian counterpart by Albano, Cannarsa, Nguyen and Sinestrari
+\cite{ACNS}, who prove that the singular set of the boundary distance
+of a bounded domain on a Riemannian manifold is invariant under the
+generalised gradient flow and deduce the homotopy equivalence of
+domain and singular set; see Cannarsa--Cheng--Fathi \cite{CCF} for
+the current form of the propagation-of-singularities method behind
+such results. The rate-one growth of $\dX$ off the singular set is
+classical in that literature; what Theorem~\ref{thm:capture} takes
+from the flow is different, and in a sense opposite. Our argument
+analyses the inclusion only \emph{off} $\Sigma$, where every
+selection agrees with the naive one (extend the unique minimising
+geodesic); it imposes no semiconcave or minimal selection --- any
+relaxed solution serves; and it \emph{terminates} at $\Sigma$, where
+those flows are designed to continue. The deliverable is not a
+retraction but the quantitative margin $\dX(a)-d(p,a)\ge\dX(p)$ at
+the first approach --- a reconstruction statement with no counterpart
+in the homotopy results --- extracted on an arbitrary complete
+manifold, for an arbitrary closed $\X$, with the escape alternative
+live. This is why no analogue of the swallow property past cut points
+is needed: the trajectory is stopped at first approach, and the
+reconstruction is read off the margin accumulated strictly before it.
+The price --- capture produces a centre only \emph{near} the first
+$\Sigma$-approach when $\Phi_{T}\notin\Sigma$ --- costs an
+arbitrarily small $\varepsilon$ of depth, invisible to the open-ball
+statement. Section~\ref{sec:homotopy} completes the comparison in
+the opposite direction: importing their invariance theorem, capture
+supplies the uniform clock that boundedness of the domain supplied
+in \cite{Lie,ACNS}, extending the homotopy equivalence to every
+complete $M$ with $\sup\dX<\infty$; and the Aubry set of \cite{CCF}
+turns out to be exactly the escape class of
+Theorem~\ref{thm:trichotomy}, which locates the failure beyond that
+bound.
+\end{remark}
+
+\begin{remark}[Capture as critical point theory of $\dX$]
+\label{rem:critical}
+The inclusion \eqref{eq:incl} is also the engine of the critical
+point theory of distance functions of Grove--Shiohama
+\cite{GS,Che,Grv}: $q\in M\setminus\X$ is \emph{critical} for
+$\dX$ iff $0\in\conv U(q)$, which forces $|U(q)|\ge2$ --- so all
+critical points of $\dX$ lie on $\Mg$ --- and the isotopy lemma
+deforms sublevel sets across critical-value-free intervals along
+precisely such gradient-like curves. In that vocabulary
+Theorem~\ref{thm:capture} is an isotopy lemma made quantitative
+and unconditional: it assumes no critical-value-free interval ---
+the trajectory is stopped at its first approach to the
+(non-closed) set $\Mg\supseteq\{\text{critical points}\}$,
+whenever that occurs --- and it returns not an isotopy but the
+margin $\dX(a)-d(p,a)\ge\dX(p)$: a reconstruction statement. The
+min-type Morse theory of Gershkovich--Rubinstein \cite{GR}
+structures the same objects on nonpositively curved manifolds,
+where germs of $\dX$ are min-type; and in $\R^{n}$ the \emph{weak
+feature size} of Chazal--Lieutier \cite{CL} --- the smallest
+critical value of $\dX$, below which their $\lambda$-medial axis
+carries the homotopy type of the complement --- is the global
+critical scale whose pointwise, per-trajectory analogue is the
+capture margin. A Riemannian $\lambda$-medial axis built on that
+margin is a natural project we do not open here.
 \end{remark}
 
 \section{Drift: the swallow, the characterisation, the trichotomy}
@@ -597,10 +779,12 @@ $\X\subseteq M$, $\varnothing\neq\X\neq M$,
   limit function of}\ \X\bigr\}\ }.
 \]
 The same identity holds for $\Rx$ and $\Mx$ in place of $\Rg$ and
-$\Mg$. (Every finite medial limit function is itself a free-ball
-function $\psi_{a}$, with $a$ in the closure of $\Mg$ in
-$M\setminus\X$; the sublevel set of such a limit is still swallowed,
-by the lemma, even when $a\notin\Mg$.)
+$\Mg$. (Every finite medial limit function is itself of the form
+$\psi_{a}=d(\cdot,a)-\dX(a)$ with $a$ in the closure of $\Mg$ taken
+in $M$: a focal-degenerate limit of medial centres, or ---
+degenerately --- a point of $\X$, where $\dX(a)=0$ and the sublevel
+set is empty. Either way its sublevel set is swallowed by the lemma,
+which never needs the limit centre itself.)
 \end{theorem}
 
 \begin{proof}
@@ -715,7 +899,8 @@ running over a bisector witness with no offset. The escaping class
 (3) is exactly Bia\l{}o\.zyt's unreconstructed set --- the rays
 leaving $\X$ with a single foot and no defective facet around them.
 
-\paragraph{Hadamard manifolds \cite{R1,R2,R3}.} Here class (2)'s
+\paragraph{Hadamard manifolds (complete, simply connected, variable
+$\sect\le0$) \cite{R1,R2,R3}.} Here class (2)'s
 ideal witnesses are Busemann functions at a level
 (Remark~\ref{rem:offset}); the faithful certificate for their
 existence is the horoconvexity defect
@@ -760,6 +945,171 @@ carriers). Partial-versus-total is decided by compactness, detection
 flavour by the Hessian sign, exactly as the $2\times2$ prescribes ---
 now with both rows unconditional.
 
+\paragraph{The flat cylinder: the first certificate beyond the
+series.} The simplest manifold outside every certificate theorem so
+far is the flat cylinder $C=(\R/L\mathbb{Z})\times\R$: flat but not
+simply connected, so neither \cite{Bia} nor the Hadamard results
+apply, and non-compact, so Corollary~\ref{cor:compact} is silent
+about its ends. Its horofunction boundary consists of two points ---
+the compact circle factor washes out of every limit
+$d(\cdot,a_{k})-d(o,a_{k})$ --- so ideal medial limit functions are
+$\pm z+\mathrm{const}$, attached to the two ends; write $z$ for the
+second coordinate and $\pi$ for the projection to the circle factor.
+
+\begin{proposition}[End certificate on the flat cylinder]
+\label{prop:cylinder}
+Let $\X\subseteq C$ be closed, $\varnothing\neq\X\neq C$, bounded
+above: $z_{+}:=\sup_{\X}z<\infty$. The upper contact set
+$\X_{+}:=\X\cap\{z=z_{+}\}$ is nonempty and compact, and exactly one
+of the following holds.
+\begin{enumerate}[label=\textup{(\roman*)}]
+\item\emph{(Defective end.)} $\X_{+}$ omits a circle position:
+$\pi(\X_{+})\neq\R/L\mathbb{Z}$. Then $\Mg$ meets every slice
+$\{z=s\}$ for all large $s$, the free-ball functions of such centres
+converge locally uniformly (no subsequence needed) to the medial
+limit function $\psi=z_{+}-z$, and
+\[
+  \{z>z_{+}\}\ \subseteq\ \Rg :
+\]
+the maximal free end-region is reconstructed in full, at level $0$.
+\item\emph{(Capped end.)} $\X\supseteq(\R/L\mathbb{Z})\times
+\{z_{+}\}$. Then every point above the top circle has a unique
+minimising geodesic to $\X$ (the vertical one), no medial ball meets
+$\{z>z_{+}\}$, and $\Rg\cap\{z>z_{+}\}=\varnothing$: the free
+end-region is not reconstructed at all (in particular no ideal
+medial limit function $c-z$ exists).
+\end{enumerate}
+The lower end is symmetric; an end on whose side $\X$ is unbounded
+admits no ideal medial limit function at all ($\psi\ge0$ on $\X$
+would fail).
+\end{proposition}
+
+\begin{proof}
+$\X$ closed and $\{z_{+}-1\le z\le z_{+}\}$ compact make $\X_{+}$
+nonempty and compact; and with
+$\Theta_{\varepsilon}:=\pi(\X\cap\{z\ge z_{+}-\varepsilon\})$ the
+sets $\Theta_{\varepsilon}$ are compact, nested, and
+$\bigcap_{\varepsilon>0}\Theta_{\varepsilon}=\pi(\X_{+})=:
+\Theta_{+}$ (a point $(\alpha,a_{\varepsilon})\in\X$ with
+$a_{\varepsilon}\to z_{+}$ has limit $(\alpha,z_{+})\in\X$), so
+$\Theta_{\varepsilon}\to\Theta_{+}$ in the Hausdorff sense as
+$\varepsilon\downarrow0$.
+
+Two elementary facts about $q=(\theta,s)$ with $s>z_{+}$. First, the
+horizontal displacement of any minimising geodesic from $q$ to a
+foot is at most $L/2$ in absolute value --- re-wrapping the lift by
+$\mp L$ strictly shortens otherwise --- with equality forcing a
+second minimising geodesic (both wraps). Hence, comparing with any
+top point,
+\[
+  s-z_{+}\ \le\ \dX(q)\ \le\ \sqrt{(s-z_{+})^{2}+L^{2}/4}
+  \ \le\ s-z_{+}+\frac{L^{2}}{8(s-z_{+})}.
+\]
+Second, every foot $(\alpha,a)$ of $q$ then has
+$s-a\le\dX(q)$, i.e.\ $a\ge z_{+}-\varepsilon(s)$ with
+$\varepsilon(s):=L^{2}/(8(s-z_{+}))\to0$: feet of high points are
+near-top points, and their positions lie in
+$\Theta_{\varepsilon(s)}$.
+
+\emph{(i)} Fix $\alpha_{0}$ and $\rho>0$ with the arc of radius
+$\rho$ about $\alpha_{0}$ disjoint from $\Theta_{+}$, and $s_{1}$
+with $\Theta_{\varepsilon(s)}$ contained in the
+$\rho/2$-neighbourhood of $\Theta_{+}$ for $s\ge s_{1}$. Suppose a
+slice $\{z=s\}$ with $s\ge s_{1}$ contained no point of $\Mg$. Then
+every $(\theta,s)$ has a unique minimising geodesic, whose
+horizontal displacement $\delta(\theta)\in(-L/2,L/2)$ (strict, by
+uniqueness) is continuous in $\theta$ (Lemma~\ref{lem:usc} with
+single values), and the foot position is $\theta+\delta(\theta)$
+mod $L$. As $\theta$ increases through one period,
+$\theta+\delta(\theta)$ is continuous with total increment $L$, so
+by the intermediate value theorem its values cover \emph{every}
+circle position --- including the forbidden arc about $\alpha_{0}$:
+a contradiction. So $\Mg$ meets every slice $\{z=s\}$, $s\ge s_{1}$;
+pick $a_{s}$ there. For $(\theta,z)$ in a fixed compact set and $s$
+large, the displacement bound gives
+$s-z\le d((\theta,z),a_{s})\le s-z+L^{2}/(8(s-z))$, while
+$s-z_{+}\le\dX(a_{s})\le s-z_{+}+L^{2}/(8(s-z_{+}))$; subtracting,
+$\psi_{a_{s}}\to z_{+}-z$ locally uniformly. Lemma~\ref{lem:swallow}
+swallows the sublevel set: $\{z>z_{+}\}\subseteq\Rg$.
+
+\emph{(ii)} If the full top circle lies in $\X$ then for
+$q=(\theta,s)$, $s>z_{+}$, the vertical segment to
+$(\theta,z_{+})\in\X$ has length $s-z_{+}$, while any geodesic to
+any $x\in\X$ has length $\ge s-z(x)\ge s-z_{+}$, with equality
+throughout only for that vertical segment: the minimising geodesic
+is unique, so $\Mg\cap\{z>z_{+}\}=\varnothing$. And no medial ball
+--- centred, therefore, at height $\le z_{+}$ --- contains a point
+$q$ above the circle: the minimising geodesic from the centre to $q$
+stays in the open ball and crosses
+$\{z=z_{+}\}\subseteq\X$, contradicting freeness. So
+$\Rg\cap\{z>z_{+}\}=\varnothing$; and an ideal limit $c-z$ would
+swallow $\{z>c\}$, so none exists.
+\end{proof}
+
+\begin{remark}[What the cylinder teaches]\label{rem:cylinder}
+The dichotomy is decided by $\X$ alone --- a faithful certificate,
+the first beyond the geometries of the series. Two degenerations are
+forced by the \emph{compact} horosphere. First, Bia\l{}o\.zyt's
+``non-convex contact set'' relaxes to ``proper subset of the
+horosphere circle'': a \emph{single} contact point suffices for the
+two-geodesic drift, the wrap-around geodesic acting as the second
+contact. For $\X$ a single point this gives $\Rg=C\setminus\X$ in
+full --- the non-compact counterpart of the $|\X|=1$ clause of
+Corollary~\ref{cor:compact} --- while $\Mx=\varnothing$ and
+$\Rx=\varnothing$ exactly as in $\R^{n}$: on non-simply-connected
+manifolds the two axes separate already for singletons. Second, the
+level is always $0$ (a drift centre's reach differs from its height
+above $z_{+}$ by $O(1/s)$): compact horospheres leave no room for
+the offset phenomenon, consistent with the expectation that
+$c(\xi)>0$, if it occurs at all, requires inhomogeneous
+infinite-volume horospheres (\S\ref{sec:open}(2)). The homotopy
+content of the singleton example is recorded in
+Remark~\ref{rem:homotopyleak}: the reconstruction is complete while
+$C\setminus\X\not\simeq\Mg$ --- the two swallowed escape rays are
+exactly the Aubry set of $\dX$, and they carry the fundamental
+group, which the medial complex of \S\ref{sec:complex} recovers
+from the two ideal cells.
+\end{remark}
+
+\begin{remark}[How much curvature, where]\label{rem:curvhyp}
+Since the series ranges over constant, pinched, and merely
+sign-constrained curvature, we record exactly what each layer assumes;
+``$\sect\le0$'' etc.\ always means a \emph{sign} condition on
+in-general-variable curvature, never constancy, unless said otherwise.
+\begin{itemize}
+\item\emph{The dynamical layer} --- capture
+(Theorem~\ref{thm:capture}), swallow (Lemma~\ref{lem:swallow}),
+characterisation (Theorem~\ref{thm:char}), trichotomy
+(Theorem~\ref{thm:trichotomy}), and total reconstruction on compact
+$M$ (Corollary~\ref{cor:compact}): \emph{no curvature hypothesis at
+all}. Variable curvature of either or mixed sign is covered.
+\item\emph{The Hadamard certificate} \cite{R3}: the sign condition
+$\sect\le0$, with variable curvature expressly allowed --- the warped
+products $M_{f}$ of \cite[\S5]{R3}, of non-constant, two-sidedly
+pinched negative curvature, are its showcase --- \emph{together with
+simple connectedness}. The latter is not cosmetic: it is what
+identifies horofunctions with Busemann functions of rays
+(Remark~\ref{rem:horo}), and on a non-simply-connected $\sect\le0$
+manifold the faithful certificate is not established
+(\S\ref{sec:open}(1)).
+\item\emph{The knife-edge} \cite{Bia}: exact flatness \emph{and}
+simple connectedness, i.e.\ $M=\R^{n}$ itself. A flat cylinder has
+$\sect\equiv0$ but is not covered by Theorem~6 verbatim: its ideal
+certificates attach to the two ends, not to a visual sphere of
+directions --- they are instead the dichotomy of
+Proposition~\ref{prop:cylinder}.
+\item\emph{Constancy of curvature} is essential in exactly one result
+of the series: total reconstruction from the two-\emph{point} axis on
+$\Sn$ \cite[Thm.~4.1]{Sph}. Its mechanism --- every geodesic realises
+the diameter at its cut point, in every direction at once --- is a
+constant-curvature rigidity, and the conclusion genuinely fails under
+variable $\sect>0$ (the prolate-ellipsoid shielding transition at
+$c^{\ast}=2.6\pm0.1$, \cite[Rem.~6.6]{Tri}). The two-\emph{geodesic}
+counterpart needs no curvature at all
+(Corollary~\ref{cor:compact}).
+\end{itemize}
+\end{remark}
+
 \paragraph{The updated table.} Rows: compactness (axis A). Columns:
 Busemann--Hessian sign (axis B). Entries: the two-geodesic theory,
 with the two-point refinement in brackets.
@@ -785,16 +1135,880 @@ compact & \emph{total} $\Rg$ & \emph{total} $\Rg$
 \noindent The compact row is Corollary~\ref{cor:compact} ---
 unconditional, all curvatures, $|\X|\ge1$. The non-compact row is
 Theorem~\ref{thm:char}, with the faithful certificates known on the
-flat and Hadamard columns and open elsewhere
-(\S\ref{sec:open}).
+flat and Hadamard columns and open elsewhere (\S\ref{sec:open}). The
+column heads are sign conditions on variable curvature and govern only
+the detection flavour; the certificates quoted in the cells carry the
+stronger hypotheses of their sources --- simple connectedness
+(Hadamard) in the first column, $M=\R^{n}$ exactly at the knife-edge,
+with the flat cylinder now carrying its own end certificate
+(Proposition~\ref{prop:cylinder}) --- and constancy of curvature
+appears only in the bracketed two-point refinement of the $\Sn$ cell
+(Remark~\ref{rem:curvhyp}).
+
+\section{The homotopy layer: capture, the Aubry set, and the limits
+of swallowing}\label{sec:homotopy}
+
+Remark~\ref{rem:lieutier} separated the capture theorem from the
+canonical singular gradient flow of Lieutier and
+Albano--Cannarsa--Nguyen--Sinestrari, whose purpose is homotopy
+equivalence. This section runs the two together and settles the
+homotopy question for the completed theory: when the axis carries
+the homotopy type of the complement, what obstructs it when it does
+not, and what either answer has to do with the reconstruction
+$\Rg$. Throughout, $\Phi$ denotes the \emph{canonical} flow: the
+unique generalised-gradient trajectory of $\dX$ through each point
+of $M\setminus\X$ --- Lieutier's flow in $\R^{n}$ \cite{Lie};
+existence and uniqueness \cite[Thm.~3.4, Cor.~3.6]{ACNS} in the
+Euclidean case and \cite[\S4]{ACNS} on Riemannian domains. The
+construction is local, its only input being the local semiconcavity
+of $\dX$ on $M\setminus\X$ \cite{ACa,MM}, so it defines $\Phi$ for
+every closed $\X$ in every complete $M$; uniqueness gives the
+semigroup property. Canonical trajectories satisfy the inclusion
+\eqref{eq:incl}, so Theorem~\ref{thm:capture} applies to them
+verbatim; and they are global in time: $\dX$ is nondecreasing along
+them, so they stay in $M\setminus\X$, and speed $\le1$ together with
+completeness of $M$ rules out finite-time breakdown. We import two
+further facts, both local, from that literature.
+\begin{enumerate}[label=\textup{(F\arabic*)}]
+\item\label{F1} \emph{Joint continuity:}
+$(t,p)\mapsto\Phi_{t}(p)$ is continuous on
+$[0,\infty)\times(M\setminus\X)$. (Local semiconcavity makes the
+ascending field one-sidedly Lipschitz, and Gr\"onwall gives locally
+Lipschitz dependence on the initial point; this is the continuity
+that underlies the homotopy statements of \cite{Lie,ACNS}.)
+\item\label{F2} \emph{Propagation:} $\Sigma$ is positively invariant
+under $\Phi$: once a canonical trajectory is singular it stays
+singular \cite[Thms.~3.7 and~4.5]{ACNS}. (Stated there for domains,
+under curvature bounds; the proof --- semiconcavity plus a
+differential inequality --- is local, and a finite time window of a
+trajectory lives in a compact subset of $M\setminus\X$, where the
+bounds hold. So it applies verbatim here.)
+\end{enumerate}
+
+\begin{lemma}[Capture is permanent; the cut locus is invariant]
+\label{lem:perm}
+Let $p\in M\setminus\X$ and suppose the canonical trajectory of $p$
+is captured, with first-approach time $T$ as in
+Theorem~\ref{thm:capture}\textup{(i)}. Then
+\[
+  \Phi_{t}(p)\ \in\ \Sigma\qquad\text{for every }t>T :
+\]
+the trajectory does not merely approach the axis; it enters it and
+never leaves. Moreover the cut locus
+\[
+  \Cut(\X)\ :=\ \overline{\Sigma}\cap(M\setminus\X)
+  \qquad(\text{closure in }M)
+\]
+is positively invariant as well.
+\end{lemma}
+
+\begin{proof}
+If $\Phi_{T}\in\Sigma$, apply \ref{F2} from time $T$. If
+$\Phi_{T}\notin\Sigma$, then by the definition of $T$ every interval
+$(T,T+\delta]$ contains a time $s_{\delta}$ with
+$\Phi_{s_{\delta}}\in\Sigma$ (proof of
+Theorem~\ref{thm:capture}); \ref{F2} from time $s_{\delta}$ gives
+$\Phi_{t}\in\Sigma$ for all $t\ge s_{\delta}$, and
+$\delta\downarrow0$ covers all of $(T,\infty)$. For the cut locus:
+$q\in\Cut(\X)$ is a limit of $a_{j}\in\Sigma$, so by \ref{F1} and
+\ref{F2}, $\Phi_{t}(q)=\lim_{j}\Phi_{t}(a_{j})\in\overline{\Sigma}$;
+and $\Phi_{t}(q)\in M\setminus\X$ always.
+\end{proof}
+
+\begin{theorem}[Uniform capture is a homotopy equivalence]
+\label{thm:homotopy}
+Let $M$ be complete, $\X$ closed, and let $U\subseteq M\setminus\X$
+be open and positively invariant under the canonical flow, on which
+capture is uniform: for some $D<\infty$ the trajectory of every
+$p\in U$ meets $\Sigma$ by time $D$. Then
+$\Phi_{D}(U)\subseteq\Sigma\cap U$, and the inclusions
+\[
+  \Sigma\cap U\ \hookrightarrow\ \Cut(\X)\cap U\ \hookrightarrow\ U
+\]
+are homotopy equivalences, with $\Phi_{D}$ as homotopy inverse and
+the flow itself as the homotopy.
+\end{theorem}
+
+\begin{proof}
+$\Phi_{D}(p)\in\Sigma$ for $p\in U$ by Lemma~\ref{lem:perm} (the
+trajectory meets $\Sigma$ at some $t^{*}\le D$ and stays), and
+$\Phi_{D}(p)\in U$ by invariance. Set
+$r:=\Phi_{D}\colon U\to\Sigma\cap U$, write
+$i\colon\Sigma\cap U\hookrightarrow U$ for the inclusion, and let
+$H(p,s):=\Phi_{sD}(p)$, jointly continuous by \ref{F1}. Then $H$ is
+a homotopy in $U$ from $\mathrm{id}_{U}$ to $i\circ r$; and $H$
+restricted to $(\Sigma\cap U)\times[0,1]$ takes values in
+$\Sigma\cap U$ (\ref{F2} and invariance of $U$), so it is also a
+homotopy from $\mathrm{id}_{\Sigma\cap U}$ to $r\circ i$. Hence $i$
+is a homotopy equivalence. The same two sentences with
+$\Cut(\X)\cap U$ in place of $\Sigma\cap U$ --- using the
+invariance of the cut locus from Lemma~\ref{lem:perm} and
+$\Phi_{D}(U)\subseteq\Sigma\cap U\subseteq\Cut(\X)\cap U$ --- show
+that $\Cut(\X)\cap U\hookrightarrow U$ is a homotopy equivalence,
+and the inner inclusion follows by two-out-of-three.
+\end{proof}
+
+\begin{corollary}[Bounded distance: topological faithfulness]
+\label{cor:homotopy}
+Let $M$ be complete, $\X$ closed,
+$\varnothing\neq\X\neq M$, and suppose
+$D:=\sup_{M\setminus\X}\dX<\infty$. Then escape is impossible,
+$\Rg=M\setminus\X$, every component $\Omega$ of $M\setminus\X$
+meets $\Sigma$, and
+\[
+  \Sigma\cap\Omega\ \hookrightarrow\ \Cut(\X)\cap\Omega\
+  \hookrightarrow\ \Omega
+\]
+are homotopy equivalences. In particular:
+\begin{enumerate}[label=\textup{(\alph*)}]
+\item on every compact $M$:
+$M\setminus\X\ \simeq\ \Mg\ \simeq\ \Cut(\X)$, unconditionally ---
+the closed-set counterpart of the classical retraction of
+$M\setminus\{x_{0}\}$ onto $\Cut(x_{0})$;
+\item for every coarsely dense closed set in any complete $M$ ---
+e.g.\ a periodic $\X\subseteq\R^{n}$ --- the complement, an
+\emph{unbounded} domain outside the scope of \cite{Lie,ACNS}, has
+the homotopy type of its two-geodesic axis and of its cut locus.
+\end{enumerate}
+With Corollary~\ref{cor:spread} this completes a pairing:
+$\sup\dX<\inj(M)$ makes the two-point reconstruction metrically
+complete ($\Rx=M\setminus\X$), and $\sup\dX<\infty$ alone makes the
+two-geodesic picture topologically faithful.
+\end{corollary}
+
+\begin{proof}
+Escape forces $\dX(\Phi_{t})=\dX(p)+t\to\infty$
+(Theorem~\ref{thm:capture}(ii)), impossible under the bound; so
+every $p\notin\Mg$ is captured, hence $p\in\Rg$
+(Theorem~\ref{thm:capture}(i)), and $\Mg\subseteq\Rg$ trivially:
+$\Rg=M\setminus\X$. If a canonical trajectory avoided $\Sigma$ on
+$[0,\tau]$, the rate-one identity \eqref{eq:rateone} would give
+$\dX(p)+\tau\le D$; hence every trajectory meets $\Sigma$ by time
+$D-\dX(p)\le D$, and the meeting point lies in the component of its
+start. Apply Theorem~\ref{thm:homotopy} with $U=\Omega$ (open;
+invariant, since trajectories are continuous and stay in
+$M\setminus\X$). Compact $M$ has $D\le\operatorname{diam}(M)$; a
+$\delta$-dense $\X$ has $D\le\delta$.
+\end{proof}
+
+Beyond the bound, escape occurs and the statement genuinely changes.
+The right language is the \emph{Aubry set} of weak KAM theory, and
+the translation is exact.
+
+\begin{lemma}[The Aubry set of $\dX$ is the escape class]
+\label{lem:aubry}
+Following \cite[Def.~1.4]{CCF}, let
+\[
+  \Aub(\X)\ :=\ \bigl\{q\in M\setminus\X:\ q=\gamma(t_{0})\
+  \text{for some } t_{0}>0\ \text{and some arclength }
+  \gamma:[0,\infty)\to M\ \text{with}\ \dX(\gamma(t))=t\ \forall
+  t\ge0\bigr\},
+\]
+the union of the infinite calibrated rays of $\X$. Then:
+\begin{enumerate}[label=\textup{(\roman*)}]
+\item $\Aub(\X)\cap\Sigma=\varnothing$;
+\item $\Aub(\X)$ is closed in $M\setminus\X$;
+\item a point $p\in M\setminus\X$ lies in $\Aub(\X)$ if and only if
+its capture curves escape --- that is, $\Aub(\X)$ is exactly classes
+\textup{(2)}$\,\cup\,$\textup{(3)} of
+Theorem~\ref{thm:trichotomy}, and
+\[
+  M\setminus(\X\cup\Aub(\X))\ =\ \{\text{captured points}\}\
+  \supseteq\ \Sigma ,
+\]
+an open set.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+(i) Let $q=\gamma(t_{0})$ lie on a calibrated ray. If $q$ had a
+second minimising geodesic $\sigma\neq\gamma|_{[0,t_{0}]}$, the
+curve $\sigma$ followed by $\gamma|_{[t_{0},t]}$ would realise
+$\dX(\gamma(t))=t$ for $t>t_{0}$ with a corner at $q$, hence could
+be strictly shortened --- contradiction. (The same argument shows
+that past a point of $\Sigma$ no minimising geodesic keeps
+minimising, so calibrated rays avoid $\Sigma$ outright.)
+
+(ii) Let $q_{j}=\gamma_{j}(t_{j})\to q\in M\setminus\X$ with
+$\gamma_{j}$ calibrated. Then $t_{j}=\dX(q_{j})\to\dX(q)>0$, and
+the feet $\gamma_{j}(0)$ eventually lie in the compact set
+$\bar B(q,2\dX(q))\cap\X$. Calibrated rays are unit-speed
+minimising geodesics on every initial segment
+(\cite[Rem.~1.5]{CCF}); by properness of $M$ a subsequence
+converges locally uniformly to an arclength ray $\gamma$, and
+$\dX(\gamma(t))=t$ passes to the limit: $q=\gamma(\dX(q))\in
+\Aub(\X)$.
+
+(iii) All capture curves from $p\notin\Sigma$ agree until their
+first approach to $\Sigma$: off $\Sigma$ the inclusion
+\eqref{eq:incl} is the ODE of the single unit field, and the
+trajectory is the arclength extension of the minimising geodesic of
+$p$ (\S\ref{sec:prelim}). If that trajectory escapes, it never
+meets $\Sigma$ and the rate-one identity holds forever; prepending
+the minimising segment from the foot of $p$ produces a curve
+$\gamma$ with $\dX(\gamma(t))=t$ for all $t\ge0$: an infinite
+calibrated ray through $p$, so $p\in\Aub(\X)$. Conversely let
+$p=\gamma(t_{0})\in\Aub(\X)$; by (i) applied at each $\gamma(s)$,
+$s>0$, the ray avoids $\Sigma$, and since the trajectory off
+$\Sigma$ is the extension of the unique minimising geodesic, the
+trajectory of $p$ is $t\mapsto\gamma(t_{0}+t)$: it never meets
+$\Sigma$, and $\dX\to\infty$ along it --- escape. Points of
+$\Sigma$ are captured at time $0$ and excluded from $\Aub(\X)$ by
+(i); openness of the captured set is (ii).
+\end{proof}
+
+\begin{theorem}[{Cannarsa--Cheng--Fathi \cite[Thm.~1.6]{CCF}, in
+the vocabulary of the trichotomy}]\label{thm:ccf}
+For every closed $\X\neq\varnothing$ in every complete $M$, the
+inclusion
+\[
+  \Mg\ \hookrightarrow\ M\setminus(\X\cup\Aub(\X))\ =\
+  \{\text{captured points}\}
+\]
+is a homotopy equivalence: \emph{the captured part of the complement
+always has the homotopy type of the axis} --- no bound on $\dX$, no
+compactness. (Under uniform capture this is
+Theorem~\ref{thm:homotopy} with $U=M\setminus\X$; in general the
+uniform clock fails and the statement is exactly
+\cite[Thm.~1.6]{CCF}, translated by Lemma~\ref{lem:aubry}. Their
+Theorem~1.1 adds that $\Mg$ is always locally contractible.)
+\end{theorem}
+
+\begin{remark}[Homotopy follows capture, not swallowing]
+\label{rem:homotopyleak}
+The three classes of Theorem~\ref{thm:trichotomy} now have distinct
+topological meanings. Class (1) carries the homotopy type of $\Mg$
+(Theorem~\ref{thm:ccf}); the Aubry set
+$\Aub(\X)=(2)\cup(3)$ is what the axis cannot see; and the swallow
+splits $\Aub(\X)$ into its reconstructed part (2) and its free part
+(3) --- a \emph{metric} split that the homotopy type ignores. Both
+failure modes occur.
+\begin{itemize}
+\item\emph{Escape unswallowed (class (3) active).} $\X$ the round
+circle of radius $R$ in $\R^{3}$: every axis point has the whole
+circle as feet, and $\Mg$ is exactly the axis, contractible. The
+captured set is the open solid cylinder $\{\rho<R\}$ (each foot-ray
+there crosses the axis), which deformation-retracts to $\Mg$ in
+accordance with Theorem~\ref{thm:ccf}; the Aubry set is the closed
+shell $\{\rho\ge R\}\setminus\X$, and its unswallowed part --- the
+flange $\{z=0,\ \rho>R\}$, the plane of the circle beyond it --- is
+exactly what $\Rg=\R^{3}\setminus(\X\cup\{z=0,\rho\ge R\})$
+misses. The homotopy type $\R^{3}\setminus\X\simeq
+S^{1}\vee S^{2}$ is created across that shell and is invisible to
+the contractible axis.
+\item\emph{Escape swallowed (class (2) only) --- complete
+reconstruction without homotopy equivalence.} The flat cylinder
+with $\X$ a single point (Proposition~\ref{prop:cylinder},
+Remark~\ref{rem:cylinder}): $\Rg=C\setminus\X$ is complete, yet
+$C\setminus\X\simeq S^{1}\vee S^{1}$ while $\Mg$ is the opposite
+generator, contractible. The dictionary locates the leak exactly:
+$\Aub(\X)$ is the punctured generator through the point --- two
+vertical calibrated rays, entirely of class (2), swallowed by the
+wrap-around balls, whose non-contractibility (radius beyond the
+injectivity radius) is what lets them reconstruct without
+transporting homotopy type. The captured set is the open strip
+$C\setminus\{\text{generator}\}$, contractible, in accordance with
+Theorem~\ref{thm:ccf}. Completeness of the reconstruction is a
+metric statement; it does not imply topological faithfulness.
+\end{itemize}
+Under $\sup\dX<\infty$ the Aubry set is empty --- $\dX$ is
+unbounded along a calibrated ray --- and the two completions
+re-fuse: that is Corollary~\ref{cor:homotopy}. Emptiness of
+$\Aub(\X)$ is strictly weaker than bounded distance: inside a
+parabola in $\R^{2}$ every normal crosses the symmetry axis before
+it stops minimising, so $\Aub(\X)$ misses the interior component
+entirely and the (unbounded, unboundedly deep) interior is homotopy
+equivalent to its medial ray, both contractible. Section
+\ref{sec:complex} closes the leak: what the axis cannot see, the
+ideal medial limit functions can --- every swallowed-uncaptured
+point lies in an ideal free horoball
+(Theorem~\ref{thm:idealswallow}), and gluing those cells onto the
+axis restores the homotopy type of $\Rg$
+(Theorem~\ref{thm:complex}).
+\end{remark}
+
+\paragraph{Two classical instances, and the smooth dual side.} The
+corollary and proposition that close the section read
+Corollary~\ref{cor:homotopy} back into classical geometry: uniform
+capture \emph{is} the spine theory of cusped hyperbolic and
+crystallographic geometry; and for smooth $\X$ the homotopy
+equivalence is the boundary of a mapping-cylinder structure whose
+inward dual is the Thom space.
+
+\begin{corollary}[Spines: cusped hyperbolic manifolds and
+crystallographic quotients]\label{cor:spines}
+\begin{enumerate}[label=\textup{(\alph*)}]
+\item Let $M$ be a connected complete hyperbolic manifold of
+finite volume with cusps, and let $\X$ be the union of a system of
+disjoint closed horoball neighbourhoods of the cusps. Then
+$\sup\dX<\infty$ and
+\[
+  M\ \simeq\ M\setminus\X\ \simeq\ \Mg\ \simeq\ \Cut(\X) ,
+\]
+where $\Cut(\X)$ is the Ford--Voronoi spine of the system --- the
+complex dual to the Epstein--Penner decomposition attached to the
+same horoballs \cite{EP}. The spine theorem of cusped hyperbolic
+geometry is uniform capture for the horoball contact set.
+\item Let $M=\R^{n}/\Gamma$ be a compact flat manifold,
+$x_{0}\in\R^{n}$, and $\X=\{\pi(x_{0})\}$ (or any finite set).
+Then $\Cut(\X)$ is the projected wall complex of the Voronoi
+diagram of the orbit $\Gamma x_{0}$, and
+$M\setminus\X\simeq\Mg\simeq\Cut(\X)$. For the square torus and a
+single point, $\Cut(\X)$ is the union of the two ``antipodal''
+circles --- a figure-eight, matching
+$T^{2}\setminus\{x_{0}\}\simeq S^{1}\vee S^{1}$ --- while
+$\Mx=\varnothing$: the singleton has no two-point axis at all, and
+the two-geodesic axis alone carries the type. The homotopy type
+that the flat cylinder's complete reconstruction fails to transmit
+(Remark~\ref{rem:homotopyleak}) is carried honestly the moment the
+manifold is compact.
+\end{enumerate}
+\end{corollary}
+
+\begin{proof}
+(a) $M\setminus\X$ is the open thick-with-tubes part, of compact
+closure (Margulis; finite volume), so $\sup\dX<\infty$ and
+Corollary~\ref{cor:homotopy} applies. For the identification of
+the axis, lift to the universal cover $\HH^{n}$: the preimage of
+$\X$ is a $\Gamma$-invariant family of disjoint closed horoballs.
+A horoball is convex, so a point outside it has a unique nearest
+point on it, joined by a unique minimising geodesic; hence two
+minimising geodesics to $\X$ end on two \emph{distinct} horoballs
+of the lifted family, and $\Sigma$ is the wall set of the Voronoi
+decomposition of $\HH^{n}$ determined by the family --- whose
+quotient closure is, by definition, the Ford--Voronoi spine. (The
+two feet may well project to the \emph{same} point of $\X$ in $M$,
+so it is $\Mg$, not $\Mx$, that carries the spine --- the
+two-geodesic axis is again the right object.) Finally
+$M\simeq M\setminus\X$: the closed cusp neighbourhoods retract
+onto their horospherical boundaries, and the closed thick part
+onto the open one along a collar. (b) One level down: the lift of
+$\X$ is the orbit $\Gamma x_{0}$ (a Delone set; finitely many
+orbits for a finite set), $\Sigma$ projects from the walls of its
+classical Voronoi diagram, and $\dX$ is bounded by the covering
+radius, so Corollary~\ref{cor:homotopy} applies. On
+$\R^{2}/\mathbb{Z}^{2}$ with $x_{0}=0$: the Voronoi cell is the unit
+square centred at $0$, its boundary projects to the two circles
+$\{x=\tfrac12\}\cup\{y=\tfrac12\}$, meeting only at
+$(\tfrac12,\tfrac12)$: a wedge of two circles.
+\end{proof}
+
+\begin{proposition}[Smooth contact set: the captured part is a
+mapping cylinder]\label{prop:thom}
+Let $\X$ be a closed embedded $C^{\infty}$ submanifold of the
+complete manifold $M$, $S(\nu)$ its unit normal bundle,
+\[
+  \rho(v)\ =\ \sup\{t>0:\ \dX(\exp(tv))=t\}\ \in\ (0,\infty]
+\]
+the cut time, $S_{\mathrm{fin}}=\{\rho<\infty\}$, and
+$\sigma:S_{\mathrm{fin}}\to M\setminus\X$,
+$\sigma(v)=\exp(\rho(v)v)$, the \emph{swallow map}, whose image
+$\Cu(\X):=\sigma(S_{\mathrm{fin}})$ is the classical cut locus.
+Then $\Aub(\X)=\{\exp(tv):\rho(v)=\infty,\ t>0\}$, and the normal
+exponential descends to a homeomorphism
+\[
+  \mathrm{Cyl}(\sigma)\ :=\ \bigl(S_{\mathrm{fin}}\times(0,1]\
+  \sqcup\ \Cu(\X)\bigr)\big/\bigl[(v,1)\sim\sigma(v)\bigr]
+  \ \xrightarrow{\ \approx\ }\
+  M\setminus\bigl(\X\cup\Aub(\X)\bigr),
+  \qquad (v,t)\mapsto\exp\bigl(t\rho(v)\,v\bigr) :
+\]
+for smooth $\X$, with no further hypothesis, \emph{the captured
+part of the complement is the mapping cylinder of the swallow
+map}, and it strong deformation retracts onto $\Cu(\X)$. In
+particular $\Sigma\subseteq\Cut(\X)\subseteq\Cu(\X)$, the
+inclusion $\Sigma\hookrightarrow\Cu(\X)$ is a homotopy equivalence
+for every smooth closed $\X$ (Theorem~\ref{thm:ccf} and
+two-out-of-three) --- the equivalence of \cite{CCF} sharpened, on
+the smooth case, to a retraction onto the full cut locus ---
+and $\Cut(\X)=\Cu(\X)$ when $\dim\X=0$, by Bishop's theorem
+\cite{Bis}. If $\Aub(\X)=\varnothing$ --- equivalently
+$\rho<\infty$ everywhere, in particular whenever $\sup\dX<\infty$
+--- then $M\setminus\X$ itself is the cylinder, and under uniform
+capture the whole chain
+$\Sigma\hookrightarrow\Cut(\X)\hookrightarrow\Cu(\X)
+\hookrightarrow M\setminus\X$ consists of homotopy equivalences.
+\end{proposition}
+
+\begin{proof}
+Minimising geodesics from a point to $\X$ arrive orthogonally
+(first variation), so every $p\in M\setminus\X$ is
+$\exp(\dX(p)v)$ for some $v\in S(\nu)$ with $\dX(p)\le\rho(v)$;
+the calibration interval $\{t:\dX(\exp(tv))=t\}$ is $(0,\rho(v)]$
+(closed at $\rho$ by continuity); and $\rho(v)=\infty$ makes
+$t\mapsto\exp(tv)$ an infinite calibrated ray, so
+Lemma~\ref{lem:aubry} identifies $\Aub(\X)$ with the union of the
+open rays $\{\exp(tv):t>0\}$, $\rho(v)=\infty$. Positivity of
+$\rho$ is the tubular neighbourhood theorem; continuity of
+$\rho:S(\nu)\to(0,\infty]$ is the classical continuity of the cut
+time, proved for submanifolds as for points (see \cite{BP} and the
+references there, and \cite[III.4]{Sak} for a point).
+
+Write $F(v,t)=\exp(t\rho(v)v)$ on $S_{\mathrm{fin}}\times(0,1]$,
+continuous since $\rho$ is finite and continuous on the open set
+$S_{\mathrm{fin}}$. \emph{Image and surjectivity:} a captured $p$
+outside $\Sigma$ has a unique foot direction $v$, and
+$\rho(v)=\infty$ would put $p\in\Aub(\X)$; so
+$p=F(v,\dX(p)/\rho(v))$. A point $p\in\Sigma$ has each of its
+directions $v$ stopped at $p$ --- past a point of $\Sigma$ no
+minimising geodesic keeps minimising
+(Lemma~\ref{lem:aubry}(i)) --- so $\rho(v)=\dX(p)$ and
+$p=\sigma(v)$: thus $\Sigma\subseteq\Cu(\X)$ and $F$ maps onto the
+captured part; and the image avoids $\Aub(\X)$, since a point of
+$\Aub(\X)\cap\mathrm{im}\,F$ would carry two distinct minimising
+directions and lie in $\Sigma$, while
+$\Aub(\X)\cap\Sigma=\varnothing$. \emph{Injectivity off $t=1$:} if
+$p=F(v,t)$ with $t<1$ then $\dX(p)<\rho(v)$; a second
+representation would again put $p\in\Sigma$ and force
+$\dX(p)=\rho$, a contradiction --- the same argument shows
+$F(v,t)\notin\Cu(\X)$ for $t<1$. Hence $F$ descends to a
+continuous bijection
+$\bar F:\mathrm{Cyl}(\sigma)\to
+M\setminus(\X\cup\Aub(\X))$. \emph{Properness:} let $K$ be a
+compact subset of the captured part, $0<\varepsilon\le\dX\le C$ on
+$K$. Feet of points of $K$ lie in the compact
+$\X_{K}=\{x\in\X:\dist(x,K)\le C\}$; if $v_{k}\in
+S_{\mathrm{fin}}|_{\X_{K}}$ contribute to $\bar F^{-1}(K)$ and
+$v_{k}\to v$ with $\rho(v)=\infty$, then the limit point
+$\lim F(v_{k},t_{k})=\exp(sv)$ with
+$s=\lim t_{k}\rho(v_{k})\in[\varepsilon,C]$ would lie in
+$\Aub(\X)\cap K$ --- impossible; so the directions stay in a
+compact subset of $S_{\mathrm{fin}}$ on which $\rho\le R$, the
+$F$-preimage of $K$ is a closed subset of that compactum
+$\times\,[\varepsilon/R,1]$, and $\Cu(\X)\cap K$ is compact
+because $\Cu(\X)$ is closed in the captured part (if
+$\sigma(v_{k})\to q$ captured, feet confined give $v_{k}\to v$
+after a subsequence, $\rho(v_{k})=\dX(\sigma(v_{k}))\to\dX(q)$
+finite, so by continuity $\rho(v)=\dX(q)$ and $q=\sigma(v)$). A
+proper continuous bijection onto a locally compact Hausdorff space
+is a homeomorphism; the cylinder coordinate
+$H_{s}(v,t)=(v,\,t+s(1-t))$, the identity on $\Cu(\X)$, is a
+strong deformation retraction. Finally
+$\Cut(\X)\subseteq\Cu(\X)$: if $a_{k}\in\Sigma\to q\in
+M\setminus\X$, pick feet $x_{k}$ of $a_{k}$ with normal directions
+$w_{k}\in S(\nu)$; points of $\Sigma$ sit at their own cut time
+(the corner argument above), so
+$\rho(w_{k})=\dX(a_{k})\to\dX(q)$; the feet are confined, so after
+a subsequence $w_{k}\to w$, and continuity of $\rho$ gives
+$\rho(w)=\dX(q)<\infty$ and $q=\sigma(w)\in\Cu(\X)$. (In
+particular $\overline{\Sigma}$ avoids $\Aub(\X)$ for smooth $\X$
+--- a statement we do not claim for general closed $\X$, where no
+continuous cut time is available: the merging of directions that
+keeps $\Mg$ from being closed is not, by itself, excluded from
+happening along a calibrated ray.) For
+$\dim\X=0$, Bishop's theorem \cite{Bis} applied at the strictly
+nearest point gives $\Cu(\X)\subseteq\overline{\Sigma}$, whence
+$\Cut=\Cu$. The final chain is Theorem~\ref{thm:homotopy} plus the
+retraction just built plus two-out-of-three.
+\end{proof}
+
+\begin{remark}[The two flows, and the Thom space]\label{rem:bp}
+Proposition~\ref{prop:thom} is the outward half of a picture whose
+inward half is due to Basu and Prasad \cite{BP} (see also the
+survey \cite{Pra}): for a closed embedded submanifold $\X$ of a
+complete $M$, the square $\dX^{2}$ is Morse--Bott on
+$M\setminus\Cu(\X)$, its gradient flow deformation-retracts
+$M\setminus\Cu(\X)$ onto $\X$, and for closed $M$ the collapse
+$M/\Cu(\X)$ is the Thom space of the normal bundle of $\X$. The
+same normal geodesics thus carry three retractions: inward to
+$\X$ below the cut time \cite{BP}; outward to $\Cu(\X)$ across it
+(Proposition~\ref{prop:thom}); and --- the only one that survives
+when $\X$ is an arbitrary closed set --- the canonical flow into
+the axis, which turns at $\Sigma$ instead of stopping
+(Theorem~\ref{thm:homotopy}). For smooth $\X$ the three compute
+the homotopy type of every space in sight from medial data:
+$M\setminus(\X\cup\Aub)\simeq\Cu(\X)$,
+$M\setminus\Cu(\X)\simeq\X$, $M/\Cu(\X)\cong\mathrm{Th}(\nu)$. On
+the flat cylinder with $|\X|=1$ (Remark~\ref{rem:homotopyleak})
+the picture is visible whole: $\rho=\infty$ exactly at the two
+vertical directions --- the Aubry rays --- and the captured strip
+is the mapping cylinder of
+$\sigma:S^{1}\setminus\{\pm\}\to\{\text{opposite generator}\}$.
+Two further notes. \emph{(i) Stability:} $\Cu(\X)$ is
+Hausdorff-stable under $C^{2}$ perturbations of the metric and of
+the submanifold \cite{Bh}, so the cylinder structure is a robust
+model, in the spirit of the $\lambda$-medial axis \cite{CL}.
+\emph{(ii) Retraction versus equivalence:} for arbitrary closed
+$\X$, even Lieutier's Euclidean equivalence \cite{Lie} is, to our
+knowledge, not known to improve to a deformation retraction ---
+the obstruction is the continuity of a canonical centre selection
+--- so the smooth case, where the retraction is explicit and
+strong, is genuinely special.
+\end{remark}
+
+\section{The medial complex: the ideal cells close the leak}
+\label{sec:complex}
+
+Remark~\ref{rem:homotopyleak} located the failure of topological
+faithfulness precisely: the axis carries the homotopy type of the
+captured class (1), and what it cannot see is the Aubry set
+$(2)\cup(3)$, which the swallow splits by a metric criterion the
+homotopy type ignores. The flat cylinder suggested the repair ---
+glue the free horoballs of the ideal medial limit functions onto the
+captured part --- and an earlier draft of this note could only
+conjecture that the resulting \emph{medial complex} always carries
+the homotopy type of $\Rg$. This section proves it, on every
+complete manifold, for every closed $\X$, with no hypothesis. The
+entire content is a covering theorem: \emph{the finite layer does
+not leak}. Every point of class (2) --- swallowed, but invisible to
+its own ascent --- lies in an \emph{ideal} free horoball, at depth
+no smaller than its depth in any finite medial ball. Granting that,
+the captured set and the ideal free horoballs form an open cover of
+$\Rg$, the homotopy colimit of its diagram is $\Rg$ by the gluing
+calculus of Dugger--Isaksen \cite{DI}, and the captured vertex is
+identified with $\Mg$ by Theorem~\ref{thm:ccf}.
+
+Throughout, $W:=M\setminus(\X\cup\Aub(\X))$ denotes the captured
+set, open by Lemma~\ref{lem:aubry}, and for
+$p\in M\setminus\X$ and $a\in M$ we write
+\[
+  u_{p}(a)\ :=\ \dX(a)-d(a,p),
+\]
+the \emph{margin of $p$ at $a$}: $u_{p}(a)>0$ with $a\in\Mg$ says
+exactly that the medial ball of $a$ swallows $p$ at depth
+$u_{p}(a)$. As a difference of $1$-Lipschitz functions, $u_{p}$ is
+$2$-Lipschitz in $a$ (and in $p$).
+
+\begin{lemma}[Margin transport]\label{lem:transport}
+Let $x\in M\setminus\X$, let $\Phi$ be a capture curve from $x$, and
+let $T=\sup\{t:\Phi_{s}\notin\Sigma\ \forall s\le t\}$ be its first
+approach to the axis as in Theorem~\ref{thm:capture}. Then for every
+$p\in M$ the margin $t\mapsto u_{p}(\Phi_{t})$ is nondecreasing on
+$[0,T]$ and $2$-Lipschitz on all of $[0,T_{\max})$:
+\[
+  u_{p}(\Phi_{t})\ \ge\ u_{p}(x)\quad(t\le T),
+  \qquad
+  |u_{p}(\Phi_{t})-u_{p}(\Phi_{s})|\ \le\ 2|t-s| .
+\]
+Moreover, on any interval $[0,t]$ on which $\Phi$ avoids $\Sigma$,
+the curve is the arclength extension of the minimising geodesic of
+$x$: capture curves are unique, and are calibrated geodesics, until
+their first approach.
+\end{lemma}
+
+\begin{proof}
+On $[0,T)$ the rate-one identity \eqref{eq:rateone} gives
+$\dX(\Phi_{t})=\dX(x)+t$, while $d(\Phi_{t},p)\le d(x,p)+t$ since
+$\Phi$ is $1$-Lipschitz; subtracting, $u_{p}(\Phi_{t})\ge u_{p}(x)$,
+and continuity extends this to $t=T$. The Lipschitz bound is the
+$2$-Lipschitz property of $u_{p}$ along a $1$-Lipschitz curve. For
+uniqueness: on an avoidance interval,
+$\dX(\Phi_{t})=\dX(x)+t$ and $d(x,\Phi_{t})\le t$ force
+$d(x,\Phi_{t})=t$ (as $\dX(\Phi_{t})\le\dX(x)+d(x,\Phi_{t})$), so
+$\Phi|_{[0,t]}$ has length $t=d(x,\Phi_{t})$ and is a minimising
+geodesic; the concatenation [foot of $x$]$\to x\to\Phi_{t}$ has
+length $\dX(x)+t=\dX(\Phi_{t})$, hence minimises, hence has no
+corner at $x$: $\Phi|_{[0,t]}$ is the geodesic extension of the
+minimising geodesic of $x$, as in the proof of
+Lemma~\ref{lem:aubry}(iii).
+\end{proof}
+
+\begin{lemma}[Cut rays: grazing trajectories ride the cut locus to
+infinity]\label{lem:cutray}
+Let $z\in\Aub(\X)\cap\Cut(\X)$. Then the (unique) capture curve
+$\Phi$ from $z$ --- the shift of the calibrated ray of $z$, by
+Lemma~\ref{lem:aubry}(iii) --- satisfies
+\[
+  \Phi_{t}(z)\ \in\ \Aub(\X)\cap\Cut(\X),\qquad
+  \dX(\Phi_{t}(z))=\dX(z)+t ,
+  \qquad\text{for every }t\ge0 :
+\]
+an escaping ray that touches the closure of the axis stays in it
+forever.
+\end{lemma}
+
+\begin{proof}
+By Lemma~\ref{lem:aubry}(iii) and its proof, every capture curve
+from $z$ is the arclength shift of the calibrated ray of $z$; it
+never meets $\Sigma$, and the rate-one identity holds for all time.
+In particular the \emph{canonical} trajectory of
+\S\ref{sec:homotopy} is this ray shift. By
+Lemma~\ref{lem:perm} the cut locus
+$\Cut(\X)=\overline{\Sigma}\cap(M\setminus\X)$ is positively
+invariant under the canonical flow, so $\Phi_{t}(z)\in\Cut(\X)$; and
+forward points of a calibrated ray lie in $\Aub(\X)$ by definition.
+\end{proof}
+
+Whether $\Aub(\X)\cap\Cut(\X)$ can be nonempty for some closed $\X$
+--- merging medial directions accumulating along an escaping
+calibrated ray --- is the regularity question already flagged in
+Proposition~\ref{prop:thom} (it is empty for smooth $\X$, by
+continuity of the cut time; the structure theory of \cite{TS,MT} is
+the natural tool for the general case). The point of
+Lemma~\ref{lem:cutray} is that the theorem below does not need to
+know: a grazing ray is not an obstruction but a certificate, since
+it drags medial centres with it to infinity.
+
+\begin{theorem}[Ideal swallow: the finite layer does not leak]
+\label{thm:idealswallow}
+Let $M$ be complete, $\X$ closed, and let $p\in\Aub(\X)\cap\Rg$ ---
+a swallowed, uncaptured point, class \textup{(2)} of
+Theorem~\ref{thm:trichotomy}. Then for \emph{every} finite witness
+$a_{0}\in\Mg$ with $m_{0}:=u_{p}(a_{0})>0$ there is an \emph{ideal}
+medial limit function $\psi$ with
+\[
+  \psi(p)\ \le\ -m_{0}\ <\ 0 :
+\]
+$p$ lies in an ideal free horoball, at depth at least its depth in
+any finite medial ball.
+\end{theorem}
+
+\begin{proof}
+Let $\gamma$ be the calibrated ray of $p$, $p=\gamma(t_{0})$ with
+$t_{0}=\dX(p)$, and let $\eta:[0,L]\to M$, $L=d(a_{0},p)$, be a
+minimising geodesic from $a_{0}$ to $p$; it stays in the free ball
+$B(a_{0},\dX(a_{0}))\subseteq M\setminus\X$. Concatenate:
+\[
+  \sigma(s):=\eta(s)\ (0\le s\le L),\qquad
+  \sigma(L+t):=\gamma(t_{0}+t)\ (t\ge0).
+\]
+Along $\eta$, $d(\eta(s),p)=L-s$ and $\dX(\eta(s))\ge\dX(a_{0})-s$
+give $u_{p}(\sigma(s))\ge m_{0}$; along the ray,
+$\dX(\gamma(t))=t$ and $d(\gamma(t),p)=t-t_{0}$ give
+$u_{p}=t_{0}\ge m_{0}$ (the second inequality because
+$u_{p}(\sigma(\cdot))\ge m_{0}$ persists to $s=L$ by continuity,
+where $u_{p}(p)=\dX(p)=t_{0}$). So
+\begin{equation}\label{eq:sigmamargin}
+  u_{p}(\sigma(s))\ \ge\ m_{0}\qquad\text{for all }s\ge0 .
+\end{equation}
+The endpoint data are opposite: $\sigma(0)=a_{0}\in\Sigma$ is
+captured (at time $0$), while $p=\sigma(L)\in\Aub(\X)$; the captured
+set is open and $\Aub(\X)$ is closed in $M\setminus\X$
+(Lemma~\ref{lem:aubry}), so
+\[
+  s^{\ast}:=\inf\,\sigma^{-1}(\Aub(\X))\ \in\ (0,L],\qquad
+  x_{\ast}:=\sigma(s^{\ast})\in\Aub(\X),\qquad
+  u_{p}(x_{\ast})\ge m_{0},
+\]
+and $\sigma(s)$ is captured for every $s<s^{\ast}$.
+
+\emph{Case A (the transition grazes the cut locus):} suppose there
+are $s_{j}\uparrow s^{\ast}$ with
+$\sigma(s_{j})\in\overline{\Sigma}$. Then
+$x_{\ast}\in\Cut(\X)\cap\Aub(\X)$. By Lemma~\ref{lem:cutray} the
+points $w_{t}:=\Phi_{t}(x_{\ast})$ lie in $\Cut(\X)$ with
+$\dX(w_{t})=\dX(x_{\ast})+t\to\infty$, and by
+Lemma~\ref{lem:transport} (the trajectory never meets $\Sigma$, so
+$T=\infty$) $u_{p}(w_{t})\ge u_{p}(x_{\ast})\ge m_{0}$. Pick
+$a_{t}\in\Sigma$ with $d(a_{t},w_{t})\le\min(1,1/t)$: then
+$a_{t}\in\Mg$,
+\[
+  u_{p}(a_{t})\ \ge\ m_{0}-2/t,\qquad
+  \dX(a_{t})\ \ge\ \dX(x_{\ast})+t-1/t\ \to\ \infty .
+\]
+Since $\dX$ is bounded on bounded sets, $(a_{t})$ has no bounded
+subsequence. By Lemma~\ref{lem:cpt} a subsequence of
+$(\psi_{a_{t}})$ converges locally uniformly to a medial limit
+function $\psi$ with $\psi(p)=\lim(-u_{p}(a_{t}))\le-m_{0}$, and
+$\psi$ is ideal. Done.
+
+\emph{Case B (the transition is clean):} otherwise there is
+$s_{1}<s^{\ast}$ with $\sigma(s)\notin\overline{\Sigma}$ for
+$s\in[s_{1},s^{\ast})$. Take $s_{j}\uparrow s^{\ast}$ in
+$[s_{1},s^{\ast})$ and set $x_{j}:=\sigma(s_{j})$: captured, not in
+$\overline{\Sigma}$. Each $x_{j}$ has a capture curve $\Phi^{j}$
+with finite first approach $T_{j}$, and by the dichotomy proof of
+Theorem~\ref{thm:capture} there are times
+$t_{j}\in[T_{j},T_{j}+1/j]$ with
+$b_{j}:=\Phi^{j}_{t_{j}}\in\Sigma=\Mg$. By
+Lemma~\ref{lem:transport},
+\[
+  u_{p}(b_{j})\ \ge\ u_{p}(x_{j})-2/j\ \ge\ m_{0}-2/j,
+  \qquad
+  \dX(b_{j})\ \ge\ \dX(x_{j})+T_{j}-1/j .
+\]
+If $(T_{j})$ is unbounded, pass to a subsequence with
+$T_{j}\to\infty$: then $\dX(b_{j})\to\infty$, and exactly as in Case
+A, Lemma~\ref{lem:cpt} produces an ideal $\psi$ with
+$\psi(p)\le-m_{0}$. If $(T_{j})$ is bounded, pass to a subsequence
+$T_{j}\to\bar T<\infty$. On $[0,T_{j})$ each $\Phi^{j}$ avoids
+$\Sigma$, hence (Lemma~\ref{lem:transport}) is the geodesic
+extension of the minimising geodesic of $x_{j}$. Since
+$x_{\ast}\notin\Sigma$ ($\Aub(\X)\cap\Sigma=\varnothing$), the
+direction field $U$ is single-valued and continuous at $x_{\ast}$
+(Lemma~\ref{lem:usc}), so the extensions converge locally uniformly
+to the extension of the minimising geodesic of $x_{\ast}$ --- which
+is the calibrated ray of $x_{\ast}$ --- and, as
+$d(b_{j},\Phi^{j}_{T_{j}})\le1/j$,
+\[
+  b_{j}\ \longrightarrow\
+  z:=\Phi_{\bar T}(x_{\ast})
+  \ \in\ \Aub(\X)\cap\overline{\Sigma},
+  \qquad
+  u_{p}(z)=\lim u_{p}(b_{j})\ge m_{0} :
+\]
+a grazing point with full margin. Case A applied at $z$ (its
+hypothesis is exactly $z\in\Aub(\X)\cap\Cut(\X)$) finishes the
+proof.
+\end{proof}
+
+\begin{corollary}[Ideal decomposition of the reconstruction]
+\label{cor:idealdecomp}
+For every complete $M$ and closed $\X$,
+\[
+  \boxed{\ \Rg\ =\ W\ \cup\ \bigcup\bigl\{\{\psi<0\}:\ \psi\
+  \text{an \emph{ideal} medial limit function of }\X\bigr\}\ }
+\]
+--- the captured set plus the ideal layer; the finite medial balls
+are needed only where capture already operates. On the Aubry set the
+trichotomy is decided by the ideal functions alone:
+\[
+  \textup{class (2)}=\Aub(\X)\cap\bigcup_{\psi\,\mathrm{ideal}}
+  \{\psi<0\},
+  \qquad
+  \textup{class (3)}=\Aub(\X)\setminus\bigcup_{\psi\,\mathrm{ideal}}
+  \{\psi<0\} :
+\]
+a point escapes unswallowed if and only if it is Aubry and no ideal
+medial limit function is negative on it. In $\R^{n}$ this sharpens
+Theorem~6 of \cite{Bia}: the half-space layer alone covers the
+entire drift-swallowed set.
+\end{corollary}
+
+\begin{proof}
+$W\subseteq\Rg$ is Theorem~\ref{thm:trichotomy}(1), the horoballs
+are swallowed by Lemma~\ref{lem:swallow}, and conversely
+$\Rg\setminus W=\Aub(\X)\cap\Rg$ is covered by
+Theorem~\ref{thm:idealswallow}. The class identities follow since
+$\Aub(\X)\cap W=\varnothing$.
+\end{proof}
+
+\begin{theorem}[The medial complex carries the reconstruction]
+\label{thm:complex}
+Let $M$ be complete, $\X$ closed, and let $\Psi$ be any family of
+ideal medial limit functions whose free horoballs cover
+$\Aub(\X)\cap\Rg$ (by Theorem~\ref{thm:idealswallow} the family of
+\emph{all} of them qualifies). Then
+\[
+  \mathcal{U}\ :=\ \{W\}\ \cup\
+  \bigl\{\{\psi<0\}:\ \psi\in\Psi\bigr\}
+\]
+is an open cover of $\Rg$, and the natural map from the homotopy
+colimit of its \v{C}ech diagram (the members and their finite
+intersections) to $\Rg$ is a weak equivalence \cite{DI} --- a
+homotopy equivalence, since these spaces are ANRs. Since
+$\Mg\hookrightarrow W$ is a homotopy equivalence
+(Theorem~\ref{thm:ccf}), the \emph{medial complex} --- $\Mg$
+together with the ideal free horoballs, glued along the pattern of
+their overlaps with the captured set and with one another ---
+carries the homotopy type of $\Rg$; and of $M\setminus\X$ whenever
+the reconstruction is complete. The conjecture of the earlier draft
+is true, unconditionally.
+\end{theorem}
+
+\begin{proof}
+Covering is Corollary~\ref{cor:idealdecomp} together with
+$\{\psi<0\}\subseteq\Rg$ (Lemma~\ref{lem:swallow}) and
+$W\subseteq\Rg$; all members are open. The homotopy-colimit
+statement for an arbitrary open cover is \cite{DI}; open subsets of
+manifolds and their homotopy colimits have CW type, so the weak
+equivalence upgrades by Whitehead. The last sentence substitutes the
+CCF equivalence at the captured vertex.
+\end{proof}
+
+\begin{corollary}[Faithfulness without an ideal layer]
+\label{cor:noideal}
+If $\X$ admits no ideal medial limit function --- e.g.\ whenever
+$\Mg$ is bounded, so that no sequence of medial centres escapes ---
+then class \textup{(2)} is empty, $\Rg=W$, and
+\[
+  \Rg\ \simeq\ \Mg :
+\]
+the two-geodesic axis carries the homotopy type of everything it
+reconstructs. This extends the faithfulness regime of
+Corollary~\ref{cor:homotopy} beyond bounded distance: $\dX$ may be
+unbounded and the Aubry set nonempty, as on the paraboloid of
+\S\ref{sec:spec} ($\Mg$ the vertex, $\Rg$ the inner disk, both
+contractible, the entire flaring end escaping), or for the round
+circle in $\R^{2}$ ($\Mx$ the centre, $\Rx$ the open disk).
+\end{corollary}
+
+\begin{proof}
+Class (2) $=\Aub(\X)\cap\bigcup_{\mathrm{ideal}}\{\psi<0\}
+=\varnothing$ by Corollary~\ref{cor:idealdecomp}; so
+$\Rg=W\simeq\Mg$ by Theorem~\ref{thm:ccf}.
+\end{proof}
+
+\paragraph{The examples, reassembled.} On the flat cylinder with
+$\X$ a point (Remark~\ref{rem:homotopyleak}): $W$ is the open strip,
+$\Mg$ the opposite generator, and the two ideal cells are the open
+half-cylinders $\{\pm z>0\}$, each a homotopy circle, with
+$\{z>0\}\cap\{z<0\}=\varnothing$ and each $W$-overlap an open square,
+contractible. The complex is the double mapping cylinder
+\[
+  S^{1}\ \longleftarrow\ \ast\ \longrightarrow\
+  \ast\ \longleftarrow\ \ast\ \longrightarrow\ S^{1}
+  \ \ \simeq\ \ S^{1}\vee S^{1} ,
+\]
+the figure-eight: exactly $C\setminus\X$. The leak of
+Remark~\ref{rem:homotopyleak} is not an anomaly of the theory but
+the visible size of its ideal cells. For the round circle in
+$\R^{3}$: $W=\{\rho<R\}$ is the captured solid cylinder, the two
+ideal cells are the half-spaces $\{\pm z>0\}$, all three
+contractible with contractible overlaps, so the complex is
+contractible --- and indeed $\Rg=\R^{3}\setminus(\X\cup
+\{z=0,\rho\ge R\})$ is star-shaped about the centre. Here
+$M\setminus\X\simeq S^{1}\vee S^{2}$ differs from $\Rg$: the complex
+is faithful to the \emph{reconstruction}, and the discrepancy is
+exactly class (3), the unswallowed flange. For two points in
+$\R^{2}$: strip plus two half-planes, all contractible over
+contractible overlaps; $\Rg$, the plane minus two closed rays, is
+contractible. In all three, finitely many maximal cells suffice as
+$\Psi$; Theorem~\ref{thm:complex} is indifferent to the choice.
+
+\begin{remark}[What the complex decides, and what it does not]
+\label{rem:complexlimits}
+(a) \emph{Levels.} Any covering family $\Psi$ computes the same
+homotopy type, so the complex never needs the optimal level: the
+level function $c(\xi)$ of Remark~\ref{rem:offset} (item (2) of
+\S\ref{sec:open}) is untouched, as is the detection question ---
+\emph{which} ideal functions exist is still read from $\Mg$, not
+from $\X$ (items (1)--(2)).
+(b) \emph{The flat no-leak conjecture, reduced.} In $\R^{n}$ every
+ideal medial limit function is affine and its cell $H=\{\psi<0\}$ is
+an open half-space avoiding $\X$; along a calibrated ray
+$\gamma(t)=x_{\gamma}+tu$ the affine function
+$t\mapsto\psi(\gamma(t))$ starts nonnegative
+($\psi\ge0$ on $\X$) and is monotone, so a ray that enters $H$ never
+leaves: $\Aub(\X)\cap H$ is a bundle of inward half-lines. The
+conjecture that $\Rx=\R^{n}\setminus\X$ forces
+$\R^{n}\setminus\X\simeq\Mx$ is now equivalent, by
+Theorem~\ref{thm:complex}, to the statement that these attachments
+are trivial: $H\cap W\hookrightarrow H$ (and its finite-intersection
+versions) are weak equivalences. Both spaces are contractible
+candidates --- $H$ is convex, and $H\cap W=H\setminus\Aub(\X)$ is
+$H$ minus the half-line bundle --- but the equivalence remains open;
+the cylinder shows it is genuinely flat (its cells are homotopy
+circles, and the attachment is not trivial). On a Hadamard manifold
+the cells are horoballs, convex hence contractible; whether their
+captured traces are is open in the same way.
+(c) \emph{Regularity.} When the cover is good --- all members and
+intersections contractible, as below the convexity radius, or for
+all of $\R^{n}$ if (b) holds --- the nerve theorem \cite{Bor}
+replaces the homotopy colimit by a simplicial complex, and Damon's
+skeletal calculus \cite{Dam} realises exactly this
+reconstruction-from-medial-data programme for compact generic
+regions in $\R^{3}$; the local-tree and delta-convex structure of
+\cite{TS,MT} is what a CW model of the complex would be built on.
+(d) \emph{Where the classes live.} The escape flow
+$E_{t}(x):=\Phi_{t}(x)$ restricts to $\Aub(\X)$ (unique rays, no
+branching), is continuous there by Lemma~\ref{lem:usc}, and
+$E_{R}$ is a homotopy inverse to
+$\Aub(\X)\cap\{\dX\ge R\}\hookrightarrow\Aub(\X)$ for every $R$:
+classes (2)$\,\cup\,$(3) are carried entirely at infinity, which is
+why only ideal objects can see them --- the geometric content of
+Theorem~\ref{thm:idealswallow}.
+\end{remark}
 
 \section{What remains}\label{sec:open}
 
 The theory is now unconditional in its dynamical form on every
-complete Riemannian manifold. What remains open is exactly the
+complete Riemannian manifold, and, with \S\ref{sec:complex}, in its
+homotopy form as well. What remains open is exactly the
 \emph{faithful} layer --- certificates decidable from $\X$ and the
-geometry of $M$, with $\Mg$ absent --- and it lives entirely on the
-non-compact (escape) side.
+geometry of $M$, with $\Mg$ absent --- together with the regularity
+of the medial complex; all of it lives on the non-compact (escape)
+side.
 
 \begin{enumerate}[label=(\arabic*)]
 \item\emph{Certificates in mixed curvature.} For which ideal points
@@ -802,8 +2016,15 @@ non-compact (escape) side.
 limit function, read from the contact structure of $\X$ on
 $\{h=0\}$? Known: $\conv$/Motzkin in $\R^{n}$ \cite{Bia,Mot};
 $\hconv$ on Hadamard manifolds, with the Carnot and Alexandrov
-frontiers of \cite[\S9--10]{R3}; vacuous on compact $M$. Unknown
-already for a complete surface with both signs of curvature.
+frontiers of \cite[\S9--10]{R3}; vacuous on compact $M$; and now the
+flat cylinder, whose end certificate is the sharp dichotomy of
+Proposition~\ref{prop:cylinder}. Unknown already for a complete
+surface with both signs of curvature; and unwritten for the cusped
+hyperbolic surface (horocyclic cross-sections shrinking up the cusp)
+and the general flat quotient $\R^{n}/\Gamma$ (toral and mixed ends),
+which should follow the cylinder's two steps --- horofunction ends,
+then a wrap-around forcing argument --- but are outside the theorems
+as stated.
 \item\emph{The level function.} On an inhomogeneous Hadamard
 manifold, characterise
 $c(\xi)=\inf\{c:\ b_{\xi}+c\ \text{medial limit}\}$ from $\X$ alone
@@ -824,6 +2045,33 @@ indefinite curvature (pinched horospheres) \cite[\S10]{R3}; and the
 domain (Lieutier) problem on $\Sn$, where the boundary's positively
 curved intrinsic geometry becomes the detection object
 \cite[\S7]{Tri}.
+\item\emph{Regularity of the medial complex.} The homotopy question
+across the Aubry set, open in an earlier draft of this note, is
+settled by \S\ref{sec:complex}: the medial complex --- $\Mg$ with
+the ideal free horoballs glued on --- always carries the homotopy
+type of $\Rg$ (Theorem~\ref{thm:complex}), because the finite layer
+does not leak (Theorem~\ref{thm:idealswallow}). What remains is its
+structure. \emph{(a) The flat no-leak conjecture, in reduced form:}
+if $\Rx=\R^{n}\setminus\X$ (the sets characterised by
+\cite[Thm.~6]{Bia}), is $\R^{n}\setminus\X\simeq\Mx$? By
+Remark~\ref{rem:complexlimits}(b) this is now equivalent to the
+triviality of the ideal attachments
+$H\cap W\hookrightarrow H$ over the defective half-spaces $H$ ---
+the Aubry trace on each cell is a bundle of inward half-lines, and
+the question is whether removing it can change the homotopy type of
+a convex cell. A positive answer would make the leak of
+Remark~\ref{rem:homotopyleak} genuinely Riemannian: created by
+non-convex free balls, impossible in flat space. \emph{(b) A CW or
+nerve model:} when is the ideal cover good, so that the nerve
+theorem \cite{Bor} computes the complex --- and can the local-tree
+and delta-convex structure theory of \cite{TS,MT}, or Damon's
+skeletal calculus \cite{Dam}, produce a finite model in the generic
+compact-contact case? \emph{(c) Grazing rays:} can
+$\Aub(\X)\cap\Cut(\X)\neq\varnothing$ actually occur for a closed
+(necessarily non-smooth, Proposition~\ref{prop:thom}) contact set?
+Lemma~\ref{lem:cutray} shows the theory is indifferent, but the
+example, or its impossibility, would calibrate how wild the
+transition between capture and escape can be.
 \end{enumerate}
 
 \paragraph{Conclusion.} Bia\l{}o\.zyt's Theorem~6 generalises to
@@ -837,18 +2085,39 @@ capture is total on compact manifolds
 completeness and closedness. The \emph{faithful} layer --- replacing
 ``is a medial limit'' by a certificate on contact sets --- is exact
 on the flat knife-edge ($\conv$, \cite{Bia}), on every Hadamard
-manifold ($\hconv$, \cite{R3}), and trivial on compact manifolds;
-its extension into mixed curvature, together with the Chebyshev-set
-problems it generates, is the genuine residue. The gaps flagged in
+manifold ($\hconv$, \cite{R3}), on the flat cylinder (the end
+dichotomy of Proposition~\ref{prop:cylinder}), and trivial on
+compact manifolds; its extension into mixed curvature, together with
+the Chebyshev-set problems it generates, is the genuine residue. The gaps flagged in
 the series --- the containment step past cut points and the radial
 offset --- are closed, the first by stopping the ascent at its first
 approach to the axis instead of flowing through it, the second by
-normalising the limit objects by their own reach.
+normalising the limit objects by their own reach. A topological
+layer now sits on top: the captured part of the complement always
+has the homotopy type of the axis (Theorem~\ref{thm:ccf}, via the
+Aubry dictionary of Lemma~\ref{lem:aubry}), totally so when
+$\sup\dX<\infty$ (Corollary~\ref{cor:homotopy}); the flat cylinder
+separates the two completions --- swallowing finishes the
+reconstruction across the Aubry set, but only capture transports
+homotopy type --- and the medial complex re-fuses them: the finite
+layer does not leak (Theorem~\ref{thm:idealswallow}), so the axis
+with its ideal free horoballs glued on carries the homotopy type of
+$\Rg$ on every complete manifold, for every closed contact set
+(Theorem~\ref{thm:complex}), and the residue of the homotopy
+programme is regularity, not existence
+(\S\ref{sec:open}(5)). In the smooth case the layer is classical geometry
+made medial: the captured part is the mapping cylinder of the
+swallow map onto the cut locus, its collapse is the Thom space
+\cite{BP}, and its uniform-capture instances are the Ford--Voronoi
+and crystallographic spines (Corollary~\ref{cor:spines},
+Proposition~\ref{prop:thom}).
 
-\begin{thebibliography}{9}
+\begin{thebibliography}{ACNS}
 
-\bibitem{Bia} A.~Bia\l{}o\.zyt, \emph{Sets reconstructible with medial
-axis}, preprint, AGH University of Krak\'ow, 2024.
+\bibitem{Bia} A.~Bia\l{}o\.zyt, \emph{Sets reconstructable with
+medial axis}, arXiv:2604.20671 (2026). (\S5.2 poses the compact
+Riemannian reconstruction question settled by
+Corollary~\ref{cor:compact}.)
 
 \bibitem{R1} \emph{Sets reconstructible with medial axis: a
 generalisation to Riemannian manifolds}, companion note, June 2026
@@ -879,14 +2148,71 @@ for upper semicontinuous convex compact right-hand sides, \S2.1.)
 of singularities of semiconcave functions}, Ann.\ Scuola Norm.\ Sup.\
 Pisa \textbf{28} (1999), 719--740.
 
+\bibitem{ACNS} P.~Albano, P.~Cannarsa, K.~T.~Nguyen and
+C.~Sinestrari, \emph{Singular gradient flow of the distance function
+and homotopy equivalence}, Math.\ Ann.\ \textbf{356} (2013), 23--43.
+
+\bibitem{BP} S.~Basu and S.~Prasad, \emph{A connection between cut
+locus, Thom space and Morse--Bott functions}, Algebr.\ Geom.\
+Topol.\ \textbf{23} (2023), 4185--4233.
+
+\bibitem{Bh} A.~Bhowmick, \emph{Stability of the injectivity
+radius and the cut locus of submanifolds under perturbations},
+arXiv:2605.26499 (2026).
+
+\bibitem{Bis} R.~L.~Bishop, \emph{Decompositions of cut loci},
+Proc.\ Amer.\ Math.\ Soc.\ \textbf{65} (1977), 133--136.
+
+\bibitem{Bor} K.~Borsuk, \emph{On the imbedding of systems of
+compacta in simplicial complexes}, Fund.\ Math.\ \textbf{35}
+(1948), 217--234.
+
 \bibitem{BH} M.~Bridson and A.~Haefliger, \emph{Metric Spaces of
 Non-Positive Curvature}, Grundlehren 319, Springer, 1999.
 (Horofunctions and Busemann points, II.8.)
+
+\bibitem{CCF} P.~Cannarsa, W.~Cheng and A.~Fathi, \emph{Singularities
+of solutions of time dependent Hamilton--Jacobi equations.
+Applications to Riemannian geometry}, Publ.\ Math.\ Inst.\ Hautes
+\'Etudes Sci.\ \textbf{133} (2021), 327--366.
+
+\bibitem{CL} F.~Chazal and A.~Lieutier, \emph{The
+$\lambda$-medial axis}, Graphical Models \textbf{67} (2005),
+304--331.
+
+\bibitem{Che} J.~Cheeger, \emph{Critical points of distance
+functions and applications to geometry}, in: Geometric Topology:
+Recent Developments, Lecture Notes in Math.\ 1504, Springer, 1991,
+1--38.
+
+\bibitem{Dam} J.~Damon, \emph{The global medial structure of
+regions in $\R^{3}$}, Geom.\ Topol.\ \textbf{10} (2006),
+2385--2429.
+
+\bibitem{DI} D.~Dugger and D.~C.~Isaksen, \emph{Topological
+hypercovers and $\mathbb{A}^{1}$-realizations}, Math.\ Z.\
+\textbf{246} (2004), 667--689.
+
+\bibitem{EP} D.~B.~A.~Epstein and R.~C.~Penner, \emph{Euclidean
+decompositions of noncompact hyperbolic manifolds}, J.\
+Differential Geom.\ \textbf{27} (1988), 67--80.
+
+\bibitem{GR} V.~Gershkovich and H.~Rubinstein, \emph{Morse theory
+for Min-type functions}, Asian J.\ Math.\ \textbf{1} (1997),
+696--715.
 
 \bibitem{Gro} M.~Gromov, \emph{Hyperbolic manifolds, groups and
 actions}, in: Riemann Surfaces and Related Topics, Ann.\ of Math.\
 Stud.\ 97, Princeton, 1981, 183--213. (The horofunction
 compactification.)
+
+\bibitem{Grv} K.~Grove, \emph{Critical point theory for distance
+functions}, in: Differential Geometry: Riemannian Geometry, Proc.\
+Sympos.\ Pure Math.\ \textbf{54}, Part 3, Amer.\ Math.\ Soc.,
+1993, 357--385.
+
+\bibitem{GS} K.~Grove and K.~Shiohama, \emph{A generalized sphere
+theorem}, Ann.\ of Math.\ \textbf{106} (1977), 201--211.
 
 \bibitem{Lie} A.~Lieutier, \emph{Any open bounded subset of $\R^{n}$
 has the same homotopy type as its medial axis}, Computer-Aided Design
@@ -897,9 +2223,23 @@ equations and distance functions on Riemannian manifolds}, Appl.\
 Math.\ Optim.\ \textbf{47} (2003), 1--25. (Semiconcavity and first
 variation of the distance from a closed set.)
 
+\bibitem{MT} T.~Miura and M.~Tanaka, \emph{Delta-convex structure
+of the singular set of distance functions}, Comm.\ Pure Appl.\
+Math.\ \textbf{77} (2024); arXiv:2204.10449.
+
 \bibitem{Mot} T.~Motzkin, \emph{Sur quelques propri\'et\'es
 caract\'eristiques des ensembles born\'es non convexes}, Atti Accad.\
 Naz.\ Lincei \textbf{21} (1935), 773--779.
+
+\bibitem{Pra} S.~Prasad, \emph{Cut locus of submanifolds: a
+geometric and topological viewpoint}, arXiv:2303.14931 (2023).
+
+\bibitem{Sak} T.~Sakai, \emph{Riemannian Geometry}, Transl.\
+Math.\ Monogr.\ 149, Amer.\ Math.\ Soc., 1996.
+
+\bibitem{TS} M.~Tanaka and S.~V.~Sabau, \emph{The cut locus and
+distance function from a closed subset of a Finsler manifold},
+Houston J.\ Math.\ \textbf{42} (2016), 1157--1197.
 
 \end{thebibliography}
 

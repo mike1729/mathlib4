@@ -121,3 +121,277 @@ CORRECTIONS MADE DURING WRITING (self-audit):
 ##   characterization + trichotomy unconditional; compact case total, no caveats;
 ##   Hadamard offset gap dissolved. Faithful-certificate layer beyond flat/Hadamard/
 ##   compact remains open by nature (documented in §6 of the new note).
+
+## [4] CLARIFICATION PASS (user query: constant curvature or constant sign?)
+Answer: neither, for the core results — made explicit in the paper:
+  - §1 + §2: standing-hypotheses statements — §§2-4 use NO curvature assumption of any
+    kind (sign, constancy, pinching, bounds); curvature may vary and change sign.
+  - NEW Remark 5.1 (rem:curvhyp) "How much curvature, where": dynamical layer = none;
+    Hadamard certificate = SIGN condition sec≤0 with variable curvature allowed (warped
+    products are the showcase) PLUS simple connectedness (essential: horofunctions =
+    Busemann needs it); knife-edge = exactly R^n; CONSTANCY essential in exactly one
+    result — two-point total reconstruction on S^n (antipodal rigidity; fails on prolate
+    ellipsoid).
+  - Table caveat expanded (column heads = sign conditions; cell certificates carry their
+    sources' stronger hypotheses); Hadamard specialisation header now says "(complete,
+    simply connected, variable sec≤0)".
+  - §6(1) sharpened: faithful certificate also unwritten for non-simply-connected
+    constant-curvature cases (flat cylinder, cusped hyperbolic surface) — ends vs
+    visual boundary.
+Recompiled clean (0 errors / 0 undefined refs).
+
+## [5] REFEREE-STYLE AUDIT (user query: finished & publication-ready?)
+Re-verified every proof of the complete note line by line + recomputed the worked
+examples by hand (bisector margin 1.345→1 ✓; remote-finite-ball witness at (6,1),
+r=√37 ✓; flat-torus |X|=1 sanity ✓). All main theorems SOUND. Verdict: dynamical
+layer genuinely finished; paper is ONE REVISION SHORT of submission-ready:
+  BLOCKER: missing prior-art cluster — Albano–Cannarsa–Nguyen–Sinestrari,
+    "Singular gradient flow of the distance function and homotopy equivalence",
+    Math. Ann. 356 (2013) 23–43, arXiv:1109.5375 (gen. gradient flow of d_bdry on
+    Riemannian domains, singular-set invariance, homotopy equivalence) + the
+    Cannarsa–Cheng–Fathi singularity/cut-locus line. Rem 3.5 compares only to
+    Lieutier. Novelty survives (margin quantification, stop-at-M^g not Cut,
+    arbitrary complete M + escape, medial-limit layer) but MUST be positioned.
+  STATEMENT NITS: (i) abstract calls M^g "(the cut locus)" — it is the
+    multi-geodesic part, in general proper dense subset (evolute cusps are cut
+    points with one geodesic); (ii) Thm 3.1: T=sup∅ when p∈Σ — add WLOG p∉Σ;
+    (iii) Thm 4.3 parenthetical: finite limits can have a_k→a∈X (ψ=d(·,a), empty
+    sublevel) — "closure in M\X" off in that case; (iv) intro (G1) quotes the
+    ORIGINAL wording of Sph Rem 8.4/Tri Rem 6.5 which the patches rewrote —
+    attribute "in their original form"; (v) Cor 3.3: compactness REMOVABLE
+    (escape dies by boundedness of d_X): any complete M with sup d_X < inj(M);
+    silently improves Sph Thm 6.1's 2δ<inj to δ<inj (grep confirmed 2δ in Sph) —
+    should be said; (vi) MM cite → exact statement number.
+  WITHIN-REACH followups a referee will request: flat cylinder + cusped
+    hyperbolic surface certificates (§6(1) says "presumably easy" — then do it);
+    Cor 3.3 strengthening; ACNS comparison paragraph.
+  GENUINE OPEN (correctly left): c(ξ)>0 existence (sharpest); mixed-curvature
+    faithful certificates; shielding threshold analytic; Alexandrov capture via
+    Petrunin gradient flow (NEW suggestion); homotopy-type link to ACNS/Lieutier;
+    λ-medial-axis stability on manifolds.
+  PUBLICATION LOGISTICS: [R1–R3,Sph,Tri] are unpublished companion files — for a
+    journal either arXiv the series or submit the self-contained
+    medial_axis_riemann_complete.tex. Białożyt's "Sets Reconstructable with
+    Medial Axis" still a preprint (verified 2026-07); bib entry fine.
+No paper edits made in this pass (assessment only, per user request).
+
+## [6] REVISION LIST APPLIED (user request)
+medial_axis_complete.tex — all audit items fixed, +1 new result:
+  LITERATURE: bibitems ACNS (Albano–Cannarsa–Nguyen–Sinestrari, Math. Ann. 356
+    (2013) 23–43) and CCF (Cannarsa–Cheng–Fathi, Publ. Math. IHÉS 133 (2021)
+    327–366) added; Rem 3.5 rewritten as a full comparison (their flows run INTO
+    the closed singular set for homotopy equivalence; capture stops at first
+    approach to the non-closed M^g and extracts the quantitative margin — a
+    reconstruction statement absent there; any relaxed solution, any complete M,
+    escape alternative live); intro credits ACNS for the canonical flow.
+  STATEMENT FIXES: abstract gloss → "multi-geodesic part of the cut locus";
+    Thm 3.1 now assumes p∉Σ (else captured at t=0), T ∈ (0,T_max]; Thm 4.3
+    parenthetical → closure in M, a∈X degenerate case (empty sublevel);
+    Def 2.3 same degenerate case; intro (G1) quote attributed "in the original
+    form of [Sph Rem 8.4]/[Tri Rem 6.5], since revised"; Lem 2.2 proof sketch
+    PROMOTED to full proof (broken-path comparison, δ_k=√s_k, all error terms
+    O(s^{3/2})).
+  COR 3.3 STRENGTHENED: complete M (compactness dropped — escape dies by
+    boundedness of d_X), sup d_X < inj(M); explicitly noted: halves Sph Thm 6.1's
+    2δ<inj to δ<inj, and in R^n recovers the classical coarse-density fact.
+  NEW RESULT — Prop 5.1 (End certificate on the flat cylinder) + Rem 5.2:
+    C=(R/LZ)×R, X bounded above, X_+ = X∩{z=z_+}: (i) if π(X_+) ≠ circle then
+    M^g meets every high slice (proof: unique feet ⇒ continuous displacement
+    δ(θ)∈(−L/2,L/2) ⇒ foot positions θ+δ(θ) sweep ALL positions by IVT, but
+    feet of high points concentrate near π(X_+) — contradiction), ψ_{a_s} →
+    z_+−z, {z>z_+} ⊆ R^g in full at level 0; (ii) if X ⊇ full top circle:
+    unique vertical geodesics above, free balls cannot cross the circle,
+    R^g∩{z>z_+} = ∅. Faithful dichotomy from X alone — first certificate
+    beyond the series. Consequences recorded: single contact point suffices
+    (wrap-around = second contact; X=singleton ⇒ R^g = C∖X total, R_X = ∅ —
+    axes separate for singletons); level always 0 (compact horospheres admit
+    no offset). §6(1), rem:curvhyp knife-edge bullet, table caveat, abstract,
+    intro, conclusion all updated; cusped hyperbolic surface + R^n/Γ remain
+    the unwritten cases.
+  NUMBERING: §3–§4 numbers UNCHANGED (companion citations [C, Thm 3.1, Cor 3.2,
+    Lem 4.1, Rem 4.6] intact); rem:curvhyp is now Remark 5.3 (was 5.1);
+    prop:cylinder = 5.1, rem:cylinder = 5.2. 16 pp, compiles clean.
+COMPANIONS: Sph — new Rem after Thm 6.1 (capture halves the constant, drops
+  compactness, cites [C, Cor 3.3]); Tri — Thm 6.3 statement notes the sharper
+  form, Thm 6.4's "(the cut locus)" gloss fixed to "multi-geodesic part".
+  Both recompile clean.
+
+[7] 2026-07-06 — THE HOMOTOPY LAYER (new §6 of medial_axis_complete.tex)
+  TASK: connect capture to the Lieutier/ACNS homotopy equivalences — does the
+    capture flow give M∖X ≃ (something medial), relative to R^g?
+  LITERATURE (decisive): CCF (Publ. IHÉS 133, arXiv:1912.04863) Def 1.4 defines
+    the Aubry set A*(X) = union of infinite calibrated rays (d_X(γ(t))=t ∀t);
+    their Thm 1.6: Σ ↪ M∖(X∪A*) is a homotopy equivalence for EVERY closed X
+    in EVERY complete M; Thm 1.1: Σ locally contractible. ACNS (Math. Ann. 356):
+    flow existence/uniqueness Thm 3.4 + Cor 3.6 (global time, arbitrary open
+    Ω ⊆ R^n!), propagation Thm 3.7 (R^n) / Thm 4.5 (Riemannian, local proof),
+    homotopy Thm 5.3 (bounded domains). So "captured part ≃ axis" in full
+    generality is CCF's; our additions are the dictionary, the Cut-locus and
+    bounded-d_X statements, and the counterexample analysis.
+  NEW §6 CONTENT (items 6.1–6.6):
+    Lem 6.1 (permanence): for the canonical (min-norm) flow, capture is
+      permanent — after first approach T, Φ_t ∈ Σ for ALL t>T (ACNS invariance
+      + semigroup; handles Φ_T ∉ Σ via Σ-times s_δ ↓ T). Cut(X) :=
+      cl(Σ)∩(M∖X) is invariant too (flow continuity + limits).
+    Thm 6.2 (uniform capture ⇒ h.e.): U open invariant, all trajectories meet
+      Σ by time D ⇒ Φ_D: U → Σ∩U and Σ∩U ↪ Cut∩U ↪ U are homotopy
+      equivalences (flow = the homotopy; two-out-of-three for the inner pair).
+    Cor 6.3 (bounded distance = topological faithfulness): sup d_X < ∞ ⇒
+      no escape, R^g = M∖X, AND Σ ↪ Cut(X) ↪ M∖X h.e. componentwise.
+      Cases: every compact M (closed-set analogue of M∖{x₀} ↘ Cut(x₀));
+      every coarsely dense X (periodic X ⊂ R^n: UNBOUNDED domain, outside
+      Lieutier/ACNS scope). Pairing with Cor 3.3: sup d_X < inj ⇒ metric
+      completeness (R_X = M∖X); sup d_X < ∞ ⇒ topological faithfulness.
+    Lem 6.4 (Aubry dictionary): A*(X)∩Σ = ∅ (corner argument); A* closed in
+      M∖X (ray compactness); A* = escape class = classes (2)∪(3) of the
+      trichotomy; captured set = M∖(X∪A*) is OPEN. Key: capture ⟺ trajectory
+      has a Σ-time ⟺ extension stops calibrating (corner shortcut at Σ-times).
+    Thm 6.5 = CCF Thm 1.6 restated: the captured part always has the homotopy
+      type of the axis. No bound, no compactness.
+    Rem 6.6 (homotopy follows capture, not swallowing): class (1) carries the
+      homotopy type; A* = (2)∪(3) is invisible to the axis; the swallow split
+      of A* is metric, not topological. Examples verified by hand:
+      • unknot circle in R³: Σ = axis ≃ pt, captured set = open solid cylinder
+        {ρ<R} (foot-rays cross the axis), A* = shell {ρ≥R}∖X (all calibrated:
+        feet stay at angle-θ circle point), class (3) = flange {z=0,ρ>R} =
+        exactly what R^g misses; R³∖X ≃ S¹∨S² invisible to Σ.
+      • flat cylinder, |X|=1 (Prop 5.1/Rem 5.2): R^g = C∖X COMPLETE, yet
+        C∖X ≃ S¹∨S¹ vs M^g = opposite generator ≃ pt. A* = punctured
+        generator (2 vertical rays), ENTIRELY class (2) — swallowed by
+        wrap-around balls (non-contractible, radius > inj) which reconstruct
+        without transporting homotopy. Captured set = open strip ≃ pt ✓ CCF.
+        ⇒ COMPLETE RECONSTRUCTION DOES NOT IMPLY HOMOTOPY EQUIVALENCE.
+      • parabola interior: A* = ∅ despite sup d_X = ∞ (every normal crosses
+        the axis at a Σ-point first — bounded-d is sufficient, not necessary);
+        interior ≃ medial ray ✓.
+    OPEN ITEM (5) added to §7: repair across the Aubry set — cylinder model:
+      ideal medial limit functions ψ = ∓z swallow the two escape rays; gluing
+      free horoballs {ψ<0} (half-cylinders ≃ S¹) to the captured strip
+      rebuilds the figure-eight (van Kampen: Z∗Z ✓). Conjecture: the "medial
+      complex" (M^g + free horoballs of ideal medial limit functions) carries
+      the homotopy type of R^g / of M∖X when reconstruction is complete —
+      would be the homotopy-theoretic completion of Thm 4.3 as CCF 1.6 is of
+      Cor 3.2.
+  ALSO TOUCHED: abstract (homotopy sentences), intro (new closing paragraph of
+    "What the completed theory says"), Rem 3.5 (forward pointer), Rem 5.2
+    (pointer to Rem 6.6), §7 intro sentence, conclusion. Macros \Cut, \Aub.
+  NUMBERING: §3–§5 UNCHANGED (all companion citations intact); "What remains"
+    is now §7; open items (1)–(5). 20 pp, 0 errors, 0 undefined refs.
+  COMPANIONS: untouched (nothing superseded; no [C,§6] citations existed).
+
+[8] 2026-07-06 — HOMOTOPY-CONNECTIONS SURVEY (assessment only, no tex edits yet)
+User asked: other homotopy-theory connections that would enrich theory/paper. Verified findings:
+(1) DUAL SIDE: Basu–Prasad, Algebr. Geom. Topol. 23 (2023) 4185-4233 (arXiv:2011.02972): for closed
+    embedded submanifold N in complete M, d_N^2 is Morse–Bott off Cu(N); M∖Cu(N) DEFORMATION RETRACTS
+    onto N (gradient flow); closed M ⇒ M/Cu(N) ≅ Thom space of normal bundle. Complement-side dual of
+    our §6 (they retract down to X, we retract captured part up to Σ). For smooth X: candidate remark —
+    M∖X ≅ mapping cylinder of swallow map S(ν_X) → Cut(X); h.e. upgrades to explicit cylinder + Thom
+    duality. Also Prasad survey arXiv:2303.14931.
+(2) LINEAGE: capture flow = gradient-like flow of critical point theory of distance functions
+    (Grove–Shiohama; Cheeger LNM 1504; Grove PSPM 54); crit pts of d_X in M∖X all lie on M^g (0 ∈ conv U
+    needs ≥2 feet) ⇒ capture thm = quantitative isotopy lemma stopped at Σ. Min-type Morse theory:
+    Gershkovich–Rubinstein, Asian J. Math. 1 (1997) 696-715 (NPC germs are min-type; generic NPC metrics
+    Morse-min-type). Chazal–Lieutier λ-medial axis: M_λ ≃ O for λ < wfs, wfs = dist to critical values —
+    margin d_X(p) is pointwise wfs; Riemannian λ-axis via capture = open project.
+(3) FREE APPLICATIONS of Cor 6.3: (i) finite-volume cusped hyperbolic M, X = horoball system: thick part
+    compact ⇒ sup d_X < ∞ ⇒ recovers Ford–Voronoi spine h.e. (Epstein–Penner JDG 27 (1988) framework);
+    touches open item on cusped surfaces. (ii) X = Γ-orbit in R^n/Γ: recovers Voronoi/Delone spine of
+    crystallographic quotients. Both quotable as named corollaries, zero new proof burden.
+(4) EUCLIDEAN NO-LEAK CONJECTURE: in R^n all free balls (and their half-space limits = Euclidean
+    horoballs) are CONVEX ⇒ cylinder leak mechanism (non-contractible swallowing cells) impossible.
+    Conjecture: R_X = X^c (Bia Thm 6 sets) ⇒ X^c ≃ M_X. [Bia]'s ⋃L^+ term = Euclidean avatar of the
+    ideal-horoball layer in our item (5) (supporting half-spaces are horoballs; b_ξ linear). Also [Bia
+    §5.2, v2 April 2026] EXPLICITLY poses compact-manifold reconstruction as open + "slightly neglected"
+    — our Cor 3.2 answers it; intro should cite §5.2 pointedly.
+(5) MEDIAL-COMPLEX CONJECTURE upgrades: ideal medial limit functions = points of horofunction boundary
+    ∂_h M ([Gro] already in bib); R^g ≃ hocolim of free-ball diagram ALWAYS (Segal/Dugger–Isaksen), nerve
+    thm valid when balls convex (R^n; below convexity radius — pairs with Cor 3.3) — cylinder = failure
+    of good-cover, hocolim repairs; Damon's skeletal structures (arXiv:0903.0394 + Ann. Inst. Fourier
+    2003-04) = compact generic Euclidean case of the conjecture; Miura–Tanaka CPA (2024), arXiv:2204.10449:
+    Σ is DC-rectifiable = regularity input for the complex.
+Related-work cites found missing: Sabau–Tanaka, Houston J. Math. 42 (2016) 1157-1197 (distance from
+closed subset, Finsler: differentiable ⟺ unique foot, 2D cut locus = local tree, "new even for
+Riemannian" — cite in §2; Finsler capture = new open direction); Bhowmick arXiv:2605.26499 (cut-locus
+Hausdorff stability under C² metric perturbation, May 2026). Sweep 2024-26 found NO competing
+capture/Aubry/homotopy work. Decision: reported ranked assessment to user; awaiting pick before editing.
+
+[9] 2026-07-06 — HOMOTOPY CONNECTIONS WRITTEN IN (full set, emphasis items 1-2 of [8])
+medial_axis_complete.tex now 24 pp, 0 errors/0 undefined. §3-§6.6 numbering UNCHANGED (companion
+citations intact); new: Rem 3.6, Cor 6.7, Prop 6.8, Rem 6.9; sec:open still §7.
+EMPHASIS 1 — Cor 6.7 (Spines): (a) finite-volume cusped hyperbolic M, X = disjoint closed horoball
+  nbhds of the cusps: sup d_X < ∞ (Margulis thick+tubes compact) ⇒ M ≃ M∖X ≃ M^g ≃ Cut(X) =
+  Ford–Voronoi spine, dual to Epstein–Penner [EP]; proof identifies Σ via convexity of horoballs in
+  H^n (unique foot per horoball ⇒ ties are between DISTINCT horoballs). CAUGHT: feet of distinct
+  lifted horoballs can project to the SAME contact point ⇒ spine is carried by M^g, NOT M_X (noted in
+  proof). (b) crystallographic: R^n/Γ, X = point/finite set: Cut = projected Voronoi walls of orbit;
+  square torus + point: Cut = two antipodal circles = S¹∨S¹ ✓ T²∖pt, while M_X = ∅ (singleton!) —
+  torus vs cylinder contrast written in: compactness restores what swallowing leaked.
+EMPHASIS 2 — Prop 6.8 (mapping cylinder), STRONGER than planned — unconditional: for closed embedded
+  C^∞ submanifold X of complete M (no hypothesis at all): captured part M∖(X∪A*) ≅ Cyl(σ) of the
+  swallow map σ: S_fin(ν)→Cu(X), σ(v)=exp(ρ(v)v); strong deformation retraction onto full cut locus
+  Cu; Σ ↪ Cu(X) h.e. for every smooth closed X (CCF + 2-of-3) = CCF sharpened to a retraction in the
+  smooth case; A* = {exp(tv): ρ(v)=∞}; Cut = Cu for dim X = 0 via Bishop [Bis]; A* = ∅ ⟺ ρ < ∞
+  everywhere ⇒ M∖X itself is the cylinder. Proof: calibration interval (0,ρ]; orthogonal arrival;
+  injectivity off t=1 via corner argument; properness via feet-confinement + "limit in A*∩K
+  impossible"; Cu closed in captured part; cl(Σ)∩A* = ∅ FOR SMOOTH X via continuity of cut time
+  (ρ(w_k)=d(a_k)→d(q)<∞ vs ρ(w)=∞) — explicitly NOT claimed for general closed X (merging directions
+  along a calibrated ray not excluded). CAUGHT + FIXED mid-edit: first draft claimed A*-points have
+  Σ-free neighbourhoods "by usc" — false (merging!); replaced by the cut-time-continuity argument.
+  Rem 6.9 (two flows + Thom): BP inward d.r. M∖Cu → X, M/Cu ≅ Th(ν) closed M [BP AGT 23 (2023)
+  4185-4233]; cylinder |X|=1: ρ=∞ exactly at the 2 vertical directions, captured strip = Cyl over
+  S¹∖{±}; stability [Bh]; h.e.-vs-d.r. open for general X even in [Lie].
+REST OF SET: §2 ¶ "Prior art on the distance from a closed set" [TS Houston JM 42 (2016), MT CPA 77
+  (2024)]; Rem 3.6 capture-as-critical-point-theory [GS Ann. Math 106 (1977), Che LNM 1504, Grv PSPM
+  54, GR Asian JM 1 (1997), CL λ-medial axis + wfs = smallest critical value; Riemannian λ-axis
+  flagged as project]; item (5) three markers: (a) horofunction home + [Bia] ⋃L⁺ = flat ideal-horoball
+  layer, (b) hocolim [DI] always / nerve [Bor] when convex + Damon [Dam GT 10 (2006)], (c) FLAT
+  NO-LEAK CONJECTURE: R_X = R^n∖X ⇒ R^n∖X ≃ M_X; intro: [Bia §5.2] compact question answered by Cor
+  3.2; [Bia] bibitem → arXiv:2604.20671 (2026); abstract + intro-§6 ¶ + conclusion extended; biblio
+  +13 items (BP, Bh, Bis, Bor, CL, Che, Dam, DI, EP, GR, Grv, GS, MT, Pra, Sak, TS = 16 actually);
+  \Cu macro; \Z typo fixed. PDF sent.
+
+[10] 2026-07-07 — THE MEDIAL COMPLEX: item (5) SOLVED, new §7 of medial_axis_complete.tex
+Task: complete the homotopy analysis of §open item (5); fallback = enrich classes (2),(3) per
+Rem 6.6. Outcome: the medial-complex conjecture is a THEOREM, unconditionally (every complete M,
+every closed X) — no fallback needed.
+KEY THEOREM (7.3, "ideal swallow / the finite layer does not leak"): p ∈ A*(X)∩R^g (class 2),
+  a₀ ∈ M^g any finite witness, m₀ = d_X(a₀)−d(a₀,p) > 0 ⇒ ∃ IDEAL medial limit ψ with ψ(p) ≤ −m₀.
+  Proof mechanism (new): margin u_p(a) := d_X(a)−d(a,p); path σ = [minimising geodesic a₀→p] ∗
+  [calibrated ray of p]; u_p ≥ m₀ along σ (rate-one vs 1-Lipschitz). Transition point
+  x* = σ(s*) at inf σ⁻¹(A*) (captured set open, A* closed, endpoints opposite). Then:
+  Case A (σ(s_j) ∈ cl Σ accumulate): x* ∈ A*∩Cut(X) = "grazing"; Lemma 7.2 (cut rays): capture
+    curve from a grazing point = ray shift (aubry(iii) uniqueness) + lem:perm invariance of
+    Cut(X) under canonical flow ⇒ the WHOLE forward ray rides Cut(X) with d_X → ∞ and margin
+    ≥ m₀ transported ⇒ Σ-centres nearby ⇒ escaping medial witnesses ⇒ Lemma 4.2 ⇒ ideal ψ.
+  Case B (clean transition, x_j ∉ cl Σ captured): capture clocks T_j; B1 T_j → ∞: Σ-meets
+    b_j = Φ^j_{t_j} (t_j ∈ [T_j,T_j+1/j], from the thm:capture dichotomy proof) have
+    u_p(b_j) ≥ m₀−2/j, d_X(b_j) ≥ d_X(x_j)+T_j−1/j → ∞ ⇒ ideal. B2 T_j bounded: capture curves
+    = geodesic extensions while avoiding Σ (Lemma 7.1 uniqueness: rate-one forces the broken
+    path foot→x→Φ_t to minimise ⇒ no corner); U continuous at x* ∉ Σ (lem:usc) ⇒ extensions
+    converge ⇒ b_j → z = Φ_T̄(x*) ∈ A*∩cl Σ with u_p(z) ≥ m₀ ⇒ grazing ⇒ Case A at z. ∎
+  DEAD ENDS (recorded to avoid re-derivation): raising the witness vertically in R^n gives
+  u_p(c_λ) → t₀ but c_λ ∉ M^g (free ≠ medial); ray points themselves are all Aubry (useless as
+  capture starts); sup-margin μ(t) along the ray transports the wrong way; Hadamard convexity
+  of d(a,γ(t)) gives nothing global. The breakthrough steps: (1) margin monotone along capture
+  curves off Σ, (2) capture-time blow-up at the captured/Aubry transition, (3) grazing case
+  self-destructs via lem:perm cut-locus invariance (the ray drags medial centres to ∞).
+CONSEQUENCES written in as §7: Cor 7.4 ideal decomposition R^g = W ∪ ⋃{ψ<0 : ψ ideal}
+  (W = captured set), class(2) = A*∩⋃ideal, class(3) = A*∖⋃ideal — trichotomy decided by ideal
+  functions alone on A*; sharpens Bia Thm 6 even in R^n (half-space layer covers ALL drift).
+  Thm 7.5 medial complex: {W} ∪ {ideal horoballs} open cover of R^g, hocolim of Čech diagram ≃
+  R^g [DI] + W ≃ M^g [CCF/thm 6.5] ⇒ "M^g with ideal cells glued on" carries R^g; ≃ M∖X when
+  reconstruction complete. Any covering family Ψ works (levels irrelevant — item (2) untouched).
+  Cor 7.6 no-ideal ⇒ R^g ≃ M^g (M^g bounded suffices; paraboloid, round circle) — faithfulness
+  beyond sup d_X < ∞. Examples reassembled: cylinder figure-eight = S¹ ← * → * ← * → S¹ ✓;
+  circle-in-R³ complex contractible = R^g star-shaped ✓ (M∖X ≃ S¹∨S² = class-3 discrepancy,
+  complex faithful to RECONSTRUCTION not complement); two points R² contractible ✓.
+  Rem 7.7: (a) level function untouched; (b) flat no-leak conjecture REDUCED to attachment
+  triviality H∩W ↪ H over defective half-spaces (Aubry trace on a flat cell = bundle of inward
+  half-lines — monotone entry since ψ affine, starts ≥ 0 on X); (c) nerve/Damon/TS-MT CW model;
+  (d) escape flow E_R: A* ≃ A*∩{d_X ≥ R} — classes (2)∪(3) carried entirely at infinity.
+EDITS: new §7 before "What remains" (now §8); item (5) rewritten (solved + residue: (a) flat
+  no-leak in reduced form, (b) CW/nerve model, (c) can A*∩Cut(X) ≠ ∅ happen at all?); abstract,
+  intro §-list ¶, prelim TS/MT pointer, rem:homotopyleak + rem:cylinder pointers, conclusion.
+  Also FIXED pre-existing dangling refs \ref{G1},\ref{G2} (the (G1)/(G2) list was pruned in an
+  earlier session; replaced by inline citations Sph Rem 8.4 / Tri Rem 6.5, R3 Thm 3.4).
+  Compiles clean (xelatex, 28 pp, 0 unresolved refs; 5 overfull boxes all pre-existing). PDF sent.
