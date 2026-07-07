@@ -448,3 +448,41 @@ EDITS: Prop 7.8 + Rem 7.9 (end of §7); Rem 7.7(b) retitled/rewritten (reduction
   abstract ("The complex is not a curvature tax..."); intro §7 ¶ closing sentences;
   rem:homotopyleak closing pointer; conclusion ("the leak the complex repairs is already flat").
   Compiles clean (xelatex, 30 pp, 0 unresolved refs; 5 overfull all pre-existing). PDF sent.
+
+[12] 2026-07-07 — PUBLICATION REWORK: medial_axis_riemann_complete.tex rebuilt from the full parent
+GOAL: rework medial_axis_complete.tex (30 pp, companion-citing) into a self-contained,
+  publication-ready medial_axis_riemann_complete.tex. The old riemann_complete (Jul 2, 16 pp)
+  predated the referee revisions, §6 homotopy layer, §7 medial complex, and the flat leak —
+  superseded by this rebuild (now 37 pp, 9 sections).
+BUILD: parent = mathematical source of truth (§6/§7 carried verbatim; referee material kept:
+  full first-variation proof, TS/MT prior-art paragraph, strengthened cor:spread on complete M
+  with sup dX < inj(M), ACNS/CCF comparison remark, critical-point-theory remark); Jul-2
+  scaffold kept for self-containedness (Białożyt Thm 6 stated in full as Thm 1.1, "what breaks"
+  intro, reconstructibility criterion, worked examples, discussion section). All R1/R2/R3/Sph/
+  Tri citations and series/earlier-draft framing removed; bibliography = 26 published entries,
+  alphabetised; abstract rewritten to publication length; MSC/keywords added; §1.5 related work.
+NEW MATH (self-containment upgrades): Cor 5.4(b) round-sphere two-point theorem proved inline
+  (two minimisers to one foot ⇒ antipode ⇒ dX = π ⇒ X singleton) — replaces the Sph Thm 4.1
+  citation; hconv glossed inline (trace on horosphere of the intersection of containing
+  horoballs, per R3 def:hconv); Hadamard certificate consistently demoted to FORMULATED, not
+  proved (§5.3, §9(1), table, rem:curvhyp, conclusion) since R3 is not citable.
+REVIEW (2 proofreading agents + PDF pass; 27 findings, all fixed). Highlights: (i) intro §1.1
+  two-point example was BACKWARDS (claimed the segment is missed — it lies in the central
+  ball; the outer rays are what is missed) — latent Jul-2 error the old audit missed; (ii)
+  §1.3 polar-cap illustration garbled (cap ⇒ multivalued nearest point at the antipode) →
+  singleton example; (iii) thm:capture claimed T ∈ (0,Tmax] — unprovable since Σ is not
+  closed and the trajectory can enter it instantly ⇒ [0,Tmax] with a T=0 remark (parent has
+  this bug too); (iv) rem:offset formula off_k = d(o,a_k)+b_ξ(a_k) wrong → d(o,a_k)−dX(a_k)
+  via the exact identity ψ_{a_k} = [d(·,a_k)−d(o,a_k)] + off_k; (v) cor:flat "level β=0" →
+  level 0 relative to L (β = support value); Thm-6 attribution widened to "the two Euclidean
+  inputs of [Bia]" (hull filled by finite balls; ideal limits = defective L+ exactly) — not
+  contained in the iff statement alone; (vi) prop:flatleak: bisector centres have the edge
+  endpoints as feet only for LARGE t (obtuse triangle: opposite vertex nearer for small t on
+  one edge); (vii) shielding is variable-curvature only (round-sphere claim contradicted new
+  Cor 5.4(b)); "eccentricity" → aspect ratio (polar/equatorial) 2.6±0.1; undefined "sparse"
+  eliminated; (viii) §9 scope sentence fixed (items (1)-(2),(5) escape-side; (3)-(4) compact
+  frontier); (ix) "descent" → "ascent inclusion"; two wide displays → multline*.
+STATUS: latexmk -xelatex clean, 0 unresolved refs/cites, every label/bibitem used, 2 overfulls
+  ≤ 2.9pt. Parent medial_axis_complete.tex left untouched as the series-facing working note.
+  BEFORE SUBMISSION: fill \author{} (left empty deliberately); upload medial_capture_check.py
+  as ancillary file.
