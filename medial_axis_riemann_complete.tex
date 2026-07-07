@@ -1,0 +1,1262 @@
+\documentclass[11pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[margin=1.1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{question}[theorem]{Question}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{example}[theorem]{Example}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\X}{X}
+\newcommand{\Xhat}{\widehat{\X}}
+\newcommand{\Mx}{M_{\X}}
+\newcommand{\Mg}{M^{g}_{\X}}
+\newcommand{\Rx}{\mathcal{R}_{\X}}
+\newcommand{\Rg}{\mathcal{R}^{g}_{\X}}
+\newcommand{\Hb}[1]{\mathcal{H}_{#1}}
+\newcommand{\dist}{\operatorname{dist}}
+\newcommand{\dX}{d_{\X}}
+\newcommand{\conv}{\operatorname{conv}}
+\newcommand{\hconv}{\operatorname{hconv}}
+\newcommand{\inj}{\operatorname{inj}}
+\newcommand{\sect}{\operatorname{sec}}
+\newcommand{\sca}[2]{\left\langle #1,\, #2\right\rangle}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\HH}{\mathbb{H}}
+\newcommand{\Sn}{\mathbb{S}^{n}}
+\newcommand{\bdry}{\partial_{\infty}}
+
+\title{Medial-axis reconstruction on complete Riemannian
+manifolds:\\ a self-contained theory of capture, drift, and the
+unconditional characterisation\thanks{This paper develops, from a
+single external starting point --- Bia\l{}o\.zyt's Euclidean
+Theorem~6 \cite{Bia} --- the complete generalisation of medial-axis
+reconstruction to arbitrary complete Riemannian manifolds. It
+consolidates and re-derives, in one self-contained account, results
+the author previously distributed across a sequence of companion
+notes on Hadamard, hyperbolic, spherical, and mixed geometries; only
+Bia\l{}o\.zyt's theorem is assumed as prior mathematics, and it is
+used only to identify the \emph{faithful} certificate in the flat
+case. Drafted with the assistance of Claude (Anthropic); all
+arguments were re-derived and checked by hand, and the two mechanics
+of the capture theorem --- the rate-one identity off the axis and the
+margin at first approach --- were verified numerically on
+$\mathbb{S}^{2}$ against a non-circular convex contact curve whose
+focal region forces the foot to slide (60 random starts: growth rate
+$1$ to five digits, margin deficit $<3\cdot10^{-6}$; file
+\texttt{medial\_capture\_check.py}). Remaining errors are ours.}}
+\author{}
+\date{July 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Let $\X$ be a closed set in a complete Riemannian manifold $M$. Its
+\emph{medial axis} (the cut locus of $\X$) records the points of
+ambiguity of the nearest-point problem, and the associated
+\emph{reconstruction} is the union of the maximal balls that touch
+$\X$ without crossing it. Bia\l{}o\.zyt's Theorem~6 characterises, in
+$\R^{n}$, exactly which closed sets are recovered in full by this
+construction. We generalise that theorem to \emph{every} complete
+Riemannian manifold and \emph{every} nonempty closed proper subset,
+with no curvature bound, genericity, analyticity, spread, or
+cardinality hypothesis, and we do so from Bia\l{}o\.zyt's theorem
+alone.
+
+Two mechanisms drive the theory. The first is a \emph{capture
+theorem}. Along any solution of the differential inclusion
+$\Phi'\in-\conv U(\Phi)$, where $U$ is the (upper semicontinuous,
+generally non-closed-graph-selectable) field of unit directions of
+minimising geodesics to $\X$, the distance $\dX$ grows at unit rate
+for exactly as long as the trajectory avoids the \emph{two-geodesic
+medial axis} $\Mg$. Consequently every point of $M\setminus\X$ is
+either \emph{captured} --- it sits at depth $\ge\dX(p)$ inside a
+medial ball --- or its trajectory \emph{escapes} to infinity, which
+is impossible when $M$ is compact. Hence $\Rg=M\setminus\X$ for every
+compact $M$ and every closed $\X\neq\varnothing$, even a single point.
+The delicate point --- $\Mg$ is not closed, and the reconstruction
+margin is not monotone through multi-geodesic points --- dissolves
+once one stops at the \emph{first approach} to $\Mg$ rather than
+flowing through it; focal and conjugate degenerations become ordinary
+points of the inclusion.
+
+The second mechanism is a horofunction formulation. Calling $\psi$ a
+\emph{medial limit function} if $\psi=\lim[d(\cdot,a_{k})-\dX(a_{k})]$
+locally uniformly with $a_{k}\in\Mg$, the swallowing of remote balls
+becomes a three-line lemma, $\{\psi<0\}\subseteq\Rg$, and
+\[
+  \Rg=\bigcup\bigl\{\{\psi<0\}:\ \psi\ \text{a medial limit
+  function}\bigr\}
+\]
+holds on every complete $M$. Every point of $M\setminus\X$ is
+captured, drift-swallowed, or escaping, and $\Rg$ is exactly the first
+two classes. On a Hadamard manifold the ideal medial limit functions
+are Busemann functions up to a level, which turns the residual offset
+of the older theory into a definition. Bia\l{}o\.zyt's theorem
+reappears as the flat specialisation, its supporting-hyperplane
+certificate identifying precisely which half-space limits occur; the
+compact, spherical, hyperbolic, and Hadamard theorems are all further
+specialisations. Throughout we illustrate the definitions and
+theorems with explicit examples in $\R^{2}$, on the round sphere, in
+the hyperbolic plane, and on surfaces of revolution, and we discuss at
+length what the two layers of the theory --- the unconditional
+dynamical characterisation and the geometry-specific faithful
+certificate --- do and do not deliver.
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction}\label{sec:intro}
+
+\subsection{The reconstruction problem}
+
+Fix a nonempty closed set $\X$ in a metric space and, for each point
+$p$ outside $\X$, ask for the nearest points of $\X$. Where the answer
+is unique the geometry of $\X$ is locally transparent; the interesting
+locus is the set of $p$ with an \emph{ambiguous} nearest-point
+answer. In the plane this is the classical \emph{medial axis} or
+\emph{skeleton}, a one-dimensional graph that threads the region
+between the features of $\X$ and has been used, since Blum, as a
+shape descriptor in vision, in mesh generation, and in the topology of
+domains \cite{Lie}. Two features of the axis make it a genuine
+\emph{descriptor} rather than a mere by-product: each axis point $a$
+carries a scalar, the distance $\dX(a)$ to $\X$, and the open ball
+$B(a,\dX(a))$ of that radius is a \emph{free ball} --- a maximal ball
+that meets $\X$ only in its boundary. The union of the free balls over
+the axis,
+\[
+  \Rx=\bigcup_{a\in\Mx}B\bigl(a,\dX(a)\bigr),
+\]
+is the \emph{reconstruction} of the complement of $\X$ from the axis.
+
+One wants to know when the reconstruction is faithful, i.e.\ when
+$\Rx=M\setminus\X$. The obstruction is easy to see and hard to
+characterise. If $\X$ is convex in $\R^{n}$ the axis is empty and
+$\Rx=\varnothing$: convex sets cast no medial shadow, so their
+complements are not reconstructed at all. If $\X$ is a pair of points,
+the axis is the bisecting hyperplane and its free balls fill the two
+open half-spaces the pair spans --- but they miss the segment between
+the points, which lies in $\conv\X$ and is reconstructed only in the
+limit, by balls centred far out along the bisector. The interplay
+between the local balls, which fill the ``inside'' of the hull, and
+the escaping balls, which fill defective facets of the hull, is the
+whole content of the Euclidean theorem.
+
+\subsection{Bia\l{}o\.zyt's theorem, the starting point}
+
+Bia\l{}o\.zyt \cite{Bia} settled the Euclidean case completely. Write
+$\conv\X$ for the convex hull and $\overline{\conv}\,\X$ for its
+closure. A supporting hyperplane $L$ of $\overline{\conv}\,\X$ is
+\emph{defective} if $\X\cap L\neq\overline{\conv}\,\X\cap L$, i.e.\ if
+$\X$ fails to fill the contact face that the hull presents on $L$; for
+each supporting $L=\{\sca{v}{\cdot}=c\}$ (with $\X\subseteq
+\{\sca{v}{\cdot}\le c\}$) let $L^{+}=\{\sca{v}{\cdot}>c\}$ be the open
+outer half-space.
+
+\begin{theorem}[Bia\l{}o\.zyt {\cite[Thm.~6]{Bia}}]\label{thm:bia}
+Let $\X\subseteq\R^{n}$ be closed and nonempty. Then $\X$ is
+reconstructible, i.e.\ $\Rx=\R^{n}\setminus\X$, if and only if
+\[
+  \R^{n}\setminus\X\ \subseteq\ \overline{\conv}\,\X\ \cup\!\!
+  \bigcup_{L\ \text{defective}}\!\!L^{+}.
+\]
+\end{theorem}
+
+Two features of this statement organise everything that follows.
+First, the hull $\overline{\conv}\,\X$ is reconstructed by
+\emph{ordinary} (finite) medial balls: every point of $\conv\X$ lies
+in a free ball centred on the axis. Second, the outer half-spaces
+$L^{+}$ of defective supporting hyperplanes are reconstructed only in
+the \emph{limit}, by free balls whose centres escape to infinity along
+a direction normal to $L$; a supporting hyperplane contributes such a
+limit precisely when its contact set is defective --- equivalently,
+by Motzkin's theorem, when a point of $L$ just outside the contact
+face is non-Chebyshev. This is the dichotomy \emph{local balls vs.\
+escaping balls} in its cleanest form, and the goal of this paper is to
+find its counterpart on a curved manifold, where ``half-space'' must
+become ``horoball'', ``convex hull'' must become something
+curvature-dependent, and the very notion of ``two nearest points''
+must be re-examined because two nearest points can be reached by
+several competing geodesics.
+
+\subsection{From $\R^{n}$ to a manifold: what breaks}
+
+Let $M$ be a complete Riemannian manifold. Three Euclidean
+conveniences fail at once.
+
+\emph{(i) Geodesics are not unique.} Two points can be joined by
+several minimising geodesics, and the nearest-point map to $\X$ can be
+single-valued (a unique foot $y\in\X$) yet ambiguous as a
+\emph{geodesic} problem (several minimisers reaching that same $y$).
+The sphere makes this vivid: from any point other than a pole, the
+nearest point on a small polar cap is unique, but the antipode of the
+cap's centre is reached by a whole circle of minimising geodesics.
+This forces a distinction, invisible in $\R^{n}$, between the
+\emph{two-point} axis $\Mx$ (two nearest \emph{points}) and the
+\emph{two-geodesic} axis $\Mg$ (two nearest \emph{geodesics});
+$\Mx\subseteq\Mg$, and it is $\Mg$ --- the cut locus of $\X$ --- that
+carries the reconstruction theory.
+
+\emph{(ii) Convexity is not linear.} There is no ``$\conv\X$''; its
+role is played by different objects in different curvatures --- the
+ordinary hull only in the flat case, a horoconvex hull in
+nonpositive curvature, and \emph{nothing at all} on a compact manifold,
+where every complement is reconstructed and the hull condition is
+vacuous.
+
+\emph{(iii) The distance function turns.} In $\R^{n}$ the ascending
+gradient flow of $\dX$ runs along straight rays until it meets the
+bisector; on a manifold the minimising geodesic to $\X$ bends, its
+foot slides, and the natural ``margin'' one would monotonically
+accumulate along the flow genuinely oscillates as the active contact
+set changes. This is the analytic heart of the difficulty and the
+reason a naive gradient-flow argument stalls exactly at the cut
+points, where it is asked to continue past a singularity of $\dX$.
+
+The resolution, developed below, is to change the question the flow is
+asked to answer. Rather than flowing \emph{through} the axis and
+tracking a monotone quantity, we flow \emph{up to} the axis and read
+off a margin that is exact on the complement of the axis and merely
+needs to survive to the first approach. This severs the argument from
+every regularity subtlety at cut, focal, and conjugate points.
+
+\subsection{Results}
+
+We prove three things and then specialise them.
+
+\emph{Capture (\S\ref{sec:capture}).} Theorem~\ref{thm:capture} shows
+that along any trajectory of the descent inclusion, and up to the
+first time the trajectory meets $\Mg$, the distance to $\X$ grows at
+rate exactly one while the trajectory itself is $1$-Lipschitz, so the
+starting point sits at depth $\ge\dX(p)$ inside every ball centred on
+the moving trajectory. The trajectory therefore either reaches $\Mg$
+in finite time (\emph{capture}: $p\in\Rg$) or escapes to infinity
+(\emph{escape}, impossible on a compact manifold). Hence
+Corollary~\ref{cor:compact}: $\Rg=M\setminus\X$ on \emph{every}
+compact manifold, for every closed $\X\neq\varnothing$ --- including
+a single point, which the two-point axis cannot detect at all.
+
+\emph{Drift and the characterisation (\S\ref{sec:drift}).} On a
+non-compact manifold, capture is not the whole story: a point may be
+reconstructed by remote balls whose centres run to infinity while its
+own trajectory escapes. Definition~\ref{def:mlf} packages the limits
+of these balls as \emph{medial limit functions}, and
+Lemma~\ref{lem:swallow} shows each reconstructs its whole sublevel
+set. Theorem~\ref{thm:char} is the resulting characterisation, valid
+on every complete manifold, and Theorem~\ref{thm:trichotomy} is the
+trichotomy captured / drift-swallowed / escaping.
+
+\emph{Specialisations (\S\ref{sec:spec}).} We recover, as corollaries
+and worked examples, the flat theorem (where the abstract
+characterisation \emph{is} Bia\l{}o\.zyt's, its half-space limits
+identified by the defective-hyperplane certificate), the total
+reconstruction of every compact manifold and every spherical space
+form, the hyperbolic and Hadamard characterisations (where medial
+limit functions are Busemann functions at a level), and the
+non-compact positive-curvature examples where reconstruction is
+genuinely partial.
+
+Section~\ref{sec:open} isolates what remains open --- entirely on the
+\emph{faithful} side, i.e.\ in replacing ``$\psi$ is a medial limit
+function'' by a certificate readable from $\X$ and the geometry of
+$M$, which is known in the flat and Hadamard cases and open in mixed
+curvature. We stress throughout the paper the distinction between the
+\emph{unconditional} layer --- the dynamical characterisation, which
+this paper proves in full --- and the \emph{faithful} layer --- the
+curvature-specific certificate, of which Bia\l{}o\.zyt's theorem is
+the flat instance.
+
+\section{Preliminaries}\label{sec:prelim}
+
+Throughout, $M$ is a complete Riemannian manifold; by the
+Hopf--Rinow theorem it is a proper geodesic metric space (closed balls
+are compact, and any two points are joined by a minimising geodesic).
+$\X\subseteq M$ is closed with $\varnothing\neq\X\neq M$, and
+$\dX=\dist(\cdot,\X)$ is the distance to $\X$, a $1$-Lipschitz
+function, positive exactly off $\X$. All geodesics are parametrised by
+arc length.
+
+\subsection{The two axes and the two reconstructions}
+
+For $x\in M\setminus\X$ a \emph{minimising geodesic to $\X$} is a
+unit-speed geodesic $\gamma:[0,\dX(x)]\to M$ with $\gamma(0)=x$ and
+$\gamma(\dX(x))\in\X$; its foot is $\gamma(\dX(x))$. Set
+\[
+  U(x)=\bigl\{\gamma'(0):\ \gamma\ \text{a minimising geodesic to
+  }\X,\ \gamma(0)=x\bigr\}\subseteq T^{1}_{x}M,
+\]
+the compact set of unit initial directions of such geodesics (a
+geodesic is determined by its initial vector, so distinct minimisers
+have distinct directions). Define the two medial axes
+\[
+  \Mx=\{a:\ a\ \text{has}\ \ge2\ \text{nearest \emph{points} in}\
+  \X\},\qquad
+  \Mg=\{x\in M\setminus\X:\ |U(x)|\ge2\},
+\]
+the \emph{two-point} and \emph{two-geodesic} axes. Because two
+distinct minimising geodesics may share a foot, $\Mx\subseteq\Mg$;
+$\Mg$ is exactly the cut locus of $\X$. Their reconstructions are
+\[
+  \Rx=\bigcup_{a\in\Mx}B\bigl(a,\dX(a)\bigr),\qquad
+  \Rg=\bigcup_{a\in\Mg}B\bigl(a,\dX(a)\bigr),\qquad \Rx\subseteq\Rg.
+\]
+When we use $\Mg$ as a target to be reached we write $\Sigma:=\Mg$;
+$r(a)=\dX(a)$ is the \emph{reach} of a centre $a$. In $\R^{n}$
+geodesics are unique, so $\Mx=\Mg$ and $\Rx=\Rg$, and the two theories
+coincide; the split is a purely curved phenomenon.
+
+\begin{remark}[Why the two-geodesic axis is the right object]
+The two-point axis $\Mx$ is the intuitive skeleton, but it is blind to
+a whole class of reconstructions. A single point $\X=\{x_{0}\}$ on the
+sphere has $\Mx=\varnothing$ --- every point off $x_{0}$ has the
+unique nearest point $x_{0}$ --- yet its antipode $\bar{x}_{0}$ is a
+genuine medial centre: the entire sphere minus $x_{0}$ is a free ball
+about $\bar{x}_{0}$, because $\bar{x}_{0}$ is joined to $x_{0}$ by a
+sphere's worth of minimising geodesics, all of length $\pi$. Thus
+$\bar{x}_{0}\in\Mg\setminus\Mx$ and $\Rg=\Sn\setminus\{x_{0}\}$ while
+$\Rx=\varnothing$. The reconstruction theory sees this only through
+$\Mg$. This example, trivial as it is, already shows that the compact
+theorem below \emph{cannot} hold for $\Mx$ (a single point is never
+reconstructed by two-point balls) and \emph{must} be stated for
+$\Mg$.
+\end{remark}
+
+\subsection{The direction field}
+
+\begin{lemma}[Direction field: compactness and semicontinuity]
+\label{lem:usc}
+For every $x\in M\setminus\X$ the set $U(x)$ is nonempty and compact,
+and the multimap $x\mapsto U(x)$ is upper semicontinuous: if
+$x_{k}\to x$ in $M\setminus\X$ and $u_{k}\in U(x_{k})$ with
+$u_{k}\to u$ in $TM$, then $u\in U(x)$. In particular $U$ is
+single-valued and continuous at every point of
+$(M\setminus\X)\setminus\Sigma$.
+\end{lemma}
+
+\begin{proof}
+Nonemptiness and compactness: minimisers exist by properness, and a
+limit of initial vectors of minimising geodesics from a fixed $x$ is
+the initial vector of a limit geodesic, minimising by continuity of
+$\dX$ and of length. Upper semicontinuity: let $\gamma_{k}$ be the
+minimising geodesic with $\gamma_{k}'(0)=u_{k}$. By smooth dependence
+of geodesics on initial conditions, $\gamma_{k}\to\gamma$ locally
+uniformly, where $\gamma'(0)=u$; the lengths $\dX(x_{k})\to\dX(x)$ (as
+$\dX$ is continuous), and the feet
+$\gamma_{k}(\dX(x_{k}))\in\X$ converge to $\gamma(\dX(x))$, which lies
+in $\X$ since $\X$ is closed. So $\gamma$ is a minimising geodesic from
+$x$ to $\X$, i.e.\ $u\in U(x)$. At a point with $U(x)=\{u\}$, upper
+semicontinuity of a compact-valued map into a singleton forces
+continuity of every selection \emph{at} $x$ --- though $U$ may be
+multivalued arbitrarily close by.
+\end{proof}
+
+\begin{lemma}[First variation of $\dX$; {\cite[\S3]{MM}}]
+\label{lem:firstvar}
+For $x\in M\setminus\X$ and $w\in T_{x}M$,
+\[
+  \frac{d}{ds}\Big|_{s=0^{+}}\dX\bigl(\exp_{x}(sw)\bigr)
+  =\min_{u\in U(x)}\sca{w}{-u}.
+\]
+\end{lemma}
+
+\begin{proof}[Proof sketch]
+``$\le$'': fix $u\in U(x)$ with foot $y$; comparing $\dX$ with the
+distance to $y$ along the varied geodesics gives
+$\dX(\exp_{x}(sw))\le d(\exp_{x}(sw),y)\le\dX(x)+s\sca{w}{-u}+O(s^{2})$,
+by the first variation of arc length. ``$\ge$'': for $s_{k}\downarrow0$
+pick $u_{k}\in U(\exp_{x}(s_{k}w))$; a subsequence converges to some
+$u\in U(x)$ (Lemma~\ref{lem:usc}), and the comparison along the
+geodesics with directions $u_{k}$ gives the matching bound with this
+$u$, hence with the minimum. The semiconcavity of $\dX$ on
+$M\setminus\X$, which we shall not need, and full details, are in
+Mantegazza--Mennucci \cite{MM}.
+\end{proof}
+
+Intuitively: $\dX$ increases fastest, at unit rate, in the direction
+directly \emph{away} from a nearest foot; at a two-geodesic point the
+rate in a given direction $w$ is dictated by the \emph{least
+favourable} competing foot, which is what makes the min appear and
+what makes the gradient flow turn.
+
+\subsection{The descent inclusion and capture curves}
+
+On the open set $M\setminus\X$ define the multimap
+\[
+  G(x)\ :=\ \conv\bigl(-U(x)\bigr)\ \subseteq\ T_{x}M ,
+\]
+the convex hull of the reversed minimising directions. By
+Lemma~\ref{lem:usc}, $G$ is upper semicontinuous with nonempty compact
+convex values contained in the closed unit ball. A \emph{capture
+curve} from $p\in M\setminus\X$ is a locally Lipschitz curve
+$\Phi:[0,T_{\max})\to M\setminus\X$ with $\Phi_{0}=p$ and
+\begin{equation}\label{eq:incl}
+  \Phi'(t)\in G(\Phi_{t})\qquad\text{for a.e.\ }t ,
+\end{equation}
+maximally extended in $M\setminus\X$. Existence of a solution, and its
+extension for as long as the trajectory stays in a compact subset of
+the open domain $M\setminus\X$, are the standard theory of
+differential inclusions with upper semicontinuous, convex, compact
+right-hand side (Aubin--Cellina \cite[\S2.1]{AC}), applied in charts
+and concatenated; since $G(x)$ lies in the unit ball, $|\Phi'|\le1$
+a.e.\ and trajectories are $1$-Lipschitz. No uniqueness, canonicity,
+or semiconcave-gradient selection is required: \emph{any} solution
+serves. Off $\Sigma$ the field $-U$ is single-valued
+(Lemma~\ref{lem:usc}) and \eqref{eq:incl} is the classical ODE
+$\Phi'=-u(\Phi)$ --- the curve simply extends the current minimising
+geodesic backwards from $x$, its foot sliding continuously; at a point
+of $\Sigma$ the inclusion may branch, and we shall never analyse it
+there.
+
+\begin{remark}[Relation to Lieutier's flow]\label{rem:lieutier}
+For semiconcave $\dX$ one can canonically select the minimal-norm
+element of $G$, giving Lieutier's generalised-gradient flow \cite{Lie}
+(in $\R^{n}$; \cite{ACa,MM} for the semiconcavity). Our argument uses
+the \emph{opposite} regime: it analyses \eqref{eq:incl} only
+\emph{off} $\Sigma$, where every selection agrees with the naive one,
+and it \emph{terminates} at $\Sigma$, where Lieutier's flow is
+designed to keep going. This is exactly why no analogue of the swallow
+property \emph{past} cut points is ever needed --- the classical
+sticking point in extending the Euclidean argument to manifolds.
+\end{remark}
+
+\subsection{Free-ball functions and medial limit functions}
+
+For $a\in M\setminus\X$ set
+\[
+  \psi_{a}:=d(\cdot,a)-\dX(a)\ :\ M\to\R ,
+\]
+a $1$-Lipschitz function, negative exactly on the open free ball
+$B(a,\dX(a))$ and $\ge0$ on $\X$. Crucially it is normalised by the
+\emph{reach}: $\min\psi_{a}=-\dX(a)$, attained at $a$, with no
+reference basepoint. This intrinsic normalisation --- ``measure the
+ball by how deep it goes, not by how far its centre is'' --- is what
+makes the limits below basepoint-free, and it is the technical device
+that dissolves the offset bookkeeping of the older Hadamard theory.
+
+\begin{definition}[Medial limit functions]\label{def:mlf}
+A function $\psi:M\to\R$ is a \emph{medial limit function} of $\X$ if
+there exist $a_{k}\in\Mg$ with $\psi_{a_{k}}\to\psi$ locally
+uniformly. It is \emph{finite} if $(a_{k})$ has a bounded subsequence
+and \emph{ideal} otherwise (then $d(\cdot,a_{k})\to\infty$ locally
+uniformly while $\psi$ stays finite, so $\psi$ is of horofunction
+type). Each such $\psi$ is $1$-Lipschitz and $\ge0$ on $\X$, so
+$\{\psi<0\}$ is an open set disjoint from $\X$: the \emph{free
+horoball} of $\psi$. For a finite $\psi$ along $a_{k}\to a$: if
+$a\in\Mg$ then $\psi=\psi_{a}$ is an honest free-ball function; in
+general ($\Mg$ is not closed) $\psi=\psi_{a}$ with $a$ a
+focal-degenerate limit of medial centres --- still usable by
+Lemma~\ref{lem:swallow}, which never needs the limit centre itself.
+\end{definition}
+
+\begin{remark}[Relation to the horofunction compactification]
+\label{rem:horo}
+Since $M$ is proper, the space $C(M)$ with locally uniform convergence
+is a compact home for $1$-Lipschitz functions once they are normalised
+(Arzel\`a--Ascoli). The classical horofunction compactification
+\cite{Gro,BH} normalises $d(\cdot,a_{k})$ by subtracting its value at
+a fixed basepoint $o$; our $\psi_{a_{k}}$ instead subtracts $\dX(a_{k})$,
+so the two differ by the scalar $d(o,a_{k})-\dX(a_{k})$ --- the
+\emph{offset}. Reach-normalisation absorbs the offset into the
+function; see Remark~\ref{rem:offset}. On a Hadamard manifold every
+horofunction is a Busemann function (horofunctions of a proper
+$\mathrm{CAT}(0)$ space are Busemann, \cite[II.8.13]{BH}), so every
+ideal medial limit function is ``$b_{\xi}+c$'' for some
+$\xi\in\bdry M$ and level $c\in\R$.
+\end{remark}
+
+\section{The capture theorem}\label{sec:capture}
+
+The capture theorem is the engine of the compact case and one of the
+two inputs to the general characterisation. Its statement is a clean
+dichotomy; its proof is a one-line differential identity valid off the
+axis, plus a compactness argument for the escape alternative.
+
+\begin{theorem}[Capture or escape]\label{thm:capture}
+Let $M$ be complete, $\X$ closed, $p\in M\setminus\X$, and let $\Phi$
+be any capture curve from $p$. Set
+\[
+  T\ :=\ \sup\bigl\{t\in[0,T_{\max}):\ \Phi_{s}\notin\Sigma\ \
+  \forall s\in[0,t]\bigr\}.
+\]
+Then on $[0,T)$,
+\begin{equation}\label{eq:rateone}
+  \dX(\Phi_{t})=\dX(p)+t,
+  \qquad
+  d(p,\Phi_{t})\le t,
+  \qquad\text{hence}\qquad
+  \dX(\Phi_{t})-d(p,\Phi_{t})\ \ge\ \dX(p),
+\end{equation}
+and exactly one of the following holds.
+\begin{enumerate}[label=\textup{(\roman*)}]
+\item\emph{(Capture.)} $T<T_{\max}$. Then for every $\varepsilon>0$
+there is $a\in\Mg$ (with $a=\Phi_{T}$ itself if $\Phi_{T}\in\Sigma$)
+such that
+\[
+  \dX(a)-d(p,a)\ \ge\ \dX(p)-\varepsilon,
+\]
+so $p\in B(a,\dX(a))$: hence $p\in\Rg$, at depth arbitrarily close to
+$\dX(p)$, and $T\le\operatorname{diam}(M)-\dX(p)$.
+\item\emph{(Escape.)} $T=T_{\max}$. Then $T_{\max}=\infty$, the
+trajectory never meets $\Sigma$, $\dX(\Phi_{t})=\dX(p)+t\to\infty$, and
+$\Phi_{t}$ leaves every compact subset of $M$. This is possible only
+if $M$ is non-compact.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+\emph{The rate-one identity.} Fix $t\in[0,T)$; on $[0,t]$ the
+trajectory avoids $\Sigma$, so $U(\Phi_{s})=\{u(\Phi_{s})\}$ is a
+singleton for every $s\le t$ and \eqref{eq:incl} reads
+$\Phi'(s)=-u(\Phi_{s})$ at a.e.\ $s$. Put $h(s):=\dX(\Phi_{s})$,
+a Lipschitz function. Let $s$ be a point where $\Phi'(s)$ exists
+(satisfying the inclusion) and $h'(s)$ exists --- almost every
+$s\in[0,t]$. Write $v=\Phi'(s)=-u(\Phi_{s})$, a unit vector. In a chart
+around $\Phi_{s}$, differentiability of $\Phi$ gives
+$d(\Phi_{s+\sigma},\exp_{\Phi_{s}}(\sigma v))=o(\sigma)$, and $\dX$ is
+$1$-Lipschitz, so by Lemma~\ref{lem:firstvar} and single-valuedness,
+\[
+  h(s+\sigma)=\dX\bigl(\exp_{\Phi_{s}}(\sigma v)\bigr)+o(\sigma)
+  =h(s)+\sigma\min_{u\in U(\Phi_{s})}\sca{v}{-u}+o(\sigma)
+  =h(s)+\sigma\,\sca{-u}{-u}+o(\sigma).
+\]
+Thus $h'(s)=|u|^{2}=1$ a.e.\ on $[0,t]$, and integrating,
+$h(t)=\dX(p)+t$. The bound $d(p,\Phi_{t})\le t$ is the $1$-Lipschitz
+property of $\Phi$, and the margin inequality is their difference. No
+closedness of $\Sigma$ and no structure at focal or conjugate points
+was used: a point of $(M\setminus\X)\setminus\Sigma$ in the closure of
+$\Sigma$ is simply a single-valued point of $U$, and the identity
+passes straight through it.
+
+\emph{Dichotomy.} Suppose $T<T_{\max}$. If $\Phi_{T}\in\Sigma$, then by
+continuity of the margin and \eqref{eq:rateone} on $[0,T)$,
+$\dX(\Phi_{T})-d(p,\Phi_{T})\ge\dX(p)>0$, so $a=\Phi_{T}\in\Mg$
+contains $p$ in its open medial ball at depth $\ge\dX(p)$. If
+$\Phi_{T}\notin\Sigma$, then by the definition of $T$ as a supremum
+every interval $(T,T+\delta]$ contains a time $s_{\delta}$ with
+$\Phi_{s_{\delta}}\in\Sigma$; letting $\delta\downarrow0$ and using
+continuity of the margin, $a=\Phi_{s_{\delta}}\in\Mg$ satisfies
+$\dX(a)-d(p,a)\ge\dX(p)-\varepsilon$ for $\delta$ small. Either way
+$p\in B(a,\dX(a))$ with $a\in\Mg$, so $p\in\Rg$; and
+$\dX\le\operatorname{diam}(M)$ bounds $T$ through \eqref{eq:rateone}.
+
+If instead $T=T_{\max}$, the trajectory never meets $\Sigma$ and
+\eqref{eq:rateone} holds on all of $[0,T_{\max})$. Were
+$T_{\max}<\infty$, then $\Phi([0,T_{\max}))\subseteq\bar
+B(p,T_{\max})\cap\{\dX\ge\dX(p)\}$, a compact subset of the open set
+$M\setminus\X$ (properness), and the extension property would
+contradict maximality. So $T_{\max}=\infty$ and
+$\dX(\Phi_{t})=\dX(p)+t\to\infty$; as $\dX$ is bounded on compact sets,
+$\Phi_{t}$ leaves every compact set. On a compact $M$,
+$\dX\le\operatorname{diam}(M)$ forbids this, forcing case (i).
+\end{proof}
+
+\begin{corollary}[Total reconstruction on compact manifolds]
+\label{cor:compact}
+Let $M$ be a compact Riemannian manifold and $\X\subseteq M$ closed,
+$\varnothing\neq\X\neq M$. Then
+\[
+  \boxed{\ \Rg=M\setminus\X\ },
+\]
+and every $p\in M\setminus\X$ lies at depth $\ge\dX(p)-\varepsilon$
+(any $\varepsilon>0$) inside a medial ball. No curvature, genericity,
+analyticity, spread, or cardinality hypothesis is required; in
+particular $|\X|=1$ is allowed, where $\Mx=\varnothing$ but $\Mg$
+reconstructs everything.
+\end{corollary}
+
+\begin{proof}
+$\Rg\subseteq M\setminus\X$ because medial balls are free. Conversely,
+if $p\in\Mg$ then $p\in B(p,\dX(p))\subseteq\Rg$; otherwise start a
+capture curve at $p$ (local existence, \S\ref{sec:prelim}). Escape is
+impossible on compact $M$ (Theorem~\ref{thm:capture}), so $p$ is
+captured, $p\in\Rg$.
+\end{proof}
+
+\begin{corollary}[Two-point axis under spread]\label{cor:spread}
+If $M$ is compact and $\dX<\inj(M)$ on $M\setminus\X$ --- e.g.\ if
+$\X$ is $\delta$-dense with $\delta<\inj(M)$ --- then
+$\Rx=M\setminus\X$ for the two-point axis as well.
+\end{corollary}
+
+\begin{proof}
+By Corollary~\ref{cor:compact} every $p$ lies in $B(a,\dX(a))$ for
+some $a\in\Mg$. Two distinct minimising geodesics from $a$ with a
+common foot $x_{0}$ would place $x_{0}$ in the cut locus of $a$, giving
+$\dX(a)=d(a,x_{0})\ge\inj(M)$, a contradiction. So the two geodesics of
+$a$ have distinct feet: $a\in\Mx$.
+\end{proof}
+
+\begin{remark}[Why stopping \emph{at} $\Sigma$ is the correct move]
+\label{rem:notmonotone}
+Two tempting strengthenings of Theorem~\ref{thm:capture} are false,
+and their failure is what shapes the proof.
+
+\emph{The linear margin is not monotone through multi-geodesic arcs},
+already in $\R^{2}$. Take $\X=\{(0,0),(0,2)\}$ and $p=(1,0.9)$. The
+Lieutier flow runs to the bisector $\{y=1\}$ and slides along it toward
+$+\infty$ in $x$; the margin $\dX(\Phi)-d(p,\Phi)$ \emph{decreases}
+strictly, from $\approx1.345$ toward its limit $1$ (the depth of $p$
+in the limiting half-plane $\{x>0\}$'s bisector ball). So one cannot
+hope to \emph{accumulate} margin by flowing through the axis.
+
+\emph{Even the quadratic margin} $\dX^{2}-d(p,\cdot)^{2}$, which
+\emph{is} monotone along unique-foot and along bisector arcs in
+$\R^{n}$, fails at turning points where the active contact set
+changes. Three points suffice: $\X=\{(0,0),(0,2),(10,5)\}$, with the
+flow from $p=(1,0.9)$ turning at $\approx(5.75,1)$, where the
+derivative of the quadratic margin is negative.
+
+Both phenomena live \emph{on} $\Sigma$; on its complement the rate-one
+identity \eqref{eq:rateone} is exact. Since reaching $\Sigma$ is the
+\emph{goal}, not an obstacle, the correct move is to stop there ---
+capture is achieved, with the margin intact, \emph{before} the first
+multi-geodesic time. The failure of closedness of $\Sigma$ (focal
+degenerations: the evolute of an ellipse in $\R^{2}$, or the
+conjugate-cusp endpoints of an ellipsoid's cut segment) is equally
+harmless: such points are unique-geodesic points, $-U$ is continuous
+there, and the trajectory passes through with $\dX$ growing at rate
+one, the foot sliding continuously.
+\end{remark}
+
+\section{Drift: the swallow, the characterisation, the trichotomy}
+\label{sec:drift}
+
+Capture settles the compact case, but on a non-compact $M$ a point can
+be reconstructed by medial balls whose centres escape to infinity while
+its own capture curve escapes as well. The clean example is
+$\X=\{x_{0},x_{1}\}\subseteq\R^{2}$: a point $p$ in an open half-plane
+bounded by the line $x_{0}x_{1}$, placed beyond $x_{0}$ at an obtuse
+angle, has a capture curve running straight to infinity with the
+single foot $x_{0}$ --- yet $p$ is swallowed by the bisector balls
+$B(a_{k},r(a_{k}))$ with $a_{k}\to\infty$, whose limit is a half-plane.
+The right general home for such limits is the space of medial limit
+functions (Definition~\ref{def:mlf}).
+
+\begin{lemma}[Swallow]\label{lem:swallow}
+Let $M$ be any complete Riemannian manifold, $\X$ closed, and $\psi$ a
+medial limit function of $\X$. Then $\{\psi<0\}\subseteq\Rg$. If the
+witnessing centres lie in $\Mx$, then $\{\psi<0\}\subseteq\Rx$.
+\end{lemma}
+
+\begin{proof}
+Let $\psi=\lim\psi_{a_{k}}$ locally uniformly, $a_{k}\in\Mg$, and let
+$q\in\{\psi<0\}$. Then $\psi_{a_{k}}(q)\to\psi(q)<0$, so for large $k$,
+$d(q,a_{k})-\dX(a_{k})=\psi_{a_{k}}(q)<0$, i.e.\ $q\in B(a_{k},\dX(a_{k}))$
+with $a_{k}\in\Mg$: $q\in\Rg$.
+\end{proof}
+
+There is no anchoring of feet, no curvature bound, no pinching, no
+offset hypothesis: the entire content of the swallowing step ---
+which in curved settings historically required delicate control of
+where the escaping centres' feet accumulate --- is absorbed into the
+normalisation of $\psi_{a}$ by the reach.
+
+\begin{lemma}[Compactness of reconstructing sequences]\label{lem:cpt}
+Let $p\in\Rg$, and let $a_{k}\in\Mg$ satisfy
+$\limsup_{k}[\dX(a_{k})-d(p,a_{k})]>0$ (for instance, centres whose
+balls contain $p$ with margin bounded away from $0$; a single repeated
+ball qualifies). Then a subsequence of $(\psi_{a_{k}})$ converges
+locally uniformly to a medial limit function $\psi$ with $\psi(p)<0$.
+\end{lemma}
+
+\begin{proof}
+The $\psi_{a_{k}}$ are $1$-Lipschitz and
+$\psi_{a_{k}}(p)=d(p,a_{k})-\dX(a_{k})$ is bounded: below by $-\dX(p)$
+(since $\dX(a_{k})\le\dX(p)+d(p,a_{k})$) and above by $0$ along the
+qualifying subsequence. By Arzel\`a--Ascoli on the proper space $M$, a
+further subsequence converges locally uniformly to a medial limit
+function $\psi$, and $\psi(p)\le-\limsup[\dX(a_{k})-d(p,a_{k})]<0$.
+\end{proof}
+
+\begin{theorem}[Characterisation on an arbitrary complete manifold]
+\label{thm:char}
+For every complete Riemannian manifold $M$ and every closed
+$\X\subseteq M$, $\varnothing\neq\X\neq M$,
+\[
+  \boxed{\ \Rg\ =\ \bigcup\bigl\{\{\psi<0\}:\ \psi\ \text{a medial
+  limit function of}\ \X\bigr\}\ }.
+\]
+The same identity holds for $\Rx$ and $\Mx$ in place of $\Rg$ and
+$\Mg$.
+\end{theorem}
+
+\begin{proof}
+``$\supseteq$'' is Lemma~\ref{lem:swallow}. ``$\subseteq$'': if
+$p\in\Rg$ then $p\in B(a,\dX(a))$ for some $a\in\Mg$, and the constant
+sequence $a_{k}\equiv a$ makes $\psi_{a}$ a (finite) medial limit
+function with $\psi_{a}(p)<0$.
+\end{proof}
+
+The identity is deliberately economical, and one should read its force
+correctly. Its finite members alone give a tautology --- every ball
+is its own limit --- so the set equality is not the point. The point
+is the pair of facts it packages. \emph{First}, the \emph{ideal}
+members reconstruct their entire open sublevel set, bare, with no
+anchoring or pinching hypothesis: this is the content of
+Lemma~\ref{lem:swallow} applied to horofunction-type limits.
+\emph{Second}, combined with the capture theorem it yields a clean
+trichotomy.
+
+\begin{theorem}[Trichotomy on a complete manifold]
+\label{thm:trichotomy}
+Let $M$ be complete, $\X$ closed, $p\in M\setminus\X$. Exactly one of
+the following holds.
+\begin{enumerate}[label=\textup{(\arabic*)}]
+\item\emph{(Captured.)} Some capture curve from $p$ approaches $\Mg$
+in finite time. Then $p\in\Rg$, at depth arbitrarily close to
+$\dX(p)$.
+\item\emph{(Swallowed, uncaptured.)} No capture curve from $p$
+approaches $\Mg$ in finite time, but $\psi(p)<0$ for some medial limit
+function $\psi$. Then $p\in\Rg$: reconstructed, but only by centres
+$p$'s own ascent cannot find --- a remote ball, or a drifting
+sequence.
+\item\emph{(Escaping.)} Neither. Then $p\notin\Rg$, and every capture
+curve from $p$ escapes to infinity with $\dX(\Phi_{t})=\dX(p)+t$.
+\end{enumerate}
+In particular $\Rg=\{p:\ \textup{(1) or (2)}\}$, and on compact $M$
+class \textup{(1)} is all of $M\setminus\X$.
+\end{theorem}
+
+\begin{proof}
+The classes are exclusive and exhaustive by construction. (1)
+$\Rightarrow p\in\Rg$ is Theorem~\ref{thm:capture}(i); (2)
+$\Rightarrow p\in\Rg$ is Lemma~\ref{lem:swallow}. Conversely, if
+$p\in\Rg$ then $\psi_{a}(p)<0$ for the finite medial limit function of
+some containing ball, so $p$ lies in class (2) whenever not in class
+(1) --- never in (3). A point outside class (1) has every capture
+curve uncaptured, hence escaping, by Theorem~\ref{thm:capture}.
+\end{proof}
+
+Bia\l{}o\.zyt's theorem is not a description of the reconstructed set
+but a \emph{reconstructibility criterion}: it says exactly when a
+closed set is recovered in full. The trichotomy yields the direct
+analogue on any complete manifold, because $\Rg$ is precisely classes
+(1)--(2) while class (3) is its complement.
+
+\begin{corollary}[Reconstructibility criterion]
+\label{cor:reconstructible}
+Let $M$ be complete, $\X$ closed, $\varnothing\neq\X\neq M$. The
+following are equivalent.
+\begin{enumerate}[label=\textup{(\alph*)}]
+\item $\X$ is reconstructible: $\Rg=M\setminus\X$.
+\item $M\setminus\X\ \subseteq\ \bigcup\bigl\{\{\psi<0\}:\ \psi\
+\text{a medial limit function of}\ \X\bigr\}$.
+\item Every $p\in M\setminus\X$ is captured or drift-swallowed;
+equivalently, the escaping class \textup{(3)} of
+Theorem~\ref{thm:trichotomy} is empty.
+\item For every $p\in M\setminus\X$ whose capture curves escape to
+infinity, some medial limit function $\psi$ satisfies $\psi(p)<0$.
+\end{enumerate}
+\end{corollary}
+
+\begin{proof}
+$(a)\Leftrightarrow(b)$: by Theorem~\ref{thm:char} the right-hand side
+of (b) equals $\Rg$, and $\Rg\subseteq M\setminus\X$ always, so (b) is
+the reverse inclusion, i.e.\ (a). $(a)\Leftrightarrow(c)$: by
+Theorem~\ref{thm:trichotomy}, $\Rg$ is exactly classes (1)--(2) and is
+disjoint from class (3); since the three classes partition
+$M\setminus\X$, $\Rg=M\setminus\X$ iff class (3) is empty.
+$(c)\Leftrightarrow(d)$: a point outside class (1) escapes
+(Theorem~\ref{thm:capture}), so it lies in class (2) --- swallowed ---
+iff some $\psi$ has $\psi(p)<0$; captured points lie in $\Rg$
+regardless, so emptiness of class (3) is exactly (d).
+\end{proof}
+
+Two remarks fix its meaning. First, \emph{on a compact manifold the
+criterion is vacuously satisfied}: escape is impossible
+(Theorem~\ref{thm:capture}), class (3) is empty, and $\X$ is
+reconstructible for free (Corollary~\ref{cor:compact}). The criterion
+therefore has content only on non-compact $M$ --- exactly where
+Bia\l{}o\.zyt's does, $\R^{n}$ being non-compact. Second, condition
+(b) is the \emph{unconditional} form: it refers to the medial limit
+functions, hence implicitly to the axis $\Mg$. Bia\l{}o\.zyt's theorem
+is the \emph{faithful} sharpening of (b) in the flat case, replacing
+``$M\setminus\X\subseteq\bigcup\{\psi<0\}$'' by the axis-free hull
+condition
+\[
+  \R^{n}\setminus\X\ \subseteq\ \overline{\conv}\,\X\ \cup\!\!
+  \bigcup_{L\ \text{defective}}\!\!L^{+}
+\]
+of Theorem~\ref{thm:bia} (Corollary~\ref{cor:flat}); on a Hadamard
+manifold the corresponding faithful sharpening replaces the ideal
+sublevel sets by defective horoballs $\{b_{\xi}<-c(\xi)\}$
+(\S\ref{sec:hadamard}, Remark~\ref{rem:offset}). Thus
+Corollary~\ref{cor:reconstructible} is the general analogue of
+Bia\l{}o\.zyt's main theorem, and the passage from (b) to a
+checkable-from-$\X$ certificate is precisely the faithful-layer
+problem, solved in flat and Hadamard geometry and open in mixed
+curvature.
+
+\begin{remark}[The witnesses of class (2)]\label{rem:class2}
+Both kinds of witness genuinely occur, already for
+$\X=\{x_{0},x_{1}\}\subseteq\R^{2}$ and $p$ beyond $x_{0}$ in an open
+half-plane at an obtuse angle to the bisector. Every capture curve from
+$p$ runs straight to infinity with the single foot $x_{0}$, yet $p$
+lies in a single \emph{finite} bisector ball (and in the ideal
+half-plane limit of the bisector balls). Class (2) is thus the precise
+sense in which ``reconstruction is non-local for $p$'': the
+certificate cannot be found by ascending from $p$. This is exactly the
+phenomenon that separates the non-compact theory from the compact one,
+and the reason the faithful certificates below must quantify over
+supporting half-spaces or horoballs rather than over flow lines.
+\end{remark}
+
+\begin{remark}[The Hadamard offset, dissolved]\label{rem:offset}
+Let $M$ be Hadamard (complete, simply connected, $\sect\le0$). By
+Remark~\ref{rem:horo} the ideal medial limit functions are exactly
+$b_{\xi}+c$ with $\xi\in\bdry M$ and $c\in\R$, normalised so that
+$b_{\xi}$ vanishes on the horosphere of the maximal free horoball
+$\Hb{}$ at $\xi$; necessarily $c\ge0$ when $\X$ meets every
+neighbourhood of that horosphere. Call $\Hb{}$ \emph{defective at level
+$c$} if $b_{\xi}+c$ is a medial limit function; then
+Lemma~\ref{lem:swallow} reconstructs $\{b_{\xi}<-c\}$, the horoball
+shrunk by $c$. The historical ``radial offset''
+$\mathrm{off}_{k}=d(o,a_{k})+b_{\xi}(a_{k})$ is precisely the
+discrepancy $\psi_{a_{k}}-b_{\xi}$ along the drift, so a drift with
+$\mathrm{off}_{k}\to c$ is a level-$c$ certificate. What used to be a
+gap --- ``only the deep part $\{b_{\xi}<-c\}$ is reconstructed for a
+non-vanishing asymptotic offset'' --- is now simply the content of the
+level: the drift \emph{is} a level-$c$ certificate and reconstructs
+exactly $\{b_{\xi}<-c\}$. The full-horoball statement is the assertion
+that a level-$0$ certificate exists, and the exact level
+\[
+  c(\xi)\ :=\ \inf\{c\ge0:\ b_{\xi}+c\ \text{is a medial limit
+  function}\}
+\]
+is a question about $\X$ and the horosphere geometry, not about the
+medial axis; see \S\ref{sec:open}.
+\end{remark}
+
+\section{Specialisations and worked examples}\label{sec:spec}
+
+We now recover the classical theory as specialisations of
+Theorems~\ref{thm:char}--\ref{thm:trichotomy}, and illustrate every
+key definition with an explicit example. Throughout, the
+\emph{unconditional} content --- the abstract characterisation --- is
+supplied by the theorems above; the \emph{faithful} content --- a
+certificate readable from $\X$ and $M$ --- is supplied by
+Bia\l{}o\.zyt's theorem in the flat case and discussed as the open
+residue elsewhere.
+
+\subsection{Euclidean space: recovering Bia\l{}o\.zyt's theorem}
+\label{sec:euclid}
+
+In $\R^{n}$ geodesics are unique, so $\Mg=\Mx=:M_{\X}$ and
+$\Rg=\Rx=:\Rx$. We identify the medial limit functions. A finite
+medial limit function is a free-ball function $y\mapsto|y-a|-r$,
+$a\in\overline{M_{\X}}$. For an \emph{ideal} one, let $a_{k}\to\infty$
+along a unit direction $u$ (i.e.\ $a_{k}/|a_{k}|\to u$) with reaches
+$r_{k}=\dX(a_{k})$. Then, for each fixed $y$,
+\[
+  \psi_{a_{k}}(y)=|y-a_{k}|-r_{k}
+  =\bigl(|y-a_{k}|-|a_{k}|\bigr)+\bigl(|a_{k}|-r_{k}\bigr)
+  \longrightarrow\ -\sca{y}{u}+\beta,
+\]
+where the first bracket tends to $-\sca{y}{u}$ (a standard Euclidean
+computation) and convergence of $\psi_{a_{k}}$ forces the offset
+$|a_{k}|-r_{k}$ to a finite limit $\beta$. So every ideal medial limit
+function is \emph{affine},
+\[
+  \psi(y)=\beta-\sca{y}{u},\qquad\{\psi<0\}=\{\sca{y}{u}>\beta\},
+\]
+an open half-space with outward normal $u$. Conversely a supporting
+half-space limit of medial balls is exactly such a $\psi$.
+Theorem~\ref{thm:char} therefore reads, in $\R^{n}$:
+\[
+  \Rx\ =\ \Bigl(\bigcup\text{finite medial balls}\Bigr)\ \cup\
+  \Bigl(\bigcup\bigl\{\text{open half-spaces that are ideal medial
+  limits}\bigr\}\Bigr).
+\]
+This is Bia\l{}o\.zyt's decomposition. The finite balls fill
+$\conv\X\setminus\X$ (every point of the convex hull lies in a free
+ball); the half-spaces are the outer half-spaces $L^{+}$ of
+supporting hyperplanes $L$ that arise as ideal limits. Bia\l{}o\.zyt's
+Theorem~\ref{thm:bia} identifies \emph{which} supporting hyperplanes
+occur: precisely the \emph{defective} ones, $\X\cap
+L\neq\overline{\conv}\,\X\cap L$ (equivalently, by Motzkin's theorem,
+those carrying a non-Chebyshev point just outside the contact face).
+Thus:
+
+\begin{corollary}[Flat specialisation]\label{cor:flat}
+In $\R^{n}$, Theorem~\ref{thm:char} together with
+Bia\l{}o\.zyt's Theorem~\ref{thm:bia} gives
+\[
+  \Rx\ =\ \bigl(\overline{\conv}\,\X\setminus\X\bigr)\ \cup\!\!
+  \bigcup_{L\ \text{defective}}\!\!L^{+},
+\]
+and $\X$ is reconstructible iff
+$\R^{n}\setminus\X\subseteq\overline{\conv}\,\X\cup\bigcup_{L}L^{+}$.
+The drift over a defective $L$ runs at level $\beta=0$ (no offset): the
+escaping bisector centres accumulate their feet on the defective
+contact face, and their half-space limit is $L^{+}$ itself.
+\end{corollary}
+
+Here the split of labour is exact and instructive: the abstract
+characterisation (unconditional, self-contained) delivers ``$\Rx$ is
+balls $\cup$ half-space limits''; Bia\l{}o\.zyt's theorem (the faithful
+certificate) delivers ``the half-space limits are exactly the
+defective supporting hyperplanes.'' This is the template the whole
+paper follows on other geometries.
+
+\begin{example}[Two points]\label{ex:twopoints}
+$\X=\{x_{0},x_{1}\}\subseteq\R^{2}$, so $\overline{\conv}\,\X$ is the
+segment $[x_{0},x_{1}]$ and the axis $M_{\X}$ is its perpendicular
+bisector. There is exactly one defective supporting line: the line
+$\ell$ \emph{through} $x_{0}x_{1}$ itself, on which
+$\overline{\conv}\,\X\cap\ell=[x_{0},x_{1}]$ while $\X\cap\ell=
+\{x_{0},x_{1}\}$ --- two points, not the whole segment. It supports
+from both sides, so it is defective in both orientations, with the two
+open half-planes bounded by $\ell$ as outer half-spaces $L^{+}$; these
+are the ideal (half-plane) medial limits of the escaping bisector
+balls. By Corollary~\ref{cor:flat},
+\[
+  \Rx=\bigl([x_{0},x_{1}]\setminus\{x_{0},x_{1}\}\bigr)\ \cup\
+  \{\text{two open half-planes}\}\ =\
+  \R^{2}\setminus\bigl(\ell\setminus(x_{0},x_{1})\bigr),
+\]
+i.e.\ \emph{everything except the two outer rays} of $\ell$ beyond the
+endpoints (together with $\X$ itself). Note what is and is not
+reconstructed: the \emph{open} segment $(x_{0},x_{1})$ \emph{is}
+reconstructed --- by finite bisector balls, which contain every
+interior segment point --- while the two collinear rays $\{x_{0}+
+t(x_{0}-x_{1}):t>0\}$ and its mirror are on \emph{no} free ball and are
+missed by the open half-planes. Removing the reconstruction of these
+rays is exactly the failure of reconstructibility for a two-point set.
+This is the primal drift example of Remark~\ref{rem:class2}: a point in
+an open half-plane at an obtuse angle to the bisector is reconstructed
+only by the ideal half-plane limit (class (2)), not by its own escaping
+capture curve.
+\end{example}
+
+\begin{example}[A triangle: the outer half-spaces close up]
+\label{ex:arc}
+Let $\X$ be the three vertices of an equilateral triangle, so
+$\overline{\conv}\,\X$ is the solid triangle. A supporting line through
+a single vertex has $\X\cap L=\overline{\conv}\,\X\cap L=\{v\}$ ---
+not defective. A supporting line \emph{along an edge} has
+$\overline{\conv}\,\X\cap L$ the whole edge while $\X\cap L$ is its two
+endpoints --- defective, with a genuinely nonempty outer half-plane
+$L^{+}$ reconstructed by the ideal drift of the escaping bisector
+centres of those two vertices (which are legitimate medial centres far
+out beyond the edge, the third vertex being strictly farther). The
+three edge half-planes \emph{overlap to cover every exterior point} ---
+a point beyond a vertex lies in the outer half-plane of an incident
+edge --- and the interior is filled by finite balls, so
+$\Rx=\R^{2}\setminus\X$: reconstructible. Contrast
+Example~\ref{ex:twopoints}, the degenerate ``triangle'' with one edge:
+there the single edge's two outer half-planes leave the collinear rays
+uncovered, and reconstructibility fails. The moral is that
+reconstructibility is about whether the defective outer half-spaces
+\emph{tile} the exterior, which a genuine polygon does and a segment
+does not.
+\end{example}
+
+\subsection{Compact manifolds, the sphere, and space forms}
+\label{sec:compact}
+
+Here the faithful layer is \emph{vacuous}: there are no ideal medial
+limit functions (the manifold is bounded), no hull condition, and
+Corollary~\ref{cor:compact} gives total reconstruction outright.
+
+\begin{corollary}[Round sphere and spherical space forms]
+\label{cor:sphere}
+For every closed $\varnothing\neq\X\neq\Sn$, $\Rg=\Sn\setminus\X$;
+likewise $\Rg=(\Sn/\Gamma)\setminus\X$ on every spherical space form.
+For $|\X|\ge2$ under the spread hypothesis $\dX<\inj$ one also gets
+$\Rx=\Sn\setminus\X$ (Corollary~\ref{cor:spread}).
+\end{corollary}
+
+\begin{example}[A single point on $\Sn$: the antipodal centre]
+\label{ex:point-sphere}
+$\X=\{x_{0}\}\subseteq\Sn$. Then $\Mx=\varnothing$, so the two-point
+theory reconstructs nothing. But the antipode $\bar x_{0}$ is a medial
+centre in $\Mg$: it is joined to $x_{0}$ by an $(n-1)$-sphere of
+minimising geodesics, all of length $\pi=\dX(\bar x_{0})$, and the free
+ball $B(\bar x_{0},\pi)=\Sn\setminus\{x_{0}\}$ swallows everything.
+Corollary~\ref{cor:sphere} thus reconstructs the whole complement from
+a single point --- the extreme demonstration that $\Mg$, not $\Mx$, is
+the reconstruction axis. The capture curve from any $p\ne x_{0},\bar
+x_{0}$ ascends the meridian away from $x_{0}$ and reaches $\bar x_{0}$
+in time $\pi-\dX(p)$: capture, class (1).
+\end{example}
+
+\begin{example}[Cut-shielding and the two-point axis]\label{ex:shield}
+On a prolate ellipsoid of revolution, or on $\Sn$ with a sparse $\X$,
+$\Mg$ can strictly contain $\Mx$: a capturing centre $a$ may have two
+minimising geodesics to a \emph{single} foot (a cut point of $a$
+before any second foot appears), so $a\in\Mg\setminus\Mx$ and the
+point it captures is reconstructed by $\Rg$ but not by $\Rx$. This is
+the \emph{cut-shielding} obstruction, and it is why the two-point
+theorem needs a spread hypothesis (Corollary~\ref{cor:spread}) while
+the two-geodesic theorem never does. The obstruction is quantitative:
+on prolate ellipsoids it switches on past an eccentricity threshold
+(numerically near $c^{\ast}\approx2.6$; see \S\ref{sec:open}).
+Class-(1) points of $\Rg$ whose capturing centres lie in
+$\Mg\setminus\Mx$ are exactly the shielded points.
+\end{example}
+
+\subsection{Hyperbolic space and Hadamard manifolds}
+\label{sec:hadamard}
+
+Let $M$ be Hadamard. The ideal medial limit functions are Busemann
+functions at a level (Remark~\ref{rem:offset}), so
+Theorem~\ref{thm:char} reads: $\Rg$ is the union of the finite medial
+balls and the shrunken horoballs $\{b_{\xi}<-c(\xi)\}$ over the
+defective ideal points $\xi$. This is the exact Hadamard analogue of
+Corollary~\ref{cor:flat}, with ``half-space'' replaced by
+``horoball'' and ``$\conv$'' by the horoconvex hull.
+
+The \emph{faithful} question --- which ideal points $\xi$ are
+defective, and at what level --- is the curved analogue of
+Bia\l{}o\.zyt's defective-hyperplane certificate. In real hyperbolic
+space and, more generally, on Hadamard manifolds admitting a faithful
+horoconvexity certificate, the answer mirrors the flat one: $\xi$ is
+defective iff the contact set $\X\cap\partial\Hb{}$ on the maximal free
+horosphere fails to be horoconvex, i.e.\ $\X\cap\partial\Hb{}\neq
+\hconv(\X\cap\partial\Hb{})$, and the level is then $0$. We record
+this as the natural specialisation; its proof is the horoconvex
+counterpart of Motzkin's theorem and is beyond the flat certificate we
+assume here (see \S\ref{sec:open} and the discussion in
+Remark~\ref{rem:offset}).
+
+\begin{example}[Two ideal directions in $\HH^{2}$]\label{ex:hyp}
+Let $\X=\{x_{0},x_{1}\}$ in the hyperbolic plane. The bisector is a
+complete geodesic with two ideal endpoints $\xi_{\pm}\in\bdry\HH^{2}$.
+Escaping bisector centres $a_{k}\to\xi_{\pm}$ have reaches
+$r_{k}=d(a_{k},x_{0})\to\infty$, and $\psi_{a_{k}}=d(\cdot,a_{k})-r_{k}
+\to b_{\xi_{\pm}}$, a Busemann function at level $0$; by the swallow
+lemma the two open horoballs $\{b_{\xi_{\pm}}<0\}$ are reconstructed.
+Together with the finite bisector balls, which fill a lens-shaped
+region around the geodesic segment $[x_{0},x_{1}]$, these exhaust
+$\Rg$: by Theorem~\ref{thm:char} every reconstructed point lies in a
+finite lens ball or in one of the two horoballs. This is the
+hyperbolic mirror of Example~\ref{ex:twopoints}, with ``open
+half-plane'' replaced by ``open horoball'' --- the escaping centres now
+run to the two \emph{ideal points} of the bisector rather than off to
+Euclidean infinity, and the swallowed regions are horoballs there. The
+contact set on the maximal free horosphere at each $\xi_{\pm}$ is the
+single pair $\{x_{0},x_{1}\}$, non-horoconvex, which is the horoconvex
+analogue of the defective supporting line and certifies the defect.
+Whether the two horoballs and the lens leave any point uncovered ---
+the hyperbolic counterpart of the two collinear outer rays --- depends
+on the precise horoball geometry and is a faithful-layer question
+(\S\ref{sec:open}); the swallow and characterisation above are
+unconditional.
+\end{example}
+
+\begin{example}[The half-space limit is genuinely ideal]\label{ex:idealneeded}
+In both Examples~\ref{ex:twopoints} and \ref{ex:hyp} the drifted
+region is reconstructed by \emph{no} finite ball: a point $p$ deep in
+the open half-plane / horoball, at an obtuse angle to the bisector,
+has its capture curve escaping with a single foot
+(Remark~\ref{rem:class2}), so it is class (2), reconstructed only by
+the ideal limit. This is why Theorem~\ref{thm:char} must include the
+ideal members and why the pure capture theorem
+(Corollary~\ref{cor:compact}) cannot hold on a non-compact manifold.
+\end{example}
+
+\subsection{Non-compact positive curvature}\label{sec:poscurv}
+
+Here reconstruction is genuinely partial and neither the flat nor the
+Hadamard certificate applies; the trichotomy still governs.
+
+\begin{example}[Paraboloid of revolution]\label{ex:paraboloid}
+Let $M$ be a paraboloid of revolution ($\sect>0$, a single flattening
+end) and $\X$ a small circle about the vertex. The vertex is a finite
+medial centre reconstructing the inner disk: class (1). Every point on
+the flaring side ascends its meridian forever with a single foot, and
+no medial limit function reaches it: class (3). Hence
+$\Rg\subsetneq M\setminus\X$ --- partial reconstruction, decided by the
+non-compactness of $M$, not by the sign of the curvature.
+\end{example}
+
+\begin{example}[Ideal centres in positive curvature]\label{ex:posideal}
+Take $\X=\{x_{0},x_{1}\}$ on the paraboloid. The bisector is unbounded,
+and its escaping centres furnish genuinely \emph{ideal} medial limit
+functions on a $\sect>0$ manifold --- consistent with the trichotomy,
+because their sublevel sets are unbounded \emph{non-convex} free
+regions. It is the maximal free \emph{convex} regions that are bounded
+in positive curvature, not the carriers of medial limit functions; the
+distinction matters, and the example shows the ideal class is not a
+nonpositive-curvature artefact.
+\end{example}
+
+\subsection{The completed picture}\label{sec:table}
+
+Two independent axes organise the theory. \emph{Compactness} decides
+partial versus total; the \emph{sign of the Busemann/Hessian data}
+decides the flavour of the faithful certificate. The following table
+records the two-geodesic theory, with the two-point refinement in
+brackets.
+
+\begin{center}
+\begin{tabular}{l|ccc}
+\toprule
+ & $\sect\le0$ & $\sect\equiv0$ & $\sect>0$\\
+\midrule
+non-compact & partial; $\hconv$ defect & partial; $\conv$ defect
+ & partial (paraboloid)\\
+ & at level $c(\xi)$ & (Bia\l{}o\.zyt \cite{Bia})
+ & finite $+$ ideal centres\\
+\midrule
+compact & \emph{total} $\Rg$ & \emph{total} $\Rg$
+ & \emph{total} $\Rg$\\
+ & [$\Mx$: shielding] & [$\Mx$: shielding] & [$\Mx$: shielding;
+ $=\Sn$ ok]\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The compact row is Corollary~\ref{cor:compact} ---
+unconditional, all curvatures, $|\X|\ge1$. The non-compact row is
+Theorem~\ref{thm:char}, with the faithful certificate known on the
+flat column (Bia\l{}o\.zyt) and its Hadamard extension, and open in
+mixed curvature (\S\ref{sec:open}).
+
+\section{Discussion: the two layers}\label{sec:discussion}
+
+It is worth stating plainly what has been achieved and what the shape
+of the theory is, because the two are easy to conflate.
+
+\emph{The unconditional layer is complete.} On every complete
+Riemannian manifold and for every nonempty closed proper $\X$, the
+reconstruction $\Rg$ is exactly the union of the sublevel sets of the
+medial limit functions (Theorem~\ref{thm:char}); every point is
+captured, drift-swallowed, or escaping (Theorem~\ref{thm:trichotomy});
+and reconstruction is total on every compact manifold
+(Corollary~\ref{cor:compact}). No curvature bound, genericity,
+analyticity, spread, or cardinality hypothesis appears anywhere in
+this layer. The two ideas that make it work are worth isolating:
+
+\begin{itemize}
+\item \emph{Stop at the axis, do not flow through it.} The margin one
+would like to accumulate is not monotone through multi-geodesic points
+(Remark~\ref{rem:notmonotone}); but the axis is the \emph{goal}, so
+stopping at its first approach both avoids the non-monotonicity and
+delivers capture. This is what removes the dependence, in every
+previous compact argument, on an unproven extension of the swallow
+property past cut points.
+\item \emph{Normalise limits by the reach.} Measuring a free ball by
+its depth $\dX(a)$ rather than by the distance to a fixed basepoint
+makes the limit objects basepoint-free and absorbs the historical
+``offset'' into the function itself (Remarks~\ref{rem:horo},
+\ref{rem:offset}). The swallow lemma then costs three lines on
+\emph{any} complete manifold.
+\end{itemize}
+
+\emph{The faithful layer is curvature-specific and only partly known.}
+Replacing ``$\psi$ is a medial limit function'' by a certificate
+readable from $\X$ and the geometry of $M$ is exactly the content of
+Bia\l{}o\.zyt's theorem in the flat case (Corollary~\ref{cor:flat}),
+of the horoconvex-defect certificate on Hadamard manifolds
+(\S\ref{sec:hadamard}), and it is vacuous on compact manifolds. In
+mixed curvature it is open (\S\ref{sec:open}). The honest summary is:
+the \emph{dynamics} of reconstruction are understood in full
+generality; the \emph{combinatorics} of which asymptotic directions
+carry a defect are understood exactly where a Motzkin-type theorem is
+available, and Bia\l{}o\.zyt's theorem is the flat instance of such a
+theorem.
+
+\section{What remains}\label{sec:open}
+
+The open problems live entirely on the faithful (escape) side.
+
+\begin{enumerate}[label=(\arabic*)]
+\item\emph{Certificates in mixed curvature.} For which ideal points
+$\xi$ (horofunctions $h$) of a general non-compact $M$ is $h+c$ a
+medial limit function, read from the contact structure of $\X$ on
+$\{h=0\}$? Known: the $\conv$/Motzkin certificate in $\R^{n}$
+(Bia\l{}o\.zyt \cite{Bia}, Motzkin \cite{Mot}); the horoconvex
+certificate on Hadamard manifolds. Unknown already for a complete
+surface carrying both signs of curvature.
+\item\emph{The level function.} On an inhomogeneous Hadamard manifold,
+characterise $c(\xi)=\inf\{c:\ b_{\xi}+c\ \text{a medial limit}\}$ from
+$\X$ alone (Remark~\ref{rem:offset}). One has $c(\xi)=0$ under
+curvature pinching, in the flat case, and over any bisector witness on
+the horosphere, and no example with $c(\xi)>0$ is known; deciding
+whether the deep-part phenomenon occurs at all is the sharpest open
+question on the Hadamard side.
+\item\emph{The two-point axis in variable curvature.} Quantify
+cut-shielding (Example~\ref{ex:shield}): the prolate-ellipsoid
+threshold $c^{\ast}\approx2.6$ awaits an analytic determination, as
+does the class of compact $M$ with $\Rx=M\setminus\X$ for all sparse
+$\X$ (constant curvature suffices; bounded eccentricity
+conjecturally).
+\item\emph{Chebyshev-type problems on the frontier.} The Motzkin
+question in Carnot groups (e.g.\ $\mathbb{CH}^{n}$ horospheres) and in
+Alexandrov spaces of indefinite curvature (pinched horospheres); and
+the domain (Lieutier) problem on $\Sn$, where the boundary's own
+positively curved intrinsic geometry becomes the detection object.
+\end{enumerate}
+
+\paragraph{Conclusion.} Bia\l{}o\.zyt's Theorem~6 generalises to every
+complete Riemannian manifold, in two layers. The \emph{unconditional}
+layer, proved here in full from that theorem alone, says that
+reconstruction by the two-geodesic axis is exactly the union of the
+sublevel sets of the medial limit functions
+(Theorem~\ref{thm:char}); that every point is captured, swallowed, or
+escaping (Theorem~\ref{thm:trichotomy}); and that capture is total on
+every compact manifold (Corollary~\ref{cor:compact}), with no
+hypothesis beyond completeness and closedness. The \emph{faithful}
+layer --- replacing ``is a medial limit function'' by a certificate on
+contact sets --- is exact on the flat knife-edge ($\conv$, via
+Bia\l{}o\.zyt), on Hadamard manifolds ($\hconv$), and trivial on
+compact manifolds; its extension into mixed curvature, and the
+Chebyshev-set problems it generates, are the genuine residue. The two
+analytic obstructions that historically blocked the Riemannian passage
+--- the containment step past cut points and the radial offset --- are
+removed here, the first by stopping the ascent at its first approach to
+the axis instead of flowing through it, the second by normalising the
+limit objects by their own reach.
+
+\begin{thebibliography}{9}
+
+\bibitem{Bia} A.~Bia\l{}o\.zyt, \emph{Sets reconstructible with medial
+axis}, preprint, AGH University of Krak\'ow, 2024.
+
+\bibitem{AC} J.-P.~Aubin and A.~Cellina, \emph{Differential
+Inclusions}, Grundlehren 264, Springer, 1984. (Existence and extension
+for upper semicontinuous convex compact right-hand sides, \S2.1.)
+
+\bibitem{ACa} P.~Albano and P.~Cannarsa, \emph{Structural properties
+of singularities of semiconcave functions}, Ann.\ Scuola Norm.\ Sup.\
+Pisa \textbf{28} (1999), 719--740.
+
+\bibitem{BH} M.~Bridson and A.~Haefliger, \emph{Metric Spaces of
+Non-Positive Curvature}, Grundlehren 319, Springer, 1999.
+(Horofunctions and Busemann points, II.8.)
+
+\bibitem{Gro} M.~Gromov, \emph{Hyperbolic manifolds, groups and
+actions}, in: Riemann Surfaces and Related Topics, Ann.\ of Math.\
+Stud.\ 97, Princeton, 1981, 183--213. (The horofunction
+compactification.)
+
+\bibitem{Lie} A.~Lieutier, \emph{Any open bounded subset of $\R^{n}$
+has the same homotopy type as its medial axis}, Computer-Aided Design
+\textbf{36} (2004), 1029--1046.
+
+\bibitem{MM} C.~Mantegazza and A.~C.~Mennucci, \emph{Hamilton--Jacobi
+equations and distance functions on Riemannian manifolds}, Appl.\
+Math.\ Optim.\ \textbf{47} (2003), 1--25. (Semiconcavity and first
+variation of the distance from a closed set.)
+
+\bibitem{Mot} T.~Motzkin, \emph{Sur quelques propri\'et\'es
+caract\'eristiques des ensembles born\'es non convexes}, Atti Accad.\
+Naz.\ Lincei \textbf{21} (1935), 773--779.
+
+\end{thebibliography}
+
+\end{document}
