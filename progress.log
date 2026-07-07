@@ -395,3 +395,56 @@ EDITS: new §7 before "What remains" (now §8); item (5) rewritten (solved + res
   Also FIXED pre-existing dangling refs \ref{G1},\ref{G2} (the (G1)/(G2) list was pruned in an
   earlier session; replaced by inline citations Sph Rem 8.4 / Tri Rem 6.5, R3 Thm 3.4).
   Compiles clean (xelatex, 28 pp, 0 unresolved refs; 5 overfull boxes all pre-existing). PDF sent.
+
+[11] 2026-07-07 — THE FLAT LEAK: §8 item (5)(a) SETTLED, NEGATIVELY — three points refute the
+  flat no-leak conjecture. New Prop 7.8 (prop:flatleak) + Rem 7.9 (rem:flatleak) at the end of
+  §7; Rem 7.7(b) retitled "reduced — and refuted"; §8(5)(a) rewritten to the localisation
+  residue.
+RESULT: X = 3 affinely independent points in R²: R_X = R²∖X (complete!) ≃ S¹∨S¹∨S¹, while
+  M_X = Voronoi tripod ≃ pt. So R_X = R^n∖X does NOT imply R^n∖X ≃ M_X, already in the plane,
+  already for |X| = 3. The conjecture died at the smallest possible configuration.
+PROOF MECHANISM (all steps verified by hand this session):
+  (1) Flat Aubry characterisation: ray p+tv (p ∈ X) calibrated ⟺ ⋃_t B(p+tv,t) = open
+      half-space {⟨·−p,v⟩>0} avoids X ⟺ v ∈ normal cone N_p of conv X. So Aub = ⋃ corner cones.
+  (2) Ideal cells: outward bisector centres of each edge escape, ψ_e → ⟨m_e−·, n_e⟩, cell =
+      open half-plane beyond the edge LINE (level 0, vertices ON the boundary).
+  (3) Coverage (Gram trick, angle-free): v = an'+bn'' ∈ N_p with ⟨v,n'⟩≤0 and ⟨v,n''⟩≤0 ⇒
+      |v|² = a⟨n',v⟩+b⟨n'',v⟩ ≤ 0 ⇒ v = 0. So every cone ray enters an adjacent cell at t = 0⁺
+      (vertex lies on both support lines) ⇒ Aub ⊆ H₁∪H₂∪H₃ ⇒ Cor 7.4 ⇒ complete.
+  (4) WHERE THE LEAK LIVES (the step the old draft missed): single-cell attachments H∩W ↪ H are
+      TRIVIAL here (strips into half-planes); the failure is the DOUBLE overlaps: two cells
+      adjacent at vertex p meet in an open cone ⊆ p+N_p ⊆ Aub (containment ⟺ normals subtend
+      ≥ 90° ⟺ angle at p non-obtuse) ⇒ W∩H'∩H'' = ∅. Acute triangle: cover is GOOD, nerve = K₄
+      (6 edges, no triangles: W-triples empty; H₁∩H₂∩H₃ = ∅ by Minkowski Σ|e|n_e = 0) ≃ ⋁₃S¹ —
+      Thm 7.5 computes R_X exactly; it is W ↪ R_X that fails. Winding localises: a loop winding
+      about p must cross the unbounded cone p+N_p ⊆ Aub ⇒ no captured loop winds; the cycle
+      W→H'→H''→W does. Obtuse triangle: cover NOT good (overlap cone protrudes past N_p,
+      captured near apex / in the OPPOSITE vertex's cone far out; W∩H'∩H'' and one W∩H_e
+      disconnect) — nerve threshold for 3 points: good ⟺ no obtuse angle (recorded in §8(5)(b)).
+GENERALISATIONS (Rem 7.9): (b) finite X ⊂ R², affinely spanning, no X-point interior to a hull
+  edge: hull edges defective (unbounded Voronoi edges ↔ hull adjacency), same cone coverage ⇒
+  R_X = R²∖X ≃ ⋁_k S¹ vs M_X = Voronoi skeleton with b₁ = #interior sites (bounded cells ⟺
+  interior) ⇒ LEAK RANK = #hull vertices exactly. Complete reconstruction is GENERIC in the
+  plane; transport is what fails, by the number of Aubry corners. (c) corners ARE the mechanism:
+  notched half-plane X = {y≤0, |x|≥1}: Aub = rays over the shelf, one cell {y>0} covers at
+  level 0, complete, NO leak (complement and M_X = {x=0} both contractible) — no hull corner.
+  Single-cell attachments can fail too: X = circle ∪ plane{z=−10} in R³: cell {z>0} defective
+  (bisector-bowl centres, ψ → −z), Aubry trace = shell {ρ=1,z>0}, H∩W = tube ⊔ outside
+  DISCONNECTED (reconstruction incomplete there). (d) moral inverted: the leak is affine, not
+  Riemannian; curvature only makes the cells themselves nontrivial. Lieutier is genuinely a
+  bounded-domain theorem — completeness does not restore it unbounded; the medial complex does.
+HADAMARD NOTE (Rem 7.7(b) new ending): corner mechanism throttled by horoball thinness — a
+  calibrated ray not asymptotic to the cell's ideal point exits it (Busemann convex, slope →
+  −cos of angle at infinity) ⇒ 3 points in H² do NOT reconstruct completely; which complete
+  Hadamard reconstructions leak stays open.
+DEAD ENDS / TRAPS: 4-point square found first (same leak, V=4), 3 points minimal; collinear 3
+  points NOT complete (endpoint horizontal rays uncovered — degenerate hull); circle+plane and
+  circle+paraboloid attempts at a completable shell all leak class 3 downward (no downward
+  medial escape ⇒ {z<−10} never defective); solid polygons never complete (connected facet
+  contact ⇒ not defective — defectiveness needs disconnected contact).
+EDITS: Prop 7.8 + Rem 7.9 (end of §7); Rem 7.7(b) retitled/rewritten (reduction kept, refutation
+  + Hadamard note); §8(5)(a) → "The flat leak, localised" (residue: corner strata of ∂conv X in
+  R^n, realisation problem for pairs (R^n∖X, M_X)); §8(5)(b) + triangle goodness datum;
+  abstract ("The complex is not a curvature tax..."); intro §7 ¶ closing sentences;
+  rem:homotopyleak closing pointer; conclusion ("the leak the complex repairs is already flat").
+  Compiles clean (xelatex, 30 pp, 0 unresolved refs; 5 overfull all pre-existing). PDF sent.
