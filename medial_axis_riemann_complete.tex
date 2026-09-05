@@ -447,11 +447,15 @@ the convex hull of the reversed minimising directions. By
 Lemma~\ref{lem:usc}, $G$ is upper semicontinuous with nonempty
 compact convex values contained in the closed unit ball. A
 \emph{capture curve} from $p\in M\setminus\X$ is a locally Lipschitz
-curve $\Phi:[0,T_{\max})\to M\setminus\X$ with $\Phi_{0}=p$ and
+curve $\Phi:[0,T_{\max})\to M\setminus\X$ --- we write
+$\Phi_{t}:=\Phi(t)$ --- with $\Phi_{0}=p$ and
 \begin{equation}\label{eq:incl}
   \Phi'(t)\in G(\Phi_{t})\qquad\text{for a.e.\ }t ,
 \end{equation}
-maximally extended in $M\setminus\X$. Local existence of solutions of
+maximally extended in $M\setminus\X$, where $T_{\max}=T_{\max}(\Phi)
+\in(0,\infty]$ is the resulting maximal time of existence (finite only
+if $\Phi_{t}$ leaves every compact subset of $M\setminus\X$ as
+$t\uparrow T_{\max}$). Local existence of solutions of
 \eqref{eq:incl}, and extension as long as the trajectory stays in a
 compact subset of the open domain, are the standard theory of
 differential inclusions with upper semicontinuous convex compact
